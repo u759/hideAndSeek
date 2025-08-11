@@ -1,11 +1,6 @@
 {
   "challenges": [
     {
-      "title": "Challenge Info",
-      "description": "Approved challenges go here, sorted from easiest to hardest. Token values are not final and are subject to change.\n\nChallenge types:\nStatic/dynamic: is it location-specific?\n\n**Find** (and possibly use) certain object(s), e.g. a water fountain, a trash can\n**Visit** a certain (type of) place, e.g. a park, a store, a bus stop\n**Attempt** a succeed/fail task, e.g. count time\n**Perform** a progress-based task, e.g. exercises\n**Memorize**\n**Predict**",
-      "token_count": null
-    },
-    {
       "title": "Flamingo",
       "description": "**FLAMINGO: 6 Tokens**\n\nAll team members must stand still on one foot, without support, for 90 seconds non-stop.",
       "token_count": 6
