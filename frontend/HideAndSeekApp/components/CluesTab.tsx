@@ -46,7 +46,27 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
     }
   };
 
+  const getStatusMessage = () => {
+    if (game.status === 'waiting') {
+      return 'Game has not started yet. Clues will be available once the game begins.';
+    } else if (game.status === 'paused') {
+      return 'Game is paused. All clue purchases are temporarily disabled.';
+    } else if (game.status === 'ended') {
+      return 'Game has ended. No more clues can be purchased.';
+    }
+    return null;
+  };
+
+  const canPurchaseClues = () => {
+    return game.status === 'active';
+  };
+
   const purchaseClue = async (clueType: ClueType) => {
+    if (!canPurchaseClues()) {
+      Alert.alert('Cannot Purchase', 'Clues can only be purchased when the game is active.');
+      return;
+    }
+    
     if (currentTeam.tokens < clueType.cost) {
       Alert.alert('Insufficient Tokens', `You need ${clueType.cost} tokens to purchase this clue.`);
       return;
@@ -95,25 +115,32 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
 
   const renderClueType = ({ item }: { item: ClueType }) => {
     const canAfford = currentTeam.tokens >= item.cost;
+    const gameActive = canPurchaseClues();
+    const isDisabled = loading || !canAfford || !gameActive;
 
     return (
       <TouchableOpacity
-        style={[styles.clueCard, !canAfford && styles.unaffordableCard]}
+        style={[styles.clueCard, isDisabled && styles.unaffordableCard]}
         onPress={() => purchaseClue(item)}
-        disabled={loading || !canAfford}
+        disabled={isDisabled}
       >
         <View style={styles.clueHeader}>
           <Text style={styles.clueName}>{item.name}</Text>
-          <View style={[styles.costBadge, !canAfford && styles.unaffordableBadge]}>
-            <Text style={[styles.costText, !canAfford && styles.unaffordableCostText]}>
+          <View style={[styles.costBadge, isDisabled && styles.unaffordableBadge]}>
+            <Text style={[styles.costText, isDisabled && styles.unaffordableCostText]}>
               {item.cost} 🪙
             </Text>
           </View>
         </View>
         <Text style={styles.clueDescription}>{item.description}</Text>
-        {!canAfford && (
+        {!canAfford && gameActive && (
           <Text style={styles.insufficientText}>
             Need {item.cost - currentTeam.tokens} more tokens
+          </Text>
+        )}
+        {!gameActive && (
+          <Text style={styles.insufficientText}>
+            Game must be active to purchase clues
           </Text>
         )}
       </TouchableOpacity>
@@ -166,6 +193,13 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Available Clues</Text>
+          
+          {getStatusMessage() && (
+            <View style={styles.statusMessageContainer}>
+              <Text style={styles.statusMessageText}>{getStatusMessage()}</Text>
+            </View>
+          )}
+          
           <FlatList
             data={clueTypes}
             renderItem={renderClueType}
@@ -383,6 +417,20 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,
+  },
+  statusMessageContainer: {
+    backgroundColor: '#fff3cd',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#f39c12',
+  },
+  statusMessageText: {
+    fontSize: 16,
+    color: '#856404',
+    textAlign: 'center',
+    fontWeight: '600',
   },
 });
 

@@ -29,20 +29,35 @@ const LocationTab: React.FC<LocationTabProps> = ({ game, currentTeam, onRefresh 
   }, []);
 
   useEffect(() => {
-    let subscription: any = null;
-
+    // This effect now only requests the current location for display purposes
+    // when the component mounts. The actual background tracking is handled
+    // by the useLocationTracker hook.
     if (locationEnabled) {
-      startLocationTracking().then(sub => {
-        subscription = sub;
-      });
+      const fetchLocation = async () => {
+        try {
+          const currentLocation = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.High,
+          });
+          setLocation(currentLocation);
+        } catch (error) {
+          console.error('Failed to fetch location for display:', error);
+        }
+      };
+      
+      fetchLocation();
     }
-
-    return () => {
-      if (subscription) {
-        subscription.remove();
-      }
-    };
   }, [locationEnabled]);
+
+  const getCurrentLocationForDisplay = async () => {
+    try {
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      setLocation(currentLocation);
+    } catch (error) {
+      console.error('Failed to get current location for display:', error);
+    }
+  };
 
   const requestLocationPermission = async () => {
     try {
@@ -79,44 +94,20 @@ const LocationTab: React.FC<LocationTabProps> = ({ game, currentTeam, onRefresh 
     }
   };
 
-  const startLocationTracking = async () => {
-    try {
-      // Get initial location
-      const initialLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-      
-      setLocation(initialLocation);
-      await updateServerLocation(initialLocation);
-
-      // Start watching location changes
-      const subscription = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.High,
-          timeInterval: 30000, // Update every 30 seconds
-          distanceInterval: 10, // Update when moved 10 meters
-        },
-        async (newLocation) => {
-          setLocation(newLocation);
-          await updateServerLocation(newLocation);
-        }
-      );
-
-      return subscription;
-    } catch (error) {
-      setErrorMsg('Error tracking location');
-      console.error('Location tracking error:', error);
-    }
-  };
-
   const updateServerLocation = async (locationData: Location.LocationObject) => {
     try {
       await ApiService.updateLocation(
         currentTeam.id,
         locationData.coords.latitude,
-        locationData.coords.longitude
+        locationData.coords.longitude,
+        game.id
       );
       setLastUpdate(new Date());
+      console.log('Location updated successfully:', {
+        teamId: currentTeam.id,
+        gameId: game.id,
+        coords: locationData.coords
+      });
     } catch (error) {
       console.error('Failed to update server location:', error);
     }
@@ -245,10 +236,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ game, currentTeam, onRefresh 
         <View style={styles.infoSection}>
           <Text style={styles.infoTitle}>How It Works</Text>
           <Text style={styles.infoText}>
-            • Your location is automatically updated every 30 seconds
-          </Text>
-          <Text style={styles.infoText}>
-            • Location is also updated when you move more than 10 meters
+            • Your location is automatically updated every 10 seconds
           </Text>
           <Text style={styles.infoText}>
             • Seekers can buy clues based on your current location

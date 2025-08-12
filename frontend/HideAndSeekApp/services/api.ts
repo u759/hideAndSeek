@@ -85,6 +85,54 @@ class ApiService {
     return response.json();
   }
 
+  async startGame(gameId: string): Promise<Game> {
+    const response = await fetch(`${API_BASE_URL}/game/${gameId}/start`, {
+      method: 'POST',
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to start game');
+    }
+    
+    return response.json();
+  }
+
+  async endGame(gameId: string): Promise<Game> {
+    const response = await fetch(`${API_BASE_URL}/game/${gameId}/end`, {
+      method: 'POST',
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to end game');
+    }
+    
+    return response.json();
+  }
+
+  async pauseGame(gameId: string): Promise<Game> {
+    const response = await fetch(`${API_BASE_URL}/game/${gameId}/pause`, {
+      method: 'POST',
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to pause game');
+    }
+    
+    return response.json();
+  }
+
+  async resumeGame(gameId: string): Promise<Game> {
+    const response = await fetch(`${API_BASE_URL}/game/${gameId}/resume`, {
+      method: 'POST',
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to resume game');
+    }
+    
+    return response.json();
+  }
+
   async nextRound(gameId: string): Promise<Game> {
     const response = await fetch(`${API_BASE_URL}/game/${gameId}/next-round`, {
       method: 'POST',

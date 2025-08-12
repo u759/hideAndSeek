@@ -2,8 +2,8 @@
 const getApiBaseUrl = () => {
   // If running in development with Expo
   if (__DEV__) {
-    // Use your local network IP for testing on physical devices
-    return 'http://192.168.1.147:3000/api';
+    // Use your local network IP for Spring Boot backend
+    return 'http://192.168.1.147:8080/api';
   }
   
   // Production URL would go here

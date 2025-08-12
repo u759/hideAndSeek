@@ -15,24 +15,36 @@ const useLocationTracker = ({ teamId, gameId, isHider, isActive }: LocationTrack
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!isHider || !isActive) {
-      // Stop tracking if not a hider or game is not active
+    console.log('useLocationTracker effect triggered:', { isHider, isActive, teamId, gameId });
+    
+    if (!isHider || !teamId || !gameId) {
+      console.log('Stopping location tracking - not a hider or missing IDs');
       stopLocationTracking();
       return;
     }
 
-    startLocationTracking();
+    // Only track location when game is active
+    if (isActive) {
+      console.log('Starting location tracking for hider (game is active)');
+      startLocationTracking();
+    } else {
+      console.log('Stopping location tracking - game is not active (status: paused/waiting/ended)');
+      stopLocationTracking();
+    }
 
     return () => {
+      console.log('Cleaning up location tracking');
       stopLocationTracking();
     };
   }, [isHider, isActive, teamId, gameId]);
 
   const startLocationTracking = async () => {
     try {
+      console.log('Requesting location permissions...');
       // Request location permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
+        console.log('Location permission denied');
         Alert.alert(
           'Location Permission Required',
           'Hiders must share their location to play. Please enable location access.'
@@ -40,44 +52,29 @@ const useLocationTracker = ({ teamId, gameId, isHider, isActive }: LocationTrack
         return;
       }
 
-      // Start watching location with high accuracy
-      locationSubscription.current = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.High,
-          timeInterval: 10000, // Update every 10 seconds
-          distanceInterval: 10, // Update when moved 10 meters
-        },
-        async (location) => {
-          try {
-            await ApiService.updateLocation(
-              teamId,
-              location.coords.latitude,
-              location.coords.longitude,
-              gameId
-            );
-          } catch (error) {
-            console.error('Failed to update server location:', error);
-          }
-        }
-      );
-
-      // Also send periodic updates to ensure location is fresh
+      console.log('Location permission granted, starting timer...');
+      // Use timer-based updates as primary method to ensure updates every 10 seconds regardless of movement
       intervalRef.current = setInterval(async () => {
         try {
+          console.log('Getting current position...');
           const location = await Location.getCurrentPositionAsync({
             accuracy: Location.Accuracy.High,
           });
           
+          console.log('Sending location update to server...');
           await ApiService.updateLocation(
             teamId,
             location.coords.latitude,
             location.coords.longitude,
             gameId
           );
+          console.log('Timer-based location update sent successfully:', location.coords);
         } catch (error) {
-          console.error('Failed to send periodic server location update:', error);
+          console.error('Failed to send timer-based location update:', error);
         }
-      }, 30000); // Every 30 seconds
+      }, 10000); // Every 10 seconds - this is the primary tracking method
+
+      console.log('Location tracking started with 10-second timer');
       
     } catch (error) {
       console.error('Failed to start location tracking:', error);
@@ -86,14 +83,17 @@ const useLocationTracker = ({ teamId, gameId, isHider, isActive }: LocationTrack
   };
 
   const stopLocationTracking = () => {
+    console.log('Stopping location tracking...');
     if (locationSubscription.current) {
       locationSubscription.current.remove();
       locationSubscription.current = null;
+      console.log('Location subscription removed');
     }
     
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
+      console.log('Location timer cleared');
     }
   };
 
