@@ -1,0 +1,64 @@
+{
+  "clue_types": [
+    {
+      "id": "campus-landmark",
+      "name": "Campus Landmark",
+      "description": "Get a hint about which major UBC landmark the hiders are near",
+      "cost": 3
+    },
+    {
+      "id": "building-hint",
+      "name": "Building Hint",
+      "description": "Discover which type of building or facility the hiders are closest to",
+      "cost": 5
+    },
+    {
+      "id": "directional-compass",
+      "name": "Directional Compass",
+      "description": "Learn the general direction from your current location to the hiders",
+      "cost": 4
+    },
+    {
+      "id": "distance-range",
+      "name": "Distance Range",
+      "description": "Find out approximately how far away the hiders are from you",
+      "cost": 6
+    },
+    {
+      "id": "academic-area",
+      "name": "Academic Area",
+      "description": "Get a clue about which academic faculty or department area the hiders are in",
+      "cost": 7
+    },
+    {
+      "id": "hot-cold",
+      "name": "Hot or Cold",
+      "description": "Receive feedback on whether you're getting warmer or colder to the hiders",
+      "cost": 2
+    },
+    {
+      "id": "elevation-hint",
+      "name": "Elevation Hint",
+      "description": "Learn whether the hiders are on ground level, above, or below you",
+      "cost": 4
+    },
+    {
+      "id": "crowd-level",
+      "name": "Crowd Level",
+      "description": "Discover whether the hiders are in a busy, moderate, or quiet area",
+      "cost": 3
+    },
+    {
+      "id": "outdoor-indoor",
+      "name": "Indoor/Outdoor",
+      "description": "Find out if the hiders are inside a building or outside",
+      "cost": 2
+    },
+    {
+      "id": "precise-location",
+      "name": "Precise Location",
+      "description": "Get the exact coordinates of one randomly selected hider team",
+      "cost": 12
+    }
+  ]
+}

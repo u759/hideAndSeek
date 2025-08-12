@@ -11,6 +11,7 @@ import {
 import * as Location from 'expo-location';
 import { Game, Team } from '../types';
 import ApiService from '../services/api';
+import useLocationTracker from '../hooks/useLocationTracker';
 
 interface LocationTabProps {
   game: Game;
@@ -23,6 +24,18 @@ const LocationTab: React.FC<LocationTabProps> = ({ game, currentTeam, onRefresh 
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Add this hook to update location every 10s
+  useLocationTracker({
+    teamId: currentTeam.id,
+    gameId: game.id,
+    isHider: currentTeam.role === 'hider',
+    isActive: game.status === 'active',
+    onLocationSent: (loc) => {
+      setLocation(loc);
+      setLastUpdate(new Date());
+    },
+  });
 
   useEffect(() => {
     requestLocationPermission();

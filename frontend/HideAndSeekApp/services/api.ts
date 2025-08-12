@@ -322,8 +322,8 @@ class ApiService {
         const errorText = await response.text();
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
-      
-      const result = await response.json();
+      // Backend returns plain text, not JSON
+      const result = await response.text();
       console.log('Location updated successfully:', result);
       return result;
     } catch (error) {

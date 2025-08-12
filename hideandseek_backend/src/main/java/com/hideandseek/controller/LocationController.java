@@ -17,8 +17,7 @@ public class LocationController {
     private LocationService locationService;
 
     @PostMapping("/update")
-    public ResponseEntity<Void> updateLocation(@RequestBody Map<String, Object> request) {
-        System.out.println("POOPOO");
+    public ResponseEntity<String> updateLocation(@RequestBody Map<String, Object> request) {
         try {
             String teamId = (String) request.get("teamId");
             String gameId = (String) request.get("gameId");
@@ -26,9 +25,16 @@ public class LocationController {
             Double longitude = ((Number) request.get("longitude")).doubleValue();
             
             locationService.updateLocation(gameId, teamId, latitude, longitude);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("Location updated successfully");
+        } catch (IllegalStateException e) {
+            // Game status validation error
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            // Game/team not found error
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            // Other errors
+            return ResponseEntity.badRequest().body("Failed to update location: " + e.getMessage());
         }
     }
 }

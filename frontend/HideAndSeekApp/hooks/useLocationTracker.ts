@@ -3,14 +3,16 @@ import * as Location from 'expo-location';
 import { Alert } from 'react-native';
 import ApiService from '../services/api';
 
+
 interface LocationTrackerProps {
   teamId: string;
   gameId: string;
   isHider: boolean;
   isActive: boolean;
+  onLocationSent?: (location: Location.LocationObject) => void;
 }
 
-const useLocationTracker = ({ teamId, gameId, isHider, isActive }: LocationTrackerProps) => {
+const useLocationTracker = ({ teamId, gameId, isHider, isActive, onLocationSent }: LocationTrackerProps) => {
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -54,13 +56,14 @@ const useLocationTracker = ({ teamId, gameId, isHider, isActive }: LocationTrack
 
       console.log('Location permission granted, starting timer...');
       // Use timer-based updates as primary method to ensure updates every 10 seconds regardless of movement
+
       intervalRef.current = setInterval(async () => {
         try {
           console.log('Getting current position...');
           const location = await Location.getCurrentPositionAsync({
             accuracy: Location.Accuracy.High,
           });
-          
+
           console.log('Sending location update to server...');
           await ApiService.updateLocation(
             teamId,
@@ -69,6 +72,9 @@ const useLocationTracker = ({ teamId, gameId, isHider, isActive }: LocationTrack
             gameId
           );
           console.log('Timer-based location update sent successfully:', location.coords);
+          if (onLocationSent) {
+            onLocationSent(location);
+          }
         } catch (error) {
           console.error('Failed to send timer-based location update:', error);
         }

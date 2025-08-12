@@ -4,6 +4,8 @@ import com.hideandseek.model.Game;
 import com.hideandseek.model.Team;
 import com.hideandseek.model.Challenge;
 import com.hideandseek.model.Curse;
+import com.hideandseek.model.ClueType;
+import com.hideandseek.model.PurchasedClue;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -20,11 +22,14 @@ public class GameStore {
     private final Map<String, Game> games = new ConcurrentHashMap<>();
     private List<Challenge> challenges = new ArrayList<>();
     private List<Curse> curses = new ArrayList<>();
+    private List<ClueType> clueTypes = new ArrayList<>();
+    private final Map<String, List<PurchasedClue>> gameClueHistory = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();
 
     public GameStore() {
         loadChallengesAndCurses();
+        loadClueTypes();
     }
 
     private void loadChallengesAndCurses() {
@@ -231,5 +236,50 @@ public class GameStore {
 
     public List<Curse> getAllCurses() {
         return new ArrayList<>(curses);
+    }
+
+    private void loadClueTypes() {
+        try {
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("clue_types.json");
+            if (inputStream != null) {
+                Map<String, Object> data = objectMapper.readValue(inputStream, new TypeReference<>() {});
+                if (data.containsKey("clue_types")) {
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> clueTypeList = (List<Map<String, Object>>) data.get("clue_types");
+                    for (Map<String, Object> clueTypeData : clueTypeList) {
+                        ClueType clueType = new ClueType();
+                        clueType.setId((String) clueTypeData.get("id"));
+                        clueType.setName((String) clueTypeData.get("name"));
+                        clueType.setDescription((String) clueTypeData.get("description"));
+                        clueType.setCost((Integer) clueTypeData.get("cost"));
+                        clueTypes.add(clueType);
+                    }
+                }
+                logger.info("Loaded {} clue types", clueTypes.size());
+            } else {
+                logger.warn("clue_types.json not found in resources");
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load clue types", e);
+        }
+    }
+
+    public List<ClueType> getAllClueTypes() {
+        return new ArrayList<>(clueTypes);
+    }
+
+    public ClueType getClueTypeById(String id) {
+        return clueTypes.stream()
+                .filter(clueType -> clueType.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void addPurchasedClue(PurchasedClue purchasedClue) {
+        gameClueHistory.computeIfAbsent(purchasedClue.getGameId(), k -> new ArrayList<>()).add(purchasedClue);
+    }
+
+    public List<PurchasedClue> getClueHistory(String gameId) {
+        return gameClueHistory.getOrDefault(gameId, new ArrayList<>());
     }
 }
