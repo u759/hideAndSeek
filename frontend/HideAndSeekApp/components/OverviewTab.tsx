@@ -7,8 +7,10 @@ import {
   TouchableOpacity,
   SafeAreaView,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { Game, Team } from '../types';
+import ApiService from '../services/api';
 
 interface OverviewTabProps {
   game: Game;
@@ -25,13 +27,68 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
     setRefreshing(false);
   }, [onRefresh]);
 
+  const handleGameAction = async (action: 'start' | 'pause' | 'resume' | 'end') => {
+    try {
+      let updatedGame: Game;
+      
+      switch (action) {
+        case 'start':
+          updatedGame = await ApiService.startGame(game.id);
+          Alert.alert('Success', 'Game started!');
+          break;
+        case 'pause':
+          updatedGame = await ApiService.pauseGame(game.id);
+          Alert.alert('Success', 'Game paused!');
+          break;
+        case 'resume':
+          updatedGame = await ApiService.resumeGame(game.id);
+          Alert.alert('Success', 'Game resumed!');
+          break;
+        case 'end':
+          Alert.alert(
+            'End Game',
+            'Are you sure you want to end this game? This cannot be undone.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'End Game',
+                style: 'destructive',
+                onPress: async () => {
+                  updatedGame = await ApiService.endGame(game.id);
+                  Alert.alert('Success', 'Game ended!');
+                  onRefresh();
+                },
+              },
+            ]
+          );
+          return;
+      }
+      
+      onRefresh(); // Refresh the game data
+    } catch (error) {
+      Alert.alert('Error', `Failed to ${action} game. Please try again.`);
+      console.error(`Failed to ${action} game:`, error);
+    }
+  };
+
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString();
   };
 
   const getGameDuration = () => {
-    const duration = Date.now() - game.startTime;
+    let duration = Date.now() - game.startTime;
+    
+    // Subtract total paused time
+    if (game.totalPausedDuration) {
+      duration -= game.totalPausedDuration;
+    }
+    
+    // If currently paused, subtract current pause duration
+    if (game.status === 'paused' && game.pauseTime) {
+      duration -= (Date.now() - game.pauseTime);
+    }
+    
     const minutes = Math.floor(duration / 60000);
     const hours = Math.floor(minutes / 60);
     if (hours > 0) {
@@ -73,6 +130,60 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
               <Text style={styles.statusLabel}>Started:</Text>
               <Text style={styles.statusValue}>{formatTime(game.startTime)}</Text>
             </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Game Controls</Text>
+          <View style={styles.gameControlsContainer}>
+            {game.status === 'waiting' && (
+              <TouchableOpacity
+                style={[styles.controlButton, styles.startButton]}
+                onPress={() => handleGameAction('start')}
+              >
+                <Text style={styles.controlButtonText}>🎮 Start Game</Text>
+              </TouchableOpacity>
+            )}
+            
+            {game.status === 'active' && (
+              <>
+                <TouchableOpacity
+                  style={[styles.controlButton, styles.pauseButton]}
+                  onPress={() => handleGameAction('pause')}
+                >
+                  <Text style={styles.controlButtonText}>⏸️ Pause Game</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.controlButton, styles.endButton]}
+                  onPress={() => handleGameAction('end')}
+                >
+                  <Text style={styles.controlButtonText}>🛑 End Game</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            
+            {game.status === 'paused' && (
+              <>
+                <TouchableOpacity
+                  style={[styles.controlButton, styles.resumeButton]}
+                  onPress={() => handleGameAction('resume')}
+                >
+                  <Text style={styles.controlButtonText}>▶️ Resume Game</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.controlButton, styles.endButton]}
+                  onPress={() => handleGameAction('end')}
+                >
+                  <Text style={styles.controlButtonText}>🛑 End Game</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            
+            {game.status === 'ended' && (
+              <View style={styles.gameEndedInfo}>
+                <Text style={styles.gameEndedInfoText}>🏁 Game has ended</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -329,6 +440,50 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  gameControlsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  controlButton: {
+    flex: 1,
+    minWidth: '45%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  controlButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  startButton: {
+    backgroundColor: '#27ae60',
+  },
+  pauseButton: {
+    backgroundColor: '#f39c12',
+  },
+  resumeButton: {
+    backgroundColor: '#3498db',
+  },
+  endButton: {
+    backgroundColor: '#e74c3c',
+  },
+  gameEndedInfo: {
+    backgroundColor: '#ecf0f1',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '100%',
+  },
+  gameEndedInfoText: {
+    fontSize: 16,
+    color: '#7f8c8d',
+    fontWeight: '600',
   },
 });
 

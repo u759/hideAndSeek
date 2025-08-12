@@ -36,6 +36,8 @@ export interface Game {
   code: string;
   teams: Team[];
   startTime: number;
+  pauseTime?: number;
+  totalPausedDuration?: number;
   round: number;
   status: 'waiting' | 'active' | 'paused' | 'ended';
 }

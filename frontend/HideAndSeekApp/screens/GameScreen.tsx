@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, Text } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,48 +17,20 @@ type GameScreenRouteProp = RouteProp<RootStackParamList, 'Game'>;
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-const GameScreen: React.FC = () => {
-  const route = useRoute<GameScreenRouteProp>();
-  const { gameId, teamId } = route.params;
-  
-  const [game, setGame] = useState<Game | null>(null);
-  const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Location tracking for hiders
+const GameTabs: React.FC<{
+  game: Game;
+  currentTeam: Team;
+  teamId: string;
+  gameId: string;
+  onRefresh: () => void;
+}> = ({ game, currentTeam, teamId, gameId, onRefresh }) => {
+  // Location tracking for hiders is now here, ensuring it only runs when data is loaded
   useLocationTracker({
     teamId,
     gameId,
-    isHider: currentTeam?.role === 'hider',
-    isActive: game?.status === 'active',
+    isHider: currentTeam.role === 'hider',
+    isActive: game.status === 'active',
   });
-
-  useEffect(() => {
-    loadGame();
-  }, [gameId]);
-
-  const loadGame = async () => {
-    try {
-      const gameData = await ApiService.getGame(gameId);
-      setGame(gameData);
-      
-      const team = gameData.teams.find(t => t.id === teamId);
-      setCurrentTeam(team || null);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to load game data');
-      console.error('Failed to load game:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refreshGame = () => {
-    loadGame();
-  };
-
-  if (loading || !game || !currentTeam) {
-    return <View style={styles.container} />;
-  }
 
   return (
     <Tab.Navigator
@@ -92,7 +64,7 @@ const GameScreen: React.FC = () => {
           <OverviewTab 
             game={game} 
             currentTeam={currentTeam} 
-            onRefresh={refreshGame}
+            onRefresh={onRefresh}
           />
         )}
       </Tab.Screen>
@@ -104,7 +76,7 @@ const GameScreen: React.FC = () => {
               <ChallengesTab 
                 game={game} 
                 currentTeam={currentTeam} 
-                onRefresh={refreshGame}
+                onRefresh={onRefresh}
               />
             )}
           </Tab.Screen>
@@ -113,7 +85,7 @@ const GameScreen: React.FC = () => {
               <CluesTab 
                 game={game} 
                 currentTeam={currentTeam} 
-                onRefresh={refreshGame}
+                onRefresh={onRefresh}
               />
             )}
           </Tab.Screen>
@@ -122,7 +94,7 @@ const GameScreen: React.FC = () => {
               <FindHidersTab 
                 game={game} 
                 currentTeam={currentTeam} 
-                onRefresh={refreshGame}
+                onRefresh={onRefresh}
               />
             )}
           </Tab.Screen>
@@ -130,17 +102,80 @@ const GameScreen: React.FC = () => {
       )}
       
       {currentTeam.role === 'hider' && (
-        <Tab.Screen name="Location">
-          {() => (
-            <LocationTab 
-              game={game} 
-              currentTeam={currentTeam} 
-              onRefresh={refreshGame}
-            />
-          )}
-        </Tab.Screen>
+        <>
+          <Tab.Screen name="Challenges">
+            {() => (
+              <ChallengesTab
+                game={game}
+                currentTeam={currentTeam}
+                onRefresh={onRefresh}
+              />
+            )}
+          </Tab.Screen>
+          <Tab.Screen name="Location">
+            {() => (
+              <LocationTab 
+                game={game} 
+                currentTeam={currentTeam} 
+                onRefresh={onRefresh}
+              />
+            )}
+          </Tab.Screen>
+        </>
       )}
     </Tab.Navigator>
+  );
+};
+
+const GameScreen: React.FC = () => {
+  const route = useRoute<GameScreenRouteProp>();
+  const { gameId, teamId } = route.params;
+  
+  const [game, setGame] = useState<Game | null>(null);
+  const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadGame();
+    const intervalId = setInterval(loadGame, 5000); // Poll for updates every 5 seconds
+    return () => clearInterval(intervalId);
+  }, [gameId]);
+
+  const loadGame = async () => {
+    try {
+      const gameData = await ApiService.getGame(gameId);
+      setGame(gameData);
+      
+      const team = gameData.teams.find(t => t.id === teamId);
+      setCurrentTeam(team || null);
+    } catch (error) {
+      // Avoid alerting on background poll errors
+      console.error('Failed to load game:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const refreshGame = () => {
+    loadGame();
+  };
+
+  if (loading || !game || !currentTeam) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading Game...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <GameTabs
+      game={game}
+      currentTeam={currentTeam}
+      teamId={teamId}
+      gameId={gameId}
+      onRefresh={refreshGame}
+    />
   );
 };
 

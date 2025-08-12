@@ -24,10 +24,24 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
   const [showCardModal, setShowCardModal] = useState(false);
 
   const canDrawCard = () => {
+    if (game.status !== 'active') {
+      return false;
+    }
     if (currentTeam.vetoEndTime && Date.now() < currentTeam.vetoEndTime) {
       return false;
     }
     return !drawnCard;
+  };
+
+  const getStatusMessage = () => {
+    if (game.status === 'waiting') {
+      return 'Game has not started yet. Challenges will be available once the game begins.';
+    } else if (game.status === 'paused') {
+      return 'Game is paused. All challenge activities are temporarily disabled.';
+    } else if (game.status === 'ended') {
+      return 'Game has ended. No more challenges can be drawn.';
+    }
+    return null;
   };
 
   const drawCard = async () => {
@@ -166,6 +180,12 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
         </View>
 
         <View style={styles.drawSection}>
+          {getStatusMessage() && (
+            <View style={styles.statusMessageContainer}>
+              <Text style={styles.statusMessageText}>{getStatusMessage()}</Text>
+            </View>
+          )}
+          
           {vetoTimeRemaining > 0 ? (
             <View style={styles.vetoWarning}>
               <Text style={styles.vetoText}>
@@ -498,6 +518,20 @@ const styles = StyleSheet.create({
   historyText: {
     fontSize: 16,
     color: '#333',
+  },
+  statusMessageContainer: {
+    backgroundColor: '#fff3cd',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#f39c12',
+  },
+  statusMessageText: {
+    fontSize: 16,
+    color: '#856404',
+    textAlign: 'center',
+    fontWeight: '600',
   },
 });
 
