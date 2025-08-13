@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Game, Team } from '../types';
 import ApiService from '../services/api';
+import RoleSelectionModal from './RoleSelectionModal';
 
 interface OverviewTabProps {
   game: Game;
@@ -20,6 +21,7 @@ interface OverviewTabProps {
 
 const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh }) => {
   const [refreshing, setRefreshing] = React.useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -169,6 +171,12 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
             {game.status === 'paused' && (
               <>
                 <TouchableOpacity
+                  style={[styles.controlButton, styles.roleButton]}
+                  onPress={() => setShowRoleModal(true)}
+                >
+                  <Text style={styles.controlButtonText}>🔄 Setup Next Round</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
                   style={[styles.controlButton, styles.resumeButton]}
                   onPress={() => handleGameAction('resume')}
                 >
@@ -291,6 +299,14 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
           </View>
         )}
       </ScrollView>
+
+      <RoleSelectionModal
+        visible={showRoleModal}
+        game={game}
+        currentTeam={currentTeam}
+        onClose={() => setShowRoleModal(false)}
+        onRefresh={onRefresh}
+      />
     </SafeAreaView>
   );
 };
@@ -473,6 +489,9 @@ const styles = StyleSheet.create({
   },
   resumeButton: {
     backgroundColor: '#3498db',
+  },
+  roleButton: {
+    backgroundColor: '#9b59b6',
   },
   endButton: {
     backgroundColor: '#e74c3c',

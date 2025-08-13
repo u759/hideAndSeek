@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 @Service
 public class GameService {
@@ -72,7 +75,16 @@ public class GameService {
     public Game startGame(String gameId) {
         Game game = getGame(gameId);
         game.setStatus("active");
-        game.setStartTime(System.currentTimeMillis());
+        long currentTime = System.currentTimeMillis();
+        game.setStartTime(currentTime);
+        
+        // Start tracking time for all hiders
+        for (Team team : game.getTeams()) {
+            if ("hider".equals(team.getRole())) {
+                team.setHiderStartTime(currentTime);
+            }
+        }
+        
         gameStore.updateGame(game);
         
         // Broadcast to WebSocket
@@ -129,16 +141,34 @@ public class GameService {
     public Game nextRound(String gameId) {
         Game game = getGame(gameId);
         
-        // Switch roles: seekers become hiders, hiders become seekers
+        if (!"paused".equals(game.getStatus())) {
+            throw new IllegalStateException("Can only start next round when game is paused");
+        }
+        
+        // Validate that there's at least 1 seeker and 1 hider
+        long seekers = game.getTeams().stream().filter(t -> "seeker".equals(t.getRole())).count();
+        long hiders = game.getTeams().stream().filter(t -> "hider".equals(t.getRole())).count();
+        
+        if (seekers < 1) {
+            throw new IllegalStateException("Need at least 1 seeker to start the round");
+        }
+        if (hiders < 1) {
+            throw new IllegalStateException("Need at least 1 hider to start the round");
+        }
+        
+        // Increment round and activate game
+        game.setRound(game.getRound() + 1);
+        game.setStatus("active");
+        long currentTime = System.currentTimeMillis();
+        game.setStartTime(currentTime);
+        
+        // Start tracking time for all hiders
         for (Team team : game.getTeams()) {
-            if ("seeker".equals(team.getRole())) {
-                team.setRole("hider");
-            } else if ("hider".equals(team.getRole())) {
-                team.setRole("seeker");
+            if ("hider".equals(team.getRole())) {
+                team.setHiderStartTime(currentTime);
             }
         }
         
-        game.setRound(game.getRound() + 1);
         gameStore.updateGame(game);
         
         // Broadcast to WebSocket
@@ -327,12 +357,177 @@ public class GameService {
         // Change hider to seeker
         hiderTeam.setRole("seeker");
         
+        // Check if all hiders have been found
+        long remainingHiders = game.getTeams().stream()
+                .filter(team -> "hider".equals(team.getRole()))
+                .count() - 1; // Subtract 1 for the hider we just converted
+        
+        if (remainingHiders == 0) {
+            // All hiders found, pause the game for next round setup
+            game.setStatus("paused");
+        }
+        
         gameStore.updateGame(game);
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
         
         return hiderTeam;
+    }
+
+    public Map<String, Object> markTeamFoundWithGameInfo(String gameId, String hiderId) {
+        Game game = getGame(gameId);
+        validateGameIsActive(game);
+        
+        Team hiderTeam = gameStore.getTeam(gameId, hiderId);
+        
+        if (hiderTeam == null) {
+            throw new IllegalArgumentException("Team not found");
+        }
+        
+        if (!"hider".equals(hiderTeam.getRole())) {
+            throw new IllegalStateException("Team is not a hider");
+        }
+        
+        // Accumulate hider time before changing role
+        long currentTime = System.currentTimeMillis();
+        if (hiderTeam.getHiderStartTime() != null) {
+            long sessionTime = currentTime - hiderTeam.getHiderStartTime();
+            hiderTeam.addHiderTime(sessionTime);
+            hiderTeam.setHiderStartTime(null); // Clear start time since no longer hiding
+        }
+        
+        // Change hider to seeker
+        hiderTeam.setRole("seeker");
+        
+        // Check if all hiders have been found
+        long remainingHiders = game.getTeams().stream()
+                .filter(team -> "hider".equals(team.getRole()))
+                .count() - 1; // Subtract 1 for the hider we just converted
+        
+        boolean allHidersFound = remainingHiders == 0;
+        
+        if (allHidersFound) {
+            // All hiders found, accumulate time for remaining hiders and pause the game
+            for (Team team : game.getTeams()) {
+                if ("hider".equals(team.getRole()) && team.getHiderStartTime() != null) {
+                    long sessionTime = currentTime - team.getHiderStartTime();
+                    team.addHiderTime(sessionTime);
+                    team.setHiderStartTime(null);
+                }
+            }
+            game.setStatus("paused");
+        }
+        
+        gameStore.updateGame(game);
+        
+        // Broadcast to WebSocket
+        webSocketHandler.broadcastToGame(gameId, game);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("team", hiderTeam);
+        result.put("allHidersFound", allHidersFound);
+        result.put("gamePaused", allHidersFound);
+        result.put("message", allHidersFound ? 
+            hiderTeam.getName() + " found! All hiders found - game paused for next round setup." :
+            hiderTeam.getName() + " found! They are now a seeker.");
+        
+        return result;
+    }
+
+    public Team updateTeamRole(String gameId, String teamId, String newRole) {
+        Game game = getGame(gameId);
+        
+        if (!"paused".equals(game.getStatus())) {
+            throw new IllegalStateException("Can only change roles when game is paused");
+        }
+        
+        Team team = gameStore.getTeam(gameId, teamId);
+        if (team == null) {
+            throw new IllegalArgumentException("Team not found");
+        }
+        
+        String oldRole = team.getRole();
+        
+        // If changing from hider to seeker, add accumulated hider time
+        if ("hider".equals(oldRole) && "seeker".equals(newRole) && team.getHiderStartTime() != null) {
+            long hiderDuration = System.currentTimeMillis() - team.getHiderStartTime();
+            team.addHiderTime(hiderDuration);
+            team.setHiderStartTime(null);
+        }
+        
+        // Set the new role
+        team.setRole(newRole);
+        
+        // If changing to hider, set the start time (will be updated when round actually starts)
+        if ("hider".equals(newRole)) {
+            team.setHiderStartTime(null); // Will be set when round starts
+        }
+        
+        gameStore.updateGame(game);
+        
+        // Broadcast to WebSocket
+        webSocketHandler.broadcastToGame(gameId, game);
+        
+        return team;
+    }
+
+    public Map<String, Object> getGameStats(String gameId) {
+        Game game = getGame(gameId);
+        
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("gameId", gameId);
+        stats.put("round", game.getRound());
+        stats.put("status", game.getStatus());
+        
+        // Calculate team statistics
+        List<Map<String, Object>> teamStats = new ArrayList<>();
+        for (Team team : game.getTeams()) {
+            Map<String, Object> teamStat = new HashMap<>();
+            teamStat.put("id", team.getId());
+            teamStat.put("name", team.getName());
+            teamStat.put("role", team.getRole());
+            teamStat.put("tokens", team.getTokens());
+            teamStat.put("totalHiderTime", team.getTotalHiderTime());
+            teamStat.put("totalHiderTimeFormatted", formatTime(team.getTotalHiderTime()));
+            teamStats.add(teamStat);
+        }
+        stats.put("teams", teamStats);
+        
+        // Determine winner (team with longest total hider time)
+        Team winner = game.getTeams().stream()
+                .max((t1, t2) -> Long.compare(t1.getTotalHiderTime(), t2.getTotalHiderTime()))
+                .orElse(null);
+        
+        if (winner != null) {
+            Map<String, Object> winnerInfo = new HashMap<>();
+            winnerInfo.put("id", winner.getId());
+            winnerInfo.put("name", winner.getName());
+            winnerInfo.put("totalHiderTime", winner.getTotalHiderTime());
+            winnerInfo.put("totalHiderTimeFormatted", formatTime(winner.getTotalHiderTime()));
+            stats.put("winner", winnerInfo);
+        }
+        
+        return stats;
+    }
+    
+    private String formatTime(long milliseconds) {
+        if (milliseconds <= 0) return "0s";
+        
+        long seconds = milliseconds / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        
+        seconds = seconds % 60;
+        minutes = minutes % 60;
+        
+        if (hours > 0) {
+            return String.format("%dh %dm %ds", hours, minutes, seconds);
+        } else if (minutes > 0) {
+            return String.format("%dm %ds", minutes, seconds);
+        } else {
+            return String.format("%ds", seconds);
+        }
     }
 
     public void deleteGame(String gameId) {

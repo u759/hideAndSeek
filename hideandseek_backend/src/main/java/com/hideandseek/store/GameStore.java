@@ -23,7 +23,8 @@ public class GameStore {
     private List<Challenge> challenges = new ArrayList<>();
     private List<Curse> curses = new ArrayList<>();
     private List<ClueType> clueTypes = new ArrayList<>();
-    private final Map<String, List<PurchasedClue>> gameClueHistory = new ConcurrentHashMap<>();
+    // Store clues per game and per team (seeker)
+    private final Map<String, List<PurchasedClue>> teamClueHistory = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();
 
@@ -93,7 +94,28 @@ public class GameStore {
                 }
                 
                 if (data.containsKey("curses")) {
-                    curses = objectMapper.convertValue(data.get("curses"), new TypeReference<>() {});
+                    List<Map<String, Object>> curseList = (List<Map<String, Object>>) data.get("curses");
+                    curses = new ArrayList<>();
+                    for (int i = 0; i < curseList.size(); i++) {
+                        Map<String, Object> curseData = curseList.get(i);
+                        Curse curse = new Curse();
+                        curse.setId(String.valueOf(i + 1)); // Assign unique ID
+                        curse.setTitle((String) curseData.get("title"));
+                        curse.setDescription((String) curseData.get("description"));
+                        Object tokenValue = curseData.get("token_count");
+                        if (tokenValue instanceof Integer) {
+                            curse.setTokenCount((Integer) tokenValue);
+                        } else if (tokenValue instanceof String) {
+                            try {
+                                curse.setTokenCount(Integer.parseInt((String) tokenValue));
+                            } catch (NumberFormatException e) {
+                                curse.setTokenCount(0);
+                            }
+                        } else {
+                            curse.setTokenCount(0);
+                        }
+                        curses.add(curse);
+                    }
                 }
                 
                 logger.info("Loaded {} challenges and {} curses", challenges.size(), curses.size());
@@ -139,9 +161,12 @@ public class GameStore {
             team.setTokens(10); // Starting tokens
             team.setLocation(null);
             team.setCompletedChallenges(new ArrayList<>());
+            team.setCompletedCurses(new ArrayList<>());
             team.setActiveChallenge(null);
             team.setActiveCurses(new ArrayList<>());
             team.setVetoEndTime(null);
+            team.setHiderStartTime(null);
+            team.setTotalHiderTime(0);
             game.getTeams().add(team);
         }
         
@@ -167,9 +192,12 @@ public class GameStore {
         team.setTokens(0); // Single player starts with 0 tokens
         team.setLocation(null);
         team.setCompletedChallenges(new ArrayList<>());
+        team.setCompletedCurses(new ArrayList<>());
         team.setActiveChallenge(null);
         team.setActiveCurses(new ArrayList<>());
         team.setVetoEndTime(null);
+        team.setHiderStartTime(null);
+        team.setTotalHiderTime(0);
         game.getTeams().add(team);
         
         games.put(gameId, game);
@@ -238,6 +266,24 @@ public class GameStore {
         return new ArrayList<>(curses);
     }
 
+    // New method: get random curse for a team, enforcing repeat-prevention
+    public Curse getRandomCurseForTeam(Team team) {
+        List<String> completedCurseIds = team.getCompletedCurses();
+        List<Curse> availableCurses = curses.stream()
+                .filter(curse -> curse.getId() != null && !completedCurseIds.contains(curse.getId()))
+                .toList();
+
+        // If all curses have been used, reset completedCurses for the team
+        if (availableCurses.isEmpty()) {
+            team.setCompletedCurses(new ArrayList<>());
+            availableCurses = new ArrayList<>(curses);
+        }
+
+        Curse selected = availableCurses.get(random.nextInt(availableCurses.size()));
+        team.getCompletedCurses().add(selected.getId());
+        return selected;
+    }
+
     private void loadClueTypes() {
         try {
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream("clue_types.json");
@@ -276,14 +322,22 @@ public class GameStore {
     }
 
     public void addPurchasedClue(PurchasedClue purchasedClue) {
-        gameClueHistory.computeIfAbsent(purchasedClue.getGameId(), k -> new ArrayList<>()).add(purchasedClue);
+    String key = purchasedClue.getGameId() + ":" + purchasedClue.getTeamId();
+    teamClueHistory.computeIfAbsent(key, k -> new ArrayList<>()).add(purchasedClue);
     }
 
     public List<PurchasedClue> getClueHistory(String gameId) {
-        return gameClueHistory.getOrDefault(gameId, new ArrayList<>());
+    throw new UnsupportedOperationException("Use getClueHistoryForTeam instead");
     }
 
     public void addClueToHistory(String gameId, PurchasedClue clue) {
-        gameClueHistory.computeIfAbsent(gameId, k -> new ArrayList<>()).add(clue);
+        String key = clue.getGameId() + ":" + clue.getTeamId();
+        teamClueHistory.computeIfAbsent(key, k -> new ArrayList<>()).add(clue);
+    }
+
+    // New method: get clue history for a specific team in a game
+    public List<PurchasedClue> getClueHistoryForTeam(String gameId, String teamId) {
+        String key = gameId + ":" + teamId;
+        return teamClueHistory.getOrDefault(key, new ArrayList<>());
     }
 }

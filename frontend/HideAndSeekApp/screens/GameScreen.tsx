@@ -103,15 +103,6 @@ const GameTabs: React.FC<{
       
       {currentTeam.role === 'hider' && (
         <>
-          <Tab.Screen name="Challenges">
-            {() => (
-              <ChallengesTab
-                game={game}
-                currentTeam={currentTeam}
-                onRefresh={onRefresh}
-              />
-            )}
-          </Tab.Screen>
           <Tab.Screen name="Location">
             {() => (
               <LocationTab 

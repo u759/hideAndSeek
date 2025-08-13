@@ -30,10 +30,10 @@ public class ClueController {
         }
     }
 
-    @GetMapping("/{gameId}/history")
-    public ResponseEntity<?> getClueHistory(@PathVariable String gameId) {
+    @GetMapping("/{gameId}/teams/{teamId}/history")
+    public ResponseEntity<?> getClueHistory(@PathVariable String gameId, @PathVariable String teamId) {
         try {
-            var history = clueService.getClueHistory(gameId);
+            var history = clueService.getClueHistory(gameId, teamId);
             return ResponseEntity.ok(history);
         } catch (Exception e) {
             log.error("Error fetching clue history", e);

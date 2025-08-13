@@ -62,12 +62,15 @@ const FindHidersTab: React.FC<FindHidersTabProps> = ({ game, currentTeam, onRefr
                 ]
               );
 
-              if (result.gameEnded) {
-                Alert.alert(
-                  'Game Over!',
-                  `Congratulations! Only one hider remains. The game has ended.`,
-                  [{ text: 'OK' }]
-                );
+              if (result.allHidersFound) {
+                // Additional alert for round completion
+                setTimeout(() => {
+                  Alert.alert(
+                    'Round Complete!',
+                    `All hiders have been found! The game is now paused. You can set up roles for the next round.`,
+                    [{ text: 'OK' }]
+                  );
+                }, 500);
               }
             } catch (error) {
               Alert.alert('Error', 'Failed to mark hider as found.');

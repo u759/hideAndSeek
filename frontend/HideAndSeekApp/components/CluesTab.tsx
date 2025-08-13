@@ -39,7 +39,7 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
 
   const loadClueHistory = async () => {
     try {
-      const history = await ApiService.getClueHistory(game.id);
+      const history = await ApiService.getClueHistory(game.id, currentTeam.id);
       setPurchasedClues(history);
     } catch (error) {
       console.error('Failed to load clue history:', error);

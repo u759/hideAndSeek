@@ -3,6 +3,7 @@ package com.hideandseek.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Curse {
+    private String id;
     private String title;
     private String description;
     @JsonProperty("token_count")
@@ -10,12 +11,20 @@ public class Curse {
     
     // Default constructor
     public Curse() {}
-    
+
     // Constructor with all fields
-    public Curse(String title, String description, int tokenCount) {
+    public Curse(String id, String title, String description, int tokenCount) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.tokenCount = tokenCount;
+    }
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
     
     // Getters and Setters

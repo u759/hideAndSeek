@@ -295,13 +295,41 @@ class ApiService {
     return response.json();
   }
 
-  async getClueHistory(gameId: string): Promise<Clue[]> {
-    const response = await fetch(`${API_BASE_URL}/clues/${gameId}/history`);
-    
+  async getClueHistory(gameId: string, teamId: string): Promise<Clue[]> {
+    const response = await fetch(`${API_BASE_URL}/clues/${gameId}/teams/${teamId}/history`);
     if (!response.ok) {
       throw new Error('Failed to fetch clue history');
     }
-    
+    return response.json();
+  }
+
+  async updateTeamRole(gameId: string, teamId: string, role: 'seeker' | 'hider') {
+    const response = await fetch(`${API_BASE_URL}/game/${gameId}/teams/${teamId}/role`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ role }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update team role');
+    }
+
+    return response.json();
+  }
+
+  async startNextRound(gameId: string) {
+    const response = await fetch(`${API_BASE_URL}/game/${gameId}/next-round`, {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to start next round');
+    }
+
     return response.json();
   }
 

@@ -48,8 +48,8 @@ public class ClueService {
                 .collect(Collectors.toList());
     }
 
-    public List<Map<String, Object>> getClueHistory(String gameId) {
-        return gameStore.getClueHistory(gameId).stream()
+    public List<Map<String, Object>> getClueHistory(String gameId, String teamId) {
+        return gameStore.getClueHistoryForTeam(gameId, teamId).stream()
                 .map(clue -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("id", clue.getId());
@@ -74,6 +74,11 @@ public class ClueService {
         Team team = gameStore.getTeam(gameId, teamId);
         if (team == null) {
             throw new IllegalArgumentException("Team not found");
+        }
+
+        // Check if team is a hider (hiders cannot purchase clues)
+        if ("hider".equals(team.getRole())) {
+            throw new IllegalStateException("Hiders cannot purchase clues. Only seekers can buy clues to find hiders.");
         }
 
         var clueType = gameStore.getAllClueTypes().stream()
