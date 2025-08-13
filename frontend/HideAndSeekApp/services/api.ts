@@ -279,13 +279,13 @@ class ApiService {
     return response.json();
   }
 
-  async purchaseClue(clueTypeId: string, gameId: string, purchasingTeamId: string) {
+  async purchaseClue(clueTypeId: string, gameId: string, purchasingTeamId: string, description: string) {
     const response = await fetch(`${API_BASE_URL}/clues/purchase`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ clueTypeId, gameId, purchasingTeamId }),
+      body: JSON.stringify({ clueTypeId, gameId, purchasingTeamId, description }),
     });
     
     if (!response.ok) {

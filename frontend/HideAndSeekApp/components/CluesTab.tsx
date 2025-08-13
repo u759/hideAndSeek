@@ -85,12 +85,13 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
               const result = await ApiService.purchaseClue(
                 clueType.id,
                 game.id,
-                currentTeam.id
+                currentTeam.id,
+                clueType.description
               );
               
               Alert.alert(
                 'Clue Purchased!',
-                `Clue: ${result.clue.content}`,
+                `Clue: ${result.text}`,
                 [
                   {
                     text: 'OK',
@@ -153,11 +154,11 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
     return (
       <View style={styles.purchasedClueCard}>
         <View style={styles.purchasedClueHeader}>
-          <Text style={styles.purchasedClueName}>{item.type.name}</Text>
+          <Text style={styles.purchasedClueName}>Purchased Clue</Text>
           <Text style={styles.purchasedClueTime}>{timeAgo}</Text>
         </View>
-        <Text style={styles.purchasedClueContent}>{item.content}</Text>
-        <Text style={styles.purchasedClueCost}>Cost: {item.type.cost} tokens</Text>
+        <Text style={styles.purchasedClueContent}>{item.text}</Text>
+        <Text style={styles.purchasedClueCost}>Cost: {item.cost} tokens</Text>
       </View>
     );
   };

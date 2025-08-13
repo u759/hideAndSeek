@@ -124,11 +124,15 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
             </View>
             <View style={styles.statusRow}>
               <Text style={styles.statusLabel}>Duration:</Text>
-              <Text style={styles.statusValue}>{getGameDuration()}</Text>
+              <Text style={styles.statusValue}>
+                {game.status === 'waiting' ? '--' : getGameDuration()}
+              </Text>
             </View>
             <View style={styles.statusRow}>
               <Text style={styles.statusLabel}>Started:</Text>
-              <Text style={styles.statusValue}>{formatTime(game.startTime)}</Text>
+              <Text style={styles.statusValue}>
+                {game.status === 'waiting' ? '--' : formatTime(game.startTime)}
+              </Text>
             </View>
           </View>
         </View>

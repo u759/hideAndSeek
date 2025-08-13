@@ -23,7 +23,6 @@ public class GameService {
         }
 
         Game game = gameStore.createGame(teamNames);
-        game.setStartTime(System.currentTimeMillis()); // Use Long literal
 
         return game;
     }
@@ -34,7 +33,6 @@ public class GameService {
         }
         
         Game game = gameStore.createGameWithRole(teamNames, playerRole);
-        game.setStartTime(System.currentTimeMillis()); // Use Long literal
 
         return game;
     }

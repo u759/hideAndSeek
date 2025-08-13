@@ -51,10 +51,8 @@ export interface ClueType {
 
 export interface Clue {
   id: string;
-  type: ClueType;
-  content: string;
-  targetTeamId: string;
-  purchasedBy: string;
+  text: string;
+  cost: number;
   timestamp: number;
 }
 

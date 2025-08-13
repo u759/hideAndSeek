@@ -282,4 +282,8 @@ public class GameStore {
     public List<PurchasedClue> getClueHistory(String gameId) {
         return gameClueHistory.getOrDefault(gameId, new ArrayList<>());
     }
+
+    public void addClueToHistory(String gameId, PurchasedClue clue) {
+        gameClueHistory.computeIfAbsent(gameId, k -> new ArrayList<>()).add(clue);
+    }
 }
