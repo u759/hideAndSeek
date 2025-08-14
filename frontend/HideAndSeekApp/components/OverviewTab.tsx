@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
+import { MaterialIcons, FontAwesome, Entypo, Ionicons } from '@expo/vector-icons';
 import { Game, Team } from '../types';
 import ApiService from '../services/api';
 import RoleSelectionModal from './RoleSelectionModal';
@@ -22,12 +23,38 @@ interface OverviewTabProps {
 const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh }) => {
   const [refreshing, setRefreshing] = React.useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [gameStats, setGameStats] = useState<any>(null);
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
     await onRefresh();
+    // Fetch game stats when game is ended
+    if (game.status === 'ended') {
+      try {
+        const stats = await ApiService.getGameStats(game.id);
+        setGameStats(stats);
+      } catch (error) {
+        console.error('Failed to fetch game stats:', error);
+      }
+    }
     setRefreshing(false);
-  }, [onRefresh]);
+  }, [onRefresh, game.status, game.id]);
+
+  // Fetch game stats when component mounts if game is ended
+  React.useEffect(() => {
+    if (game.status === 'ended') {
+      const fetchStats = async () => {
+        try {
+          const stats = await ApiService.getGameStats(game.id);
+          console.log('Game stats:', stats);
+          setGameStats(stats);
+        } catch (error) {
+          console.error('Failed to fetch game stats:', error);
+        }
+      };
+      fetchStats();
+    }
+  }, [game.status, game.id]);
 
   const handleGameAction = async (action: 'start' | 'pause' | 'resume' | 'end') => {
     try {
@@ -79,18 +106,23 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
   };
 
   const getGameDuration = () => {
-    let duration = Date.now() - game.startTime;
-    
-    // Subtract total paused time
+    let duration;
+
+    if (game.status === 'ended' && game.endTime) {
+      duration = game.endTime - game.startTime;
+    } else {
+      duration = Date.now() - game.startTime;
+      if (game.status === 'paused' && game.pauseTime) {
+        duration -= (Date.now() - game.pauseTime);
+      }
+    }
+
     if (game.totalPausedDuration) {
       duration -= game.totalPausedDuration;
     }
     
-    // If currently paused, subtract current pause duration
-    if (game.status === 'paused' && game.pauseTime) {
-      duration -= (Date.now() - game.pauseTime);
-    }
-    
+    duration = Math.max(0, duration);
+
     const minutes = Math.floor(duration / 60000);
     const hours = Math.floor(minutes / 60);
     if (hours > 0) {
@@ -147,7 +179,10 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                 style={[styles.controlButton, styles.startButton]}
                 onPress={() => handleGameAction('start')}
               >
-                <Text style={styles.controlButtonText}>🎮 Start Game</Text>
+                <View style={styles.controlButtonContent}>
+                  <MaterialIcons name="play-circle-outline" size={24} color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={styles.controlButtonText}>Start Game</Text>
+                </View>
               </TouchableOpacity>
             )}
             
@@ -157,13 +192,19 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                   style={[styles.controlButton, styles.pauseButton]}
                   onPress={() => handleGameAction('pause')}
                 >
-                  <Text style={styles.controlButtonText}>⏸️ Pause Game</Text>
+                  <View style={styles.controlButtonContent}>
+                    <MaterialIcons name="pause-circle-outline" size={24} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.controlButtonText}>Pause Game</Text>
+                  </View>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.controlButton, styles.endButton]}
                   onPress={() => handleGameAction('end')}
                 >
-                  <Text style={styles.controlButtonText}>🛑 End Game</Text>
+                  <View style={styles.controlButtonContent}>
+                    <MaterialIcons name="cancel" size={24} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.controlButtonText}>End Game</Text>
+                  </View>
                 </TouchableOpacity>
               </>
             )}
@@ -174,26 +215,38 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                   style={[styles.controlButton, styles.roleButton]}
                   onPress={() => setShowRoleModal(true)}
                 >
-                  <Text style={styles.controlButtonText}>🔄 Setup Next Round</Text>
+                  <View style={styles.controlButtonContent}>
+                    <MaterialIcons name="autorenew" size={24} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.controlButtonText}>Setup Next Round</Text>
+                  </View>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.controlButton, styles.resumeButton]}
                   onPress={() => handleGameAction('resume')}
                 >
-                  <Text style={styles.controlButtonText}>▶️ Resume Game</Text>
+                  <View style={styles.controlButtonContent}>
+                    <MaterialIcons name="play-arrow" size={24} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.controlButtonText}>Resume Game</Text>
+                  </View>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.controlButton, styles.endButton]}
                   onPress={() => handleGameAction('end')}
                 >
-                  <Text style={styles.controlButtonText}>🛑 End Game</Text>
+                  <View style={styles.controlButtonContent}>
+                    <MaterialIcons name="cancel" size={24} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.controlButtonText}>End Game</Text>
+                  </View>
                 </TouchableOpacity>
               </>
             )}
             
             {game.status === 'ended' && (
               <View style={styles.gameEndedInfo}>
-                <Text style={styles.gameEndedInfoText}>🏁 Game has ended</Text>
+                <View style={styles.controlButtonContent}>
+                  <FontAwesome name="flag" size={24} color="#7f8c8d" style={{ marginRight: 8 }} />
+                  <Text style={styles.gameEndedInfoText}>Game has ended</Text>
+                </View>
               </View>
             )}
           </View>
@@ -244,9 +297,13 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
           
           {game.status === 'ended' && (
             <View style={styles.gameEndedBanner}>
-              <Text style={styles.gameEndedText}>🎉 Game Over!</Text>
-              {hiderTeams.length === 1 && (
-                <Text style={styles.winnerText}>{hiderTeams[0].name} wins!</Text>
+              <View style={styles.controlButtonContent}>
+                <Text style={styles.gameEndedText}>🎉 Game Over!</Text>
+              </View>
+              {gameStats?.winner && (
+                <Text style={styles.winnerText}>
+                  {gameStats.winner.name} wins with {gameStats.winner.totalHiderTimeFormatted} of hiding time!
+                </Text>
               )}
             </View>
           )}
@@ -325,6 +382,12 @@ const getTeamColor = (role: string) => {
 };
 
 const styles = StyleSheet.create({
+  controlButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',

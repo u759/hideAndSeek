@@ -23,6 +23,7 @@ export interface Team {
   completedChallenges: string[];
   activeCurses: ActiveCurse[];
   vetoEndTime?: number;
+  totalHiderTime?: number;
 }
 
 export interface ActiveCurse {
@@ -38,6 +39,7 @@ export interface Game {
   startTime: number;
   pauseTime?: number;
   totalPausedDuration?: number;
+  endTime?: number;
   round: number;
   status: 'waiting' | 'active' | 'paused' | 'ended';
 }

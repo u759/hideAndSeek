@@ -78,10 +78,12 @@ public class GameService {
         long currentTime = System.currentTimeMillis();
         game.setStartTime(currentTime);
         
-        // Start tracking time for all hiders
+        // Start tracking time for all hiders and ensure seekers have no start time
         for (Team team : game.getTeams()) {
             if ("hider".equals(team.getRole())) {
                 team.setHiderStartTime(currentTime);
+            } else if ("seeker".equals(team.getRole())) {
+                team.setHiderStartTime(null); // Ensure seekers don't have start times
             }
         }
         
@@ -95,7 +97,19 @@ public class GameService {
 
     public Game endGame(String gameId) {
         Game game = getGame(gameId);
+        
+        // Accumulate hiding time for all teams that are still hiding
+        long currentTime = System.currentTimeMillis();
+        for (Team team : game.getTeams()) {
+            if ("hider".equals(team.getRole()) && team.getHiderStartTime() != null) {
+                long sessionTime = currentTime - team.getHiderStartTime();
+                team.addHiderTime(sessionTime);
+                team.setHiderStartTime(null);
+            }
+        }
+        
         game.setStatus("ended");
+        game.setEndTime(System.currentTimeMillis());
         gameStore.updateGame(game);
         
         // Broadcast to WebSocket
@@ -112,15 +126,30 @@ public class GameService {
 
         // Handle pause time tracking
         if ("paused".equals(status) && "active".equals(previousStatus)) {
-            // Game is being paused
+            // Game is being paused - accumulate hiding time for all active hiders
             game.setPauseTime(currentTime);
+            for (Team team : game.getTeams()) {
+                if ("hider".equals(team.getRole()) && team.getHiderStartTime() != null) {
+                    long sessionTime = currentTime - team.getHiderStartTime();
+                    team.addHiderTime(sessionTime);
+                    team.setHiderStartTime(null); // Clear start time since we're pausing
+                }
+            }
         } else if ("active".equals(status) && "paused".equals(previousStatus)) {
-            // Game is being resumed
+            // Game is being resumed - restart hiding time tracking for all hiders
             if (game.getPauseTime() != null) {
                 long pausedDuration = currentTime - game.getPauseTime();
                 long totalPaused = game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L;
                 game.setTotalPausedDuration(totalPaused + pausedDuration);
                 game.setPauseTime(null);
+            }
+            // Restart hiding time tracking for all hiders and ensure seekers have no start time
+            for (Team team : game.getTeams()) {
+                if ("hider".equals(team.getRole())) {
+                    team.setHiderStartTime(currentTime);
+                } else if ("seeker".equals(team.getRole())) {
+                    team.setHiderStartTime(null); // Ensure seekers don't have start times
+                }
             }
         }
         
@@ -162,10 +191,12 @@ public class GameService {
         long currentTime = System.currentTimeMillis();
         game.setStartTime(currentTime);
         
-        // Start tracking time for all hiders
+        // Start tracking time for all hiders and ensure seekers have no start time
         for (Team team : game.getTeams()) {
             if ("hider".equals(team.getRole())) {
                 team.setHiderStartTime(currentTime);
+            } else if ("seeker".equals(team.getRole())) {
+                team.setHiderStartTime(null); // Ensure seekers don't have start times
             }
         }
         
@@ -449,19 +480,35 @@ public class GameService {
         
         String oldRole = team.getRole();
         
-        // If changing from hider to seeker, add accumulated hider time
+        // If changing from hider to seeker, add accumulated hider time and stop tracking
         if ("hider".equals(oldRole) && "seeker".equals(newRole) && team.getHiderStartTime() != null) {
             long hiderDuration = System.currentTimeMillis() - team.getHiderStartTime();
             team.addHiderTime(hiderDuration);
             team.setHiderStartTime(null);
         }
         
+        // If changing from seeker to hider, ensure no leftover start time (safety check)
+        if ("seeker".equals(oldRole) && "hider".equals(newRole)) {
+            team.setHiderStartTime(null); // Clear any potential leftover start time
+        }
+        
         // Set the new role
         team.setRole(newRole);
         
-        // If changing to hider, set the start time (will be updated when round actually starts)
+        // If changing to hider, set the start time based on game status
         if ("hider".equals(newRole)) {
-            team.setHiderStartTime(null); // Will be set when round starts
+            if ("active".equals(game.getStatus())) {
+                // Game is active, start tracking time immediately
+                team.setHiderStartTime(System.currentTimeMillis());
+            } else {
+                // Game is paused, will be set when round starts
+                team.setHiderStartTime(null);
+            }
+        }
+        
+        // If changing to seeker, ensure no hider start time (safety check)
+        if ("seeker".equals(newRole)) {
+            team.setHiderStartTime(null);
         }
         
         gameStore.updateGame(game);
