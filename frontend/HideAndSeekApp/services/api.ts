@@ -1,4 +1,4 @@
-import { Game, Team, DrawnCard, ClueType, Clue, Location } from '../types';
+import { Game, Team, DrawnCard, ClueType, Clue, Location, Curse } from '../types';
 import { API_BASE_URL } from '../config/api';
 
 class ApiService {
@@ -263,6 +263,33 @@ class ApiService {
     
     if (!response.ok) {
       throw new Error('Failed to veto challenge');
+    }
+    
+    return response.json();
+  }
+
+  // Curse endpoints
+  async applyCurse(gameId: string, seekerTeamId: string, targetTeamId: string) {
+    const response = await fetch(`${API_BASE_URL}/curse/apply`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ gameId, seekerTeamId, targetTeamId }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to apply curse');
+    }
+    
+    return response.json();
+  }
+
+  async getAvailableCurseTargets(gameId: string, seekerTeamId: string): Promise<Team[]> {
+    const response = await fetch(`${API_BASE_URL}/curse/targets/${gameId}/${seekerTeamId}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch available curse targets');
     }
     
     return response.json();

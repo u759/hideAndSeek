@@ -8,16 +8,19 @@ public class Curse {
     private String description;
     @JsonProperty("token_count")
     private int tokenCount; // Use int for consistency
+    @JsonProperty("time_seconds")
+    private Integer timeSeconds; // Duration in seconds (nullable)
     
     // Default constructor
     public Curse() {}
 
     // Constructor with all fields
-    public Curse(String id, String title, String description, int tokenCount) {
+    public Curse(String id, String title, String description, int tokenCount, Integer timeSeconds) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.tokenCount = tokenCount;
+        this.timeSeconds = timeSeconds;
     }
     public String getId() {
         return id;
@@ -50,5 +53,13 @@ public class Curse {
     
     public void setTokenCount(int tokenCount) {
         this.tokenCount = tokenCount;
+    }
+    
+    public Integer getTimeSeconds() {
+        return timeSeconds;
+    }
+    
+    public void setTimeSeconds(Integer timeSeconds) {
+        this.timeSeconds = timeSeconds;
     }
 }

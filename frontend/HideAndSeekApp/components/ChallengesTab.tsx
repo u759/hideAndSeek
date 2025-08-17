@@ -47,11 +47,17 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
   const drawCard = async () => {
     setLoading(true);
     try {
-      const card = await ApiService.drawCard(
-        currentTeam.id,
-        game.id
-      );
-      setDrawnCard(card);
+      // include completedChallenges so backend can exclude them
+      const response = await ApiService.drawCard(currentTeam.id, game.id, currentTeam.completedChallenges);
+
+      // Normalize backend response to DrawnCard shape used by this component
+      const normalized: DrawnCard = {
+        card: response.card,
+        type: response.type,
+        remainingCards: (response as any).remainingChallenges,
+      };
+
+      setDrawnCard(normalized);
       setShowCardModal(true);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to draw card. Please try again.');
@@ -153,10 +159,12 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
         </Text>
         <Text style={styles.cardTitle}>{card.title}</Text>
         <Text style={styles.cardDescription}>{card.description}</Text>
-        {card.token_count && (
-          <Text style={styles.cardTokens}>
-            Tokens: {card.token_count}
-          </Text>
+        {isChallenge && card.token_count != null && (
+          <View style={styles.rewardContainer}>
+            <Text style={styles.cardTokens}>
+              🪙 Reward: {card.token_count} tokens
+            </Text>
+          </View>
         )}
       </View>
     );
@@ -410,6 +418,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#27ae60',
+  },
+  rewardContainer: {
+    backgroundColor: '#e8f5e8',
+    padding: 8,
+    borderRadius: 6,
+    marginTop: 8,
+    alignItems: 'center',
   },
   cardActions: {
     flexDirection: 'row',

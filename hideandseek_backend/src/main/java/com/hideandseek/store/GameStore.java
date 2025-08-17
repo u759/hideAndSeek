@@ -102,17 +102,31 @@ public class GameStore {
                         curse.setId(String.valueOf(i + 1)); // Assign unique ID
                         curse.setTitle((String) curseData.get("title"));
                         curse.setDescription((String) curseData.get("description"));
-                        Object tokenValue = curseData.get("token_count");
-                        if (tokenValue instanceof Integer) {
-                            curse.setTokenCount((Integer) tokenValue);
-                        } else if (tokenValue instanceof String) {
+                        // Parse price field for curses (not token_count)
+                        Object priceValue = curseData.get("price");
+                        if (priceValue instanceof Integer) {
+                            curse.setTokenCount((Integer) priceValue);
+                        } else if (priceValue instanceof String) {
                             try {
-                                curse.setTokenCount(Integer.parseInt((String) tokenValue));
+                                curse.setTokenCount(Integer.parseInt((String) priceValue));
                             } catch (NumberFormatException e) {
-                                curse.setTokenCount(0);
+                                curse.setTokenCount(10); // Default curse price
                             }
                         } else {
-                            curse.setTokenCount(0);
+                            curse.setTokenCount(10); // Default curse price
+                        }
+                        // Parse time_seconds field for duration
+                        Object timeValue = curseData.get("time_seconds");
+                        if (timeValue instanceof Integer) {
+                            curse.setTimeSeconds((Integer) timeValue);
+                        } else if (timeValue instanceof String) {
+                            try {
+                                curse.setTimeSeconds(Integer.parseInt((String) timeValue));
+                            } catch (NumberFormatException e) {
+                                curse.setTimeSeconds(null);
+                            }
+                        } else {
+                            curse.setTimeSeconds(null);
                         }
                         curses.add(curse);
                     }
@@ -164,6 +178,7 @@ public class GameStore {
             team.setCompletedCurses(new ArrayList<>());
             team.setActiveChallenge(null);
             team.setActiveCurses(new ArrayList<>());
+            team.setAppliedCurses(new ArrayList<>());
             team.setVetoEndTime(null);
             team.setHiderStartTime(null);
             team.setTotalHiderTime(0);
@@ -195,6 +210,7 @@ public class GameStore {
         team.setCompletedCurses(new ArrayList<>());
         team.setActiveChallenge(null);
         team.setActiveCurses(new ArrayList<>());
+        team.setAppliedCurses(new ArrayList<>());
         team.setVetoEndTime(null);
         team.setHiderStartTime(null);
         team.setTotalHiderTime(0);

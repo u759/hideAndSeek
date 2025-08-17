@@ -1,64 +1,34 @@
 {
   "clue_types": [
     {
-      "id": "campus-landmark",
-      "name": "Campus Landmark",
-      "description": "Get a hint about which major UBC landmark the hiders are near",
-      "cost": 3
+      "id": "exact-location",
+      "name": "Exact location",
+      "description": "The Hiders' exact location on a map is sent to the Seekers.",
+      "cost": 15
     },
     {
-      "id": "building-hint",
-      "name": "Building Hint",
-      "description": "Discover which type of building or facility the hiders are closest to",
+      "id": "selfie",
+      "name": "Selfie",
+      "description": "The Hiders must send the Seekers a selfie of their whole team at arm’s length, including their surroundings.",
+      "cost": 10
+    },
+    {
+      "id": "closest-landmark",
+      "name": "Closest landmark...",
+      "description": "The Seekers will chose one of the following landmarks.\n\n1. named street\n2. library\n3. museum\n4. parking lot\n\nThe Hiders must tell the Seekers the the name of the chosen landmark type.",
+      "cost": 8
+    },
+    {
+      "id": "relative-direction",
+      "name": "Relative direction",
+      "description": "The Seekers will learn the cardinal directions of any Hider teams within the clue range, relative to the Seeker’s current location.",
       "cost": 5
     },
     {
-      "id": "directional-compass",
-      "name": "Directional Compass",
-      "description": "Learn the general direction from your current location to the hiders",
-      "cost": 4
-    },
-    {
-      "id": "distance-range",
-      "name": "Distance Range",
-      "description": "Find out approximately how far away the hiders are from you",
-      "cost": 6
-    },
-    {
-      "id": "academic-area",
-      "name": "Academic Area",
-      "description": "Get a clue about which academic faculty or department area the hiders are in",
-      "cost": 7
-    },
-    {
-      "id": "hot-cold",
-      "name": "Hot or Cold",
-      "description": "Receive feedback on whether you're getting warmer or colder to the hiders",
-      "cost": 2
-    },
-    {
-      "id": "elevation-hint",
-      "name": "Elevation Hint",
-      "description": "Learn whether the hiders are on ground level, above, or below you",
-      "cost": 4
-    },
-    {
-      "id": "crowd-level",
-      "name": "Crowd Level",
-      "description": "Discover whether the hiders are in a busy, moderate, or quiet area",
-      "cost": 3
-    },
-    {
-      "id": "outdoor-indoor",
-      "name": "Indoor/Outdoor",
-      "description": "Find out if the hiders are inside a building or outside",
-      "cost": 2
-    },
-    {
-      "id": "precise-location",
-      "name": "Precise Location",
-      "description": "Get the exact coordinates of one randomly selected hider team",
-      "cost": 12
+      "id": "distance-from-seekers",
+      "name": "Distance from Seekers",
+      "description": "The Seekers will learn their straight-line distance to any Hider teams within the clue range.",
+      "cost": 5
     }
   ]
 }

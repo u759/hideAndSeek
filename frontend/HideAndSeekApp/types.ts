@@ -1,10 +1,12 @@
 export interface Challenge {
+  id: string;
   title: string;
   description: string;
   token_count: number | string | null;
 }
 
 export interface Curse {
+  id: string;
   title: string;
   description: string;
   token_count: number | string | null;
@@ -22,12 +24,21 @@ export interface Team {
   };
   completedChallenges: string[];
   activeCurses: ActiveCurse[];
+  appliedCurses: AppliedCurse[];
   vetoEndTime?: number;
   totalHiderTime?: number;
 }
 
 export interface ActiveCurse {
   curse: Curse;
+  startTime: number;
+  endTime: number;
+}
+
+export interface AppliedCurse {
+  curse: Curse;
+  targetTeamId: string;
+  targetTeamName: string;
   startTime: number;
   endTime: number;
 }
@@ -86,6 +97,7 @@ export type RootStackParamList = {
 export type TabParamList = {
   Overview: undefined;
   Challenges: undefined;
+  Curses: undefined;
   Clues: undefined;
   Location: undefined;
   FindHiders: undefined;

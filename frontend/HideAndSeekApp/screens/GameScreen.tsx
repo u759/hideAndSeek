@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import OverviewTab from '../components/OverviewTab';
 import ChallengesTab from '../components/ChallengesTab';
+import CursesTab from '../components/CursesTab';
 import CluesTab from '../components/CluesTab';
 import LocationTab from '../components/LocationTab';
 import FindHidersTab from '../components/FindHidersTab';
@@ -42,6 +43,8 @@ const GameTabs: React.FC<{
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'Challenges') {
             iconName = focused ? 'card' : 'card-outline';
+          } else if (route.name === 'Curses') {
+            iconName = focused ? 'flash' : 'flash-outline';
           } else if (route.name === 'Clues') {
             iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'Location') {
@@ -74,6 +77,15 @@ const GameTabs: React.FC<{
           <Tab.Screen name="Challenges">
             {() => (
               <ChallengesTab 
+                game={game} 
+                currentTeam={currentTeam} 
+                onRefresh={onRefresh}
+              />
+            )}
+          </Tab.Screen>
+          <Tab.Screen name="Curses">
+            {() => (
+              <CursesTab 
                 game={game} 
                 currentTeam={currentTeam} 
                 onRefresh={onRefresh}

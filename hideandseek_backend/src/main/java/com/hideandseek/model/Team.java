@@ -15,6 +15,8 @@ public class Team {
     private List<String> completedCurses = new ArrayList<>();
     private ActiveChallenge activeChallenge;  // Current challenge
     private List<ActiveCurse> activeCurses = new ArrayList<>();
+    @JsonProperty("appliedCurses")
+    private List<AppliedCurse> appliedCurses = new ArrayList<>(); // Curses this team has applied to others (seekers only)
     @JsonProperty("vetoEndTime")
     private Long vetoEndTime;         // Timestamp when veto penalty ends
     @JsonProperty("hiderStartTime")
@@ -28,7 +30,7 @@ public class Team {
     // Constructor with all fields
     public Team(String id, String name, String role, int tokens, TeamLocation location, 
                 List<String> completedChallenges, List<String> completedCurses, ActiveChallenge activeChallenge, 
-                List<ActiveCurse> activeCurses, Long vetoEndTime, Long hiderStartTime, long totalHiderTime) {
+                List<ActiveCurse> activeCurses, List<AppliedCurse> appliedCurses, Long vetoEndTime, Long hiderStartTime, long totalHiderTime) {
         this.id = id;
         this.name = name;
         this.role = role;
@@ -38,6 +40,7 @@ public class Team {
         this.completedCurses = completedCurses != null ? completedCurses : new ArrayList<>();
         this.activeChallenge = activeChallenge;
         this.activeCurses = activeCurses != null ? activeCurses : new ArrayList<>();
+        this.appliedCurses = appliedCurses != null ? appliedCurses : new ArrayList<>();
         this.vetoEndTime = vetoEndTime;
         this.hiderStartTime = hiderStartTime;
         this.totalHiderTime = totalHiderTime;
@@ -111,6 +114,14 @@ public class Team {
 
     public void setActiveCurses(List<ActiveCurse> activeCurses) {
         this.activeCurses = activeCurses != null ? activeCurses : new ArrayList<>();
+    }
+
+    public List<AppliedCurse> getAppliedCurses() {
+        return appliedCurses;
+    }
+
+    public void setAppliedCurses(List<AppliedCurse> appliedCurses) {
+        this.appliedCurses = appliedCurses != null ? appliedCurses : new ArrayList<>();
     }
 
     public Long getVetoEndTime() {

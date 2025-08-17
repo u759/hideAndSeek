@@ -147,6 +147,28 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
           <Text style={styles.subtitle}>Round {game.round}</Text>
         </View>
 
+        {/* Prominent Active Curses for Hiders */}
+        {currentTeam.role === 'hider' && currentTeam.activeCurses && currentTeam.activeCurses.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.hiderCursesContainer}>
+              <Text style={styles.hiderCursesTitle}>⚡ You are Cursed</Text>
+              {currentTeam.activeCurses.map((ac, idx) => {
+                const timeRemaining = Math.max(0, ac.endTime - Date.now());
+                const minutesRemaining = Math.ceil(timeRemaining / 60000);
+                return (
+                  <View key={idx} style={styles.hiderCurseCard}>
+                    <View style={styles.hiderCurseHeader}>
+                      <Text style={styles.hiderCurseTitle}>{ac.curse.title}</Text>
+                      <Text style={styles.hiderCurseTimer}>{minutesRemaining}m left</Text>
+                    </View>
+                    <Text style={styles.hiderCurseDescription}>{ac.curse.description}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Game Status</Text>
           <View style={styles.statusCard}>
@@ -270,10 +292,12 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                 <Text style={styles.statValue}>{currentTeam.completedChallenges.length}</Text>
                 <Text style={styles.statLabel}>Challenges</Text>
               </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{currentTeam.activeCurses.length}</Text>
-                <Text style={styles.statLabel}>Active Curses</Text>
-              </View>
+              {currentTeam.role === 'hider' && (
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{currentTeam.activeCurses.length}</Text>
+                  <Text style={styles.statLabel}>Active Curses</Text>
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -337,6 +361,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
             </View>
           ))}
         </View>
+
+        
 
         {currentTeam.role === 'seeker' && (
           <View style={styles.section}>
@@ -570,6 +596,104 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#7f8c8d',
     fontWeight: '600',
+  },
+  curseCard: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#e74c3c',
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  curseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  curseTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2c3e50',
+    flex: 1,
+  },
+  curseTimer: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#e74c3c',
+    backgroundColor: '#fee',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  curseTarget: {
+    fontSize: 14,
+    color: '#7f8c8d',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  curseDescription: {
+    fontSize: 14,
+    color: '#34495e',
+    lineHeight: 18,
+  },
+  hiderCursesContainer: {
+  backgroundColor: '#fff7f7',
+  borderWidth: 1,
+  borderColor: '#f5c6cb',
+  padding: 12,
+  borderRadius: 10,
+  width: '100%',
+  alignSelf: 'stretch',
+  },
+  hiderCursesTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#c0392b',
+    marginBottom: 8,
+  },
+  hiderCurseCard: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#c0392b',
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  hiderCurseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  hiderCurseTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#2c3e50',
+    flex: 1,
+  },
+  hiderCurseTimer: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#fff',
+    backgroundColor: '#c0392b',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  hiderCurseDescription: {
+    fontSize: 14,
+    color: '#34495e',
   },
 });
 

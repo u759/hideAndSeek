@@ -45,6 +45,11 @@ public class GameService {
         if (game == null) {
             throw new IllegalArgumentException("Game not found");
         }
+        
+        // Clean expired curses whenever a game is fetched
+        cleanExpiredCurses(game);
+        gameStore.updateGame(game);
+        
         return game;
     }
 
@@ -57,6 +62,20 @@ public class GameService {
     private void validateGameIsActiveOrWaiting(Game game) {
         if (!"active".equals(game.getStatus()) && !"waiting".equals(game.getStatus())) {
             throw new IllegalStateException("Game operation not allowed. Game status: " + game.getStatus());
+        }
+    }
+
+    private void cleanExpiredCurses(Game game) {
+        long currentTime = System.currentTimeMillis();
+        
+        for (Team team : game.getTeams()) {
+            // Clean expired active curses
+            team.getActiveCurses().removeIf(activeCurse -> activeCurse.getEndTime() <= currentTime);
+            
+            // Clean expired applied curses for seekers
+            if ("seeker".equals(team.getRole())) {
+                team.getAppliedCurses().removeIf(appliedCurse -> appliedCurse.getEndTime() <= currentTime);
+            }
         }
     }
 
@@ -349,15 +368,8 @@ public class GameService {
             throw new IllegalStateException("No active challenge");
         }
         
-        // Apply curse if challenge has one
-        Challenge challenge = team.getActiveChallenge().getChallenge();
-        if (challenge.getCurse() != null) {
-            ActiveCurse activeCurse = new ActiveCurse();
-            activeCurse.setCurse(challenge.getCurse());
-            activeCurse.setStartTime(System.currentTimeMillis());
-            activeCurse.setDuration(5); // 5 minutes
-            team.getActiveCurses().add(activeCurse);
-        }
+        // Seekers no longer get curses for refusing challenges
+        // Just apply the veto period
         
         // Set veto period - 5 minutes from now
         team.setVetoEndTime(System.currentTimeMillis() + (5 * 60 * 1000));
@@ -391,9 +403,9 @@ public class GameService {
         // Check if all hiders have been found
         long remainingHiders = game.getTeams().stream()
                 .filter(team -> "hider".equals(team.getRole()))
-                .count() - 1; // Subtract 1 for the hider we just converted
+                .count();
         
-        if (remainingHiders == 0) {
+        if (remainingHiders == 0) { // Only pause when NO hiders remain
             // All hiders found, pause the game for next round setup
             game.setStatus("paused");
         }
@@ -434,9 +446,9 @@ public class GameService {
         // Check if all hiders have been found
         long remainingHiders = game.getTeams().stream()
                 .filter(team -> "hider".equals(team.getRole()))
-                .count() - 1; // Subtract 1 for the hider we just converted
+                .count();
         
-        boolean allHidersFound = remainingHiders == 0;
+        boolean allHidersFound = remainingHiders == 0; // Only end when NO hiders remain
         
         if (allHidersFound) {
             // All hiders found, accumulate time for remaining hiders and pause the game

@@ -71,29 +71,25 @@ public class ChallengeService {
             }
         }
 
-        // If no challenges left, only draw curse
-        boolean onlyCurse = availableChallenges.isEmpty();
-        Object drawnCard;
-        String cardType;
-        if (onlyCurse) {
-            drawnCard = gameStore.getRandomCurseForTeam(team);
-            cardType = "curse";
-        } else {
-            // 50/50 chance to draw challenge or curse
-            if (new Random().nextBoolean()) {
-                drawnCard = availableChallenges.get(new Random().nextInt(availableChallenges.size()));
-                cardType = "challenge";
-            } else {
-                drawnCard = gameStore.getRandomCurseForTeam(team);
-                cardType = "curse";
-            }
+        // Seekers can only draw challenges (no curses anymore)
+        if (availableChallenges.isEmpty()) {
+            throw new IllegalStateException("No more challenges available for this team.");
         }
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("card", drawnCard);
-        result.put("type", cardType);
-        result.put("remainingChallenges", availableChallenges.size() - (cardType.equals("challenge") ? 1 : 0));
-        return result;
+    Challenge drawnChallenge = availableChallenges.get(new Random().nextInt(availableChallenges.size()));
+
+    // Return a predictable JSON shape for the frontend, include token_count field
+    Map<String, Object> cardMap = new HashMap<>();
+    cardMap.put("id", drawnChallenge.getId());
+    cardMap.put("title", drawnChallenge.getTitle());
+    cardMap.put("description", drawnChallenge.getDescription());
+    cardMap.put("token_count", drawnChallenge.getTokenReward());
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("card", cardMap);
+    result.put("type", "challenge");
+    result.put("remainingChallenges", availableChallenges.size() - 1);
+    return result;
     }
 
     public Map<String, Object> completeChallenge(String gameId, String teamId, String challengeTitle) {
@@ -128,8 +124,8 @@ public class ChallengeService {
 
         // Update team
         team.setTokens(team.getTokens() + tokensEarned);
-        if (!team.getCompletedChallenges().contains(challenge.getId())) {
-            team.getCompletedChallenges().add(challenge.getId());
+        if (!team.getCompletedChallenges().contains(challenge.getTitle())) {
+            team.getCompletedChallenges().add(challenge.getTitle());
         }
         
         gameStore.updateGame(game);
