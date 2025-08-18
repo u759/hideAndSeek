@@ -36,3 +36,5 @@
 
 # typescript
 **/*.tsbuildinfo
+
+**/uploads/**

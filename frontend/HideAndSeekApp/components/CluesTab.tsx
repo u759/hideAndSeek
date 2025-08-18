@@ -15,6 +15,7 @@ import * as ExpoLocation from 'expo-location';
 import ApiService from '../services/api';
 import useLocationTracker from '../hooks/useLocationTracker';
 import { API_BASE_URL } from '../config/api';
+import useGameWebSocket from '../hooks/useGameWebSocket';
 
 interface CluesTabProps {
   game: Game;
@@ -40,32 +41,18 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
     loadClueHistory();
   }, [game.id]);
 
-  // Seeker-side WebSocket to refresh on clue responses
-  const wsRef = useRef<WebSocket | null>(null);
+  // Seeker-side WebSocket to refresh on clue responses with auto-reconnect + heartbeat
   const wsUrl = useMemo(() => API_BASE_URL.replace(/\/?api$/, '').replace(/^http/, 'ws') + '/ws', []);
-
-  useEffect(() => {
-    if (currentTeam.role !== 'seeker') return;
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-    ws.onopen = () => {
-      try { ws.send(JSON.stringify({ type: 'join', gameId: game.id })); } catch {}
-    };
-    ws.onmessage = (ev) => {
-      try {
-        const msg = JSON.parse(ev.data);
-        if (msg?.type === 'clueResponse' && msg?.requestingTeamId === currentTeam.id) {
-          // Refresh history to display the new response
-          loadClueHistory();
-        }
-      } catch {}
-    };
-    return () => {
-      try { ws.send(JSON.stringify({ type: 'leave', gameId: game.id })); } catch {}
-      ws.close();
-      wsRef.current = null;
-    };
-  }, [currentTeam.id, currentTeam.role, game.id, wsUrl]);
+  useGameWebSocket({
+    wsUrl,
+    gameId: currentTeam.role === 'seeker' ? game.id : '',
+    onMessage: (msg) => {
+      if (currentTeam.role !== 'seeker') return;
+      if (msg?.type === 'clueResponse' && msg?.requestingTeamId === currentTeam.id) {
+        loadClueHistory();
+      }
+    },
+  });
 
   const loadClueTypes = async () => {
     try {

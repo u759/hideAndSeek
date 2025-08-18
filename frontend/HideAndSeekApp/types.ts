@@ -27,6 +27,8 @@ export interface Team {
   appliedCurses: AppliedCurse[];
   vetoEndTime?: number;
   totalHiderTime?: number;
+  // Server-side active challenge (must be vetoed or completed)
+  activeChallenge?: ActiveChallenge;
 }
 
 export interface ActiveCurse {
@@ -78,6 +80,12 @@ export interface DrawnCard {
 export interface Location {
   latitude: number;
   longitude: number;
+}
+
+export interface ActiveChallenge {
+  challenge: Challenge;
+  startTime: number;
+  completed: boolean;
 }
 
 // Navigation types

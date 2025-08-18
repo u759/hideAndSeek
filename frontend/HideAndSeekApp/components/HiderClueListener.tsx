@@ -3,6 +3,7 @@ import { Alert, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, Vie
 import * as ImagePicker from 'expo-image-picker';
 import { API_BASE_URL } from '../config/api';
 import ApiService from '../services/api';
+import useGameWebSocket from '../hooks/useGameWebSocket';
 
 type ClueRequestPayload = {
   id: string;
@@ -30,50 +31,22 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
   const [visible, setVisible] = useState(false);
   const [request, setRequest] = useState<ClueRequestPayload | null>(null);
   const [textResponse, setTextResponse] = useState('');
-  const wsRef = useRef<WebSocket | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   const wsUrl = useMemo(getWsUrl, []);
 
-  useEffect(() => {
-    // Connect to WebSocket and join game room
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      try {
-        ws.send(JSON.stringify({ type: 'join', gameId }));
-      } catch (e) {
-        // no-op
+  useGameWebSocket({
+    wsUrl,
+    gameId,
+    onMessage: (data) => {
+      if (data?.type === 'clueRequest' && data?.targetTeamId === teamId) {
+        const req = data.request as ClueRequestPayload;
+        setRequest(req);
+        setVisible(true);
+        updateTimer(req.expirationTimestamp || null);
       }
-    };
-
-    ws.onmessage = (ev) => {
-      try {
-        const data = JSON.parse(ev.data);
-        if (data?.type === 'clueRequest' && data?.targetTeamId === teamId) {
-          const req = data.request as ClueRequestPayload;
-          setRequest(req);
-          setVisible(true);
-          updateTimer(req.expirationTimestamp || null);
-        }
-      } catch (_) {
-        // ignore malformed messages
-      }
-    };
-
-    ws.onerror = () => {
-      // Silent; we'll rely on polling backup
-    };
-
-    return () => {
-      try {
-        ws.send(JSON.stringify({ type: 'leave', gameId }));
-      } catch (_) {}
-      ws.close();
-      wsRef.current = null;
-    };
-  }, [gameId, teamId, wsUrl]);
+    },
+  });
 
   // Polling fallback in case WS misses an event or reconnects
   useEffect(() => {
