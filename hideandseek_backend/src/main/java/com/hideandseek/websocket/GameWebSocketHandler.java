@@ -38,6 +38,19 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             if ("join".equals(type)) {
                 String gameId = (String) payload.get("gameId");
                 joinGame(session, gameId);
+            } else if ("ping".equals(type)) {
+                // Heartbeat response
+                Object lock = sessionLocks.computeIfAbsent(session, s -> new Object());
+                Map<String, Object> pong = Map.of(
+                        "type", "pong",
+                        "t", System.currentTimeMillis()
+                );
+                String pongJson = objectMapper.writeValueAsString(pong);
+                synchronized (lock) {
+                    if (session.isOpen()) {
+                        session.sendMessage(new TextMessage(pongJson));
+                    }
+                }
             } else if ("leave".equals(type)) {
                 String gameId = (String) payload.get("gameId");
                 leaveGame(session, gameId);

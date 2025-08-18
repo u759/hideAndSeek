@@ -49,6 +49,11 @@ public class ChallengeService {
             throw new IllegalStateException("Hiders cannot draw challenges. Only seekers can access challenges.");
         }
 
+        // Enforce one active challenge at a time
+        if (team.getActiveChallenge() != null) {
+            throw new IllegalStateException("You already have an active challenge. Complete or veto it before drawing another.");
+        }
+
         // Check if team is in veto period
         if (team.getVetoEndTime() != null) {
             long currentTime = System.currentTimeMillis();
@@ -62,11 +67,14 @@ public class ChallengeService {
             }
         }
 
-        // Get available challenges not completed by team
+        // Get available challenges not completed by team (tolerate legacy title-based entries)
         List<Challenge> allChallenges = gameStore.getAllChallenges();
+        Set<String> completed = new HashSet<>(team.getCompletedChallenges());
         List<Challenge> availableChallenges = new ArrayList<>();
         for (Challenge challenge : allChallenges) {
-            if (!team.getCompletedChallenges().contains(challenge.getId())) {
+            String id = challenge.getId();
+            String title = challenge.getTitle();
+            if (!completed.contains(id) && !completed.contains(title)) {
                 availableChallenges.add(challenge);
             }
         }
@@ -77,6 +85,16 @@ public class ChallengeService {
         }
 
     Challenge drawnChallenge = availableChallenges.get(new Random().nextInt(availableChallenges.size()));
+
+    // Set active challenge on the team for persistence across navigation/logins
+    ActiveChallenge active = new ActiveChallenge();
+    active.setChallenge(drawnChallenge);
+    active.setStartTime(System.currentTimeMillis());
+    active.setCompleted(false);
+    team.setActiveChallenge(active);
+    gameStore.updateGame(game);
+    // Broadcast to clients so UI hydrates active challenge
+    webSocketHandler.broadcastToGame(gameId, game);
 
     // Return a predictable JSON shape for the frontend, include token_count field
     Map<String, Object> cardMap = new HashMap<>();
@@ -113,23 +131,34 @@ public class ChallengeService {
             throw new IllegalStateException("Hiders cannot complete challenges. Only seekers can access challenges.");
         }
 
-        // Find the challenge
-        Challenge challenge = gameStore.getAllChallenges().stream()
-                .filter(c -> c.getTitle().equals(challengeTitle))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Challenge not found"));
+        // Require an active challenge
+        ActiveChallenge active = team.getActiveChallenge();
+        if (active == null || active.getChallenge() == null) {
+            throw new IllegalStateException("No active challenge to complete");
+        }
+        // Optional: ensure the provided title matches the active challenge
+        if (challengeTitle != null && !challengeTitle.equals(active.getChallenge().getTitle())) {
+            throw new IllegalStateException("Provided challenge does not match the active challenge");
+        }
 
-        // Calculate tokens earned
+        Challenge challenge = active.getChallenge();
         int tokensEarned = challenge.getTokenReward();
 
-        // Update team
+        // Update team state: tokens, completed list (normalize to use ID), clear active
         team.setTokens(team.getTokens() + tokensEarned);
-        if (!team.getCompletedChallenges().contains(challenge.getTitle())) {
-            team.getCompletedChallenges().add(challenge.getTitle());
+        List<String> completed = team.getCompletedChallenges();
+        boolean hasId = completed.contains(challenge.getId());
+        boolean hasTitle = completed.contains(challenge.getTitle());
+        if (!hasId) {
+            completed.add(challenge.getId());
         }
-        
+        // Optionally remove legacy title entry to normalize
+        if (hasTitle) {
+            completed.remove(challenge.getTitle());
+        }
+        team.setActiveChallenge(null);
+
         gameStore.updateGame(game);
-        
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
 
@@ -138,7 +167,6 @@ public class ChallengeService {
         result.put("newTokenBalance", team.getTokens());
         result.put("challenge", challenge);
         result.put("message", String.format("Challenge completed! Earned %d tokens.", tokensEarned));
-        
         return result;
     }
 
@@ -163,19 +191,29 @@ public class ChallengeService {
             throw new IllegalStateException("Hiders cannot veto challenges. Only seekers can access challenges.");
         }
 
-        // Set 5-minute veto penalty
-        team.setVetoEndTime(System.currentTimeMillis() + (5 * 60 * 1000)); // 5 minutes from now
+        // Require an active challenge
+        ActiveChallenge active = team.getActiveChallenge();
+        if (active == null || active.getChallenge() == null) {
+            throw new IllegalStateException("No active challenge to veto");
+        }
+        // Optional: ensure the provided title matches the active challenge
+        if (challengeTitle != null && !challengeTitle.equals(active.getChallenge().getTitle())) {
+            throw new IllegalStateException("Provided challenge does not match the active challenge");
+        }
+
+        // Set 5-minute veto penalty and clear active
+        long vetoEnd = System.currentTimeMillis() + (5 * 60 * 1000); // 5 minutes from now
+        team.setVetoEndTime(vetoEnd);
+        team.setActiveChallenge(null);
         
         gameStore.updateGame(game);
-        
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
 
         Map<String, Object> result = new HashMap<>();
         result.put("message", "Challenge vetoed. 5-minute penalty applied.");
-        result.put("vetoEndTime", System.currentTimeMillis() + (5 * 60 * 1000));
+        result.put("vetoEndTime", vetoEnd);
         result.put("penaltyMinutes", 5);
-        
         return result;
     }
 }
