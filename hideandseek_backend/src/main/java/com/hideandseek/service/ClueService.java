@@ -1,24 +1,14 @@
 package com.hideandseek.service;
 
-import com.hideandseek.model.Game;
-import com.hideandseek.model.Team;
+import com.hideandseek.model.*;
 import com.hideandseek.store.GameStore;
 import com.hideandseek.websocket.GameWebSocketHandler;
-import com.opencagedata.jopencage.JOpenCageGeocoder;
-import com.opencagedata.jopencage.model.JOpenCageResponse;
-import com.opencagedata.jopencage.model.JOpenCageResult;
-import com.opencagedata.jopencage.model.JOpenCageReverseRequest;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import com.google.genai.Client;
-import com.google.genai.types.GenerateContentResponse;
-import io.github.cdimascio.dotenv.Dotenv;
 
 @Service
 public class ClueService {
@@ -49,16 +39,42 @@ public class ClueService {
     }
 
     public List<Map<String, Object>> getClueHistory(String gameId, String teamId) {
-        return gameStore.getClueHistoryForTeam(gameId, teamId).stream()
-                .map(clue -> {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("id", clue.getId());
-                    map.put("text", clue.getClueText());
-                    map.put("cost", clue.getCost());
-                    map.put("timestamp", clue.getTimestamp());
-                    return map;
-                })
-                .collect(Collectors.toList());
+        // Get purchased clues (both completed and pending)
+        List<PurchasedClue> purchasedClues = gameStore.getClueHistoryForTeam(gameId, teamId);
+
+        // Merge undelivered responses into the in-memory purchased clues before returning
+        List<ClueResponse> responses = gameStore.getUndeliveredClueResponsesForTeam(gameId, teamId);
+        if (responses != null && !responses.isEmpty()) {
+            for (ClueResponse response : responses) {
+                purchasedClues.stream()
+                        .filter(clue -> clue.getRequestId() != null && clue.getRequestId().equals(response.getRequestId()))
+                        .findFirst()
+                        .ifPresent(clue -> {
+                            clue.setClueText(response.getResponseData());
+                            clue.setStatus("completed");
+                        });
+
+                // Mark response as delivered so it isn't re-applied
+                gameStore.markClueResponseAsDelivered(response.getRequestId(), teamId, gameId);
+            }
+        }
+
+        // Build response payload from the updated list
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (PurchasedClue clue : purchasedClues) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", clue.getId());
+            map.put("text", clue.getClueText());
+            map.put("cost", clue.getCost());
+            map.put("timestamp", clue.getTimestamp());
+            map.put("status", clue.getStatus());
+            map.put("clueTypeId", clue.getClueTypeId());
+            map.put("responseType", clue.getResponseType());
+            map.put("targetHiderTeamId", clue.getTargetHiderTeamId());
+            result.add(map);
+        }
+
+        return result;
     }
 
     public Map<String, Object> purchaseClue(String gameId, String teamId, String clueTypeId, String description) {
@@ -81,6 +97,12 @@ public class ClueService {
             throw new IllegalStateException("Hiders cannot purchase clues. Only seekers can buy clues to find hiders.");
         }
 
+        // Check if requesting team has location (required for distance-based clue targeting)
+        // NOTE: Both seekers and hiders need location tracking enabled in the frontend
+        if (team.getLocation() == null) {
+            throw new IllegalStateException("Location required: wait for all players to acquire location (ensure your device has GPS enabled and has sent a location).");
+        }
+
         var clueType = gameStore.getAllClueTypes().stream()
                 .filter(ct -> ct.getId().equals(clueTypeId))
                 .findFirst()
@@ -90,230 +112,293 @@ public class ClueService {
             throw new IllegalStateException("Insufficient tokens");
         }
 
-        // Generate clue based on type
-        String clueText = generateClueByType(game, team, clueTypeId, description);
-
-        var purchasedClue = new com.hideandseek.model.PurchasedClue(
-                UUID.randomUUID().toString(),
-                clueTypeId,
-                teamId,
-                gameId,
-                clueText,
-                clueType.getCost()
-        );
-
-        if (!game.getTeams().stream()
-                .filter(t -> "hider".equals(t.getRole()) && t.getLocation() != null)
-                .toList().isEmpty()) {
-            // Deduct tokens
-            team.setTokens(team.getTokens() - clueType.getCost());
-            gameStore.updateGame(game);
-
-            // Add to clue history
-            gameStore.addClueToHistory(gameId, purchasedClue);
+        // Find the closest hider team to apply the clue to
+        Team targetHiderTeam = gameStore.getClosestHiderTeam(gameId, teamId);
+        if (targetHiderTeam == null) {
+            throw new IllegalStateException("Location required: wait for all players to acquire location (hider teams are still acquiring GPS).");
         }
 
-        // Broadcast to WebSocket
-        webSocketHandler.broadcastToGame(gameId, game);
+        // Process clue based on the new clue types from JSON
+        return processClueByType(game, team, targetHiderTeam, clueType);
+    }
 
+    private Map<String, Object> processClueByType(Game game, Team requestingTeam, Team targetHiderTeam, ClueType clueType) {
+        String clueId = UUID.randomUUID().toString();
+        
+        switch (clueType.getId()) {
+            case "exact-location":
+                return handleExactLocationClue(game, requestingTeam, targetHiderTeam, clueType, clueId);
+                
+            case "selfie":
+                return handleSelfieClue(game, requestingTeam, targetHiderTeam, clueType, clueId);
+                
+            case "closest-landmark":
+                return handleClosestLandmarkClue(game, requestingTeam, targetHiderTeam, clueType, clueId);
+                
+            case "relative-direction":
+                return handleRelativeDirectionClue(game, requestingTeam, targetHiderTeam, clueType, clueId);
+                
+            case "distance-from-seekers":
+                return handleDistanceFromSeekersClue(game, requestingTeam, targetHiderTeam, clueType, clueId);
+                
+            default:
+                throw new IllegalArgumentException("Unknown clue type: " + clueType.getId());
+        }
+    }
+
+    private Map<String, Object> handleExactLocationClue(Game game, Team requestingTeam, Team targetHiderTeam, ClueType clueType, String clueId) {
+        // Immediate response with exact location
+        String clueText = String.format("Exact location of %s: %.6f, %.6f", 
+                targetHiderTeam.getName(),
+                targetHiderTeam.getLocation().getLatitude(),
+                targetHiderTeam.getLocation().getLongitude());
+        
+        var purchasedClue = new PurchasedClue(
+                clueId, clueType.getId(), requestingTeam.getId(), game.getId(),
+                clueText, clueType.getCost(), "completed", null, "location", targetHiderTeam.getId()
+        );
+        
+        // Deduct tokens and save clue
+        requestingTeam.setTokens(requestingTeam.getTokens() - clueType.getCost());
+        gameStore.updateGame(game);
+        gameStore.addClueToHistory(game.getId(), purchasedClue);
+        
+        // Broadcast update
+        webSocketHandler.broadcastToGame(game.getId(), game);
+        
         Map<String, Object> result = new HashMap<>();
         result.put("id", purchasedClue.getId());
         result.put("text", purchasedClue.getClueText());
         result.put("cost", purchasedClue.getCost());
         result.put("timestamp", purchasedClue.getTimestamp());
+        result.put("status", "completed");
+        result.put("location", Map.of(
+                "latitude", targetHiderTeam.getLocation().getLatitude(),
+                "longitude", targetHiderTeam.getLocation().getLongitude(),
+                "teamName", targetHiderTeam.getName()
+        ));
         return result;
     }
 
-    private String generateClueByType(Game game, Team requestingTeam, String clueTypeId, String description) {
-        List<Team> hiders = game.getTeams().stream()
-                .filter(t -> "hider".equals(t.getRole()) && t.getLocation() != null)
+    private Map<String, Object> handleSelfieClue(Game game, Team requestingTeam, Team targetHiderTeam, ClueType clueType, String clueId) {
+        // Create async clue request
+        String requestId = UUID.randomUUID().toString();
+        
+        ClueRequest clueRequest = new ClueRequest(
+                requestId, game.getId(), requestingTeam.getId(), targetHiderTeam.getId(),
+                clueType.getId(), clueType.getName(), "photo"
+        );
+        
+        var purchasedClue = new PurchasedClue(
+                clueId, clueType.getId(), requestingTeam.getId(), game.getId(),
+                "Waiting for selfie from " + targetHiderTeam.getName() + "...", 
+                clueType.getCost(), "pending", requestId, "photo", targetHiderTeam.getId()
+        );
+        
+        // Deduct tokens and save
+        requestingTeam.setTokens(requestingTeam.getTokens() - clueType.getCost());
+        gameStore.updateGame(game);
+        gameStore.addClueRequest(clueRequest);
+        gameStore.addClueToHistory(game.getId(), purchasedClue);
+        
+        // Broadcast clue request specifically to target hider team
+        Map<String, Object> requestData = new HashMap<>();
+        requestData.put("id", requestId);
+        requestData.put("clueTypeId", clueType.getId());
+        requestData.put("clueTypeName", clueType.getName());
+        requestData.put("requestingTeamName", requestingTeam.getName());
+        requestData.put("responseType", "photo");
+        requestData.put("description", "Take a selfie of your whole team at arm's length, including your surroundings.");
+        requestData.put("expirationTimestamp", clueRequest.getExpirationTimestamp());
+        
+        webSocketHandler.broadcastClueRequest(game.getId(), targetHiderTeam.getId(), requestData);
+        
+        // Also broadcast general game update
+        webSocketHandler.broadcastToGame(game.getId(), game);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", purchasedClue.getId());
+        result.put("text", purchasedClue.getClueText());
+        result.put("cost", purchasedClue.getCost());
+        result.put("timestamp", purchasedClue.getTimestamp());
+        result.put("status", "pending");
+        result.put("requestId", requestId);
+        return result;
+    }
+
+    private Map<String, Object> handleClosestLandmarkClue(Game game, Team requestingTeam, Team targetHiderTeam, ClueType clueType, String clueId) {
+        // Create async clue request for landmark name
+        String requestId = UUID.randomUUID().toString();
+        
+        ClueRequest clueRequest = new ClueRequest(
+                requestId, game.getId(), requestingTeam.getId(), targetHiderTeam.getId(),
+                clueType.getId(), clueType.getName(), "text"
+        );
+        
+        var purchasedClue = new PurchasedClue(
+                clueId, clueType.getId(), requestingTeam.getId(), game.getId(),
+                "Waiting for landmark information from " + targetHiderTeam.getName() + "...", 
+                clueType.getCost(), "pending", requestId, "text", targetHiderTeam.getId()
+        );
+        
+        // Deduct tokens and save
+        requestingTeam.setTokens(requestingTeam.getTokens() - clueType.getCost());
+        gameStore.updateGame(game);
+        gameStore.addClueRequest(clueRequest);
+        gameStore.addClueToHistory(game.getId(), purchasedClue);
+        
+        // Broadcast clue request specifically to target hider team
+        Map<String, Object> requestData = new HashMap<>();
+        requestData.put("id", requestId);
+        requestData.put("clueTypeId", clueType.getId());
+        requestData.put("clueTypeName", clueType.getName());
+        requestData.put("requestingTeamName", requestingTeam.getName());
+        requestData.put("responseType", "text");
+        requestData.put("description", "Choose from: 1. Named street, 2. Library, 3. Museum, 4. Parking lot. Tell the seekers the name of the closest landmark of your chosen type.");
+        requestData.put("expirationTimestamp", clueRequest.getExpirationTimestamp());
+        
+        webSocketHandler.broadcastClueRequest(game.getId(), targetHiderTeam.getId(), requestData);
+        
+        // Also broadcast general game update
+        webSocketHandler.broadcastToGame(game.getId(), game);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", purchasedClue.getId());
+        result.put("text", purchasedClue.getClueText());
+        result.put("cost", purchasedClue.getCost());
+        result.put("timestamp", purchasedClue.getTimestamp());
+        result.put("status", "pending");
+        result.put("requestId", requestId);
+        return result;
+    }
+
+    private Map<String, Object> handleRelativeDirectionClue(Game game, Team requestingTeam, Team targetHiderTeam, ClueType clueType, String clueId) {
+        // Immediate response with direction
+        String direction = getDirection(requestingTeam.getLocation(), targetHiderTeam.getLocation());
+        String clueText = String.format("The closest hider (%s) is generally to the %s of your current position.", 
+                targetHiderTeam.getName(), direction);
+        
+        var purchasedClue = new PurchasedClue(
+                clueId, clueType.getId(), requestingTeam.getId(), game.getId(),
+                clueText, clueType.getCost(), "completed", null, "automatic", targetHiderTeam.getId()
+        );
+        
+        // Deduct tokens and save clue
+        requestingTeam.setTokens(requestingTeam.getTokens() - clueType.getCost());
+        gameStore.updateGame(game);
+        gameStore.addClueToHistory(game.getId(), purchasedClue);
+        
+        // Broadcast update
+        webSocketHandler.broadcastToGame(game.getId(), game);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", purchasedClue.getId());
+        result.put("text", purchasedClue.getClueText());
+        result.put("cost", purchasedClue.getCost());
+        result.put("timestamp", purchasedClue.getTimestamp());
+        result.put("status", "completed");
+        return result;
+    }
+
+    private Map<String, Object> handleDistanceFromSeekersClue(Game game, Team requestingTeam, Team targetHiderTeam, ClueType clueType, String clueId) {
+        // Immediate response with distance
+        double distance = calculateDistance(requestingTeam.getLocation(), targetHiderTeam.getLocation());
+        String clueText = String.format("Your distance to the closest hider (%s) is approximately %.0f meters.", 
+                targetHiderTeam.getName(), distance);
+        
+        var purchasedClue = new PurchasedClue(
+                clueId, clueType.getId(), requestingTeam.getId(), game.getId(),
+                clueText, clueType.getCost(), "completed", null, "automatic", targetHiderTeam.getId()
+        );
+        
+        // Deduct tokens and save clue
+        requestingTeam.setTokens(requestingTeam.getTokens() - clueType.getCost());
+        gameStore.updateGame(game);
+        gameStore.addClueToHistory(game.getId(), purchasedClue);
+        
+        // Broadcast update
+        webSocketHandler.broadcastToGame(game.getId(), game);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", purchasedClue.getId());
+        result.put("text", purchasedClue.getClueText());
+        result.put("cost", purchasedClue.getCost());
+        result.put("timestamp", purchasedClue.getTimestamp());
+        result.put("status", "completed");
+        return result;
+    }
+
+    // Method for hiders to get pending clue requests
+    public List<Map<String, Object>> getPendingClueRequests(String gameId, String teamId) {
+        List<ClueRequest> requests = gameStore.getPendingClueRequestsForTeam(gameId, teamId);
+        return requests.stream()
+                .map(request -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", request.getId());
+                    map.put("clueTypeId", request.getClueTypeId());
+                    map.put("clueTypeName", request.getClueTypeName());
+                    map.put("requestingTeamName", gameStore.getTeam(gameId, request.getRequestingTeamId()).getName());
+                    map.put("responseType", request.getResponseType());
+                    map.put("requestTimestamp", request.getRequestTimestamp());
+                    map.put("expirationTimestamp", request.getExpirationTimestamp());
+                    return map;
+                })
                 .collect(Collectors.toList());
+    }
 
-        if (hiders.isEmpty()) {
-            return "No hiders with locations found.";
+    // Method for hiders to respond to clue requests
+    public Map<String, Object> respondToClueRequest(String requestId, String teamId, String responseData) {
+        ClueRequest request = gameStore.getClueRequest(requestId);
+        if (request == null) {
+            throw new IllegalArgumentException("Clue request not found");
         }
-
-        // Use AI for certain clue types, predefined logic for others
-        switch (clueTypeId) {
-            case "campus-landmark":
-            case "building-hint":
-            case "academic-area":
-                return generateAIClue(hiders, clueTypeId, description);
-
-            case "directional-compass":
-                return generateDirectionalClue(hiders, requestingTeam);
-
-            case "distance-range":
-                return generateDistanceClue(hiders, requestingTeam);
-
-            case "hot-cold":
-                return generateHotColdClue(hiders, requestingTeam);
-
-            case "elevation-hint":
-                return generateElevationClue(hiders);
-
-            case "crowd-level":
-                return generateCrowdLevelClue(hiders);
-
-            case "outdoor-indoor":
-                return generateIndoorOutdoorClue(hiders);
-
-            case "precise-location":
-                return generatePreciseLocationClue(hiders);
-
-            default:
-                return "Unknown clue type requested.";
+        
+        if (!request.getTargetHiderTeamId().equals(teamId)) {
+            throw new IllegalArgumentException("This clue request is not for your team");
         }
-    }
-
-    // AI-based clue generator (uses Gemini API if available)
-    private String generateAIClue(List<Team> hiders, String clueTypeId, String description) {
-
-        Team closestHider = hiders.stream()
-                .min((h1, h2) -> {
-                    double dist1 = calculateDistance(h1.getLocation(), hiders.get(0).getLocation());
-                    double dist2 = calculateDistance(h2.getLocation(), hiders.get(0).getLocation());
-                    return Double.compare(dist1, dist2);
-                })
-                .orElse(null);
-
-        if (closestHider == null) {
-            return "No hiders found.";
+        
+        if (!"pending".equals(request.getStatus())) {
+            throw new IllegalStateException("This clue request is no longer pending");
         }
-
-        Dotenv dotenv = Dotenv.load();
-
-        JOpenCageGeocoder geocoder = new JOpenCageGeocoder(dotenv.get("OPENCAGE_API_KEY"));
-
-        JOpenCageReverseRequest request =
-                new JOpenCageReverseRequest(closestHider.getLocation().getLatitude(), closestHider.getLocation().getLongitude());
-
-        request.setLanguage("en");
-        request.setNoAnnotations(true);
-
-        StringBuilder result = new StringBuilder();
-
-        JOpenCageResponse geocoded = geocoder.reverse(request);
-
-        for (JOpenCageResult resultItem : geocoded.getResults()) {
-            if (resultItem.getFormatted() != null) {
-                result.append(resultItem.getFormatted()).append("\n");
-            }
+        
+        if (request.isExpired()) {
+            request.setStatus("expired");
+            gameStore.updateClueRequest(request);
+            throw new IllegalStateException("This clue request has expired");
         }
-
-        Client client = Client.builder().apiKey(dotenv.get("GEMINI_API_KEY")).build();
-
-        String prompt = String.format(
-                "Generate a %s clue for the seekers with hiders located in the general vicinity of the" +
-                        " following reverse-geocoded location: %s. The clue should follow" +
-                        " the instructions in this description: %s. Only return the clue text, no additional information." +
-                        " It should be 1-2 sentences long. Only return plaintext, no markdown or other formatting.",
-                clueTypeId, result, description);
-
-        System.out.println(prompt);
-
-        GenerateContentResponse response =
-                client.models.generateContent(
-                        "gemma-3-27b-it",
-                        prompt,
-                        null);
-        System.out.println(response.text());
-        return response.text();
-    }
-
-    // Predefined logic-based clue generators
-    private String generateDirectionalClue(List<Team> hiders, Team requestingTeam) {
-        if (requestingTeam.getLocation() == null) {
-            return "Cannot determine direction without your current location.";
-        }
-
-        Team closestHider = hiders.stream()
-                .min((h1, h2) -> {
-                    double dist1 = calculateDistance(requestingTeam.getLocation(), h1.getLocation());
-                    double dist2 = calculateDistance(requestingTeam.getLocation(), h2.getLocation());
-                    return Double.compare(dist1, dist2);
-                })
-                .orElse(null);
-
-        if (closestHider == null) return "No hiders found.";
-
-        String direction = getDirection(requestingTeam.getLocation(), closestHider.getLocation());
-        return String.format("The closest hider is generally to the %s of your current position.", direction);
-    }
-
-    private String generateDistanceClue(List<Team> hiders, Team requestingTeam) {
-        if (requestingTeam.getLocation() == null) {
-            return "Cannot determine distance without your current location.";
-        }
-
-        double avgDistance = hiders.stream()
-                .mapToDouble(h -> calculateDistance(requestingTeam.getLocation(), h.getLocation()))
-                .average()
-                .orElse(0);
-
-        if (avgDistance < 100) return "The hiders are very close - within 100 meters!";
-        else if (avgDistance < 300) return "The hiders are nearby - within 300 meters.";
-        else if (avgDistance < 500) return "The hiders are moderately far - within 500 meters.";
-        else return "The hiders are quite far - over 500 meters away.";
-    }
-
-    private String generateHotColdClue(List<Team> hiders, Team requestingTeam) {
-        if (requestingTeam.getLocation() == null) {
-            return "Cannot determine temperature without your current location.";
-        }
-
-        double minDistance = hiders.stream()
-                .mapToDouble(h -> calculateDistance(requestingTeam.getLocation(), h.getLocation()))
-                .min()
-                .orElse(Double.MAX_VALUE);
-
-        if (minDistance < 50) return "🔥 You're on fire! Very hot!";
-        else if (minDistance < 150) return "🌡️ Getting warmer...";
-        else if (minDistance < 300) return "😐 Lukewarm.";
-        else if (minDistance < 500) return "🧊 Getting cold...";
-        else return "❄️ Freezing! You're way off.";
-    }
-
-    private String generateElevationClue(List<Team> hiders) {
-        String[] elevationHints = {
-                "The hiders are on ground level, blending with the campus crowd.",
-                "Look up! The hiders have taken to higher ground.",
-                "The hiders have gone underground or to lower levels."
-        };
-        return elevationHints[random.nextInt(elevationHints.length)];
-    }
-
-    private String generateCrowdLevelClue(List<Team> hiders) {
-        String[] crowdHints = {
-                "The hiders are in a bustling, high-traffic area of campus.",
-                "The hiders have found a moderately busy spot with some foot traffic.",
-                "The hiders are hiding in a quiet, secluded area of campus."
-        };
-        return crowdHints[random.nextInt(crowdHints.length)];
-    }
-
-    private String generateIndoorOutdoorClue(List<Team> hiders) {
-        return random.nextBoolean() ?
-                "The hiders are inside a building, sheltered from the elements." :
-                "The hiders are outside, enjoying the fresh campus air.";
-    }
-
-    private String generatePreciseLocationClue(List<Team> hiders) {
-        Team randomHider = hiders.get(random.nextInt(hiders.size()));
-        return String.format("Exact location of team %s: %.6f, %.6f",
-                randomHider.getName(),
-                randomHider.getLocation().getLatitude(),
-                randomHider.getLocation().getLongitude());
-    }
-
-    private String generateFallbackClue(List<Team> hiders, String clueTypeId) {
-        String[] fallbackClues = {
-                "The shadows dance near the heart of learning, where books whisper ancient secrets.",
-                "Between towers of knowledge and pathways of discovery, the hidden ones wait.",
-                "Where students gather to fuel their minds and bodies, secrets may be concealed.",
-                "In the realm where science meets nature, look for those who lurk in plain sight."
-        };
-        return fallbackClues[random.nextInt(fallbackClues.length)];
+        
+        // Create response
+        ClueResponse response = new ClueResponse(
+                requestId, request.getGameId(), teamId, request.getRequestingTeamId(),
+                request.getClueTypeId(), request.getResponseType(), responseData
+        );
+        
+        // Update request status
+        request.setStatus("completed");
+        request.setResponse(responseData);
+        gameStore.updateClueRequest(request);
+        gameStore.addClueResponse(response);
+        
+        // Broadcast clue response to requesting team
+        Map<String, Object> responseInfo = new HashMap<>();
+        responseInfo.put("requestId", requestId);
+        responseInfo.put("clueTypeId", request.getClueTypeId());
+        responseInfo.put("responseType", request.getResponseType());
+        responseInfo.put("responseData", responseData);
+        responseInfo.put("timestamp", response.getResponseTimestamp());
+        
+        webSocketHandler.broadcastClueResponse(request.getGameId(), request.getRequestingTeamId(), responseInfo);
+        
+        // Broadcast general update to all players
+        Game game = gameStore.getGame(request.getGameId());
+        webSocketHandler.broadcastToGame(request.getGameId(), game);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("requestId", requestId);
+        result.put("status", "completed");
+        result.put("responseData", responseData);
+        result.put("timestamp", response.getResponseTimestamp());
+        return result;
     }
 
     // Utility methods

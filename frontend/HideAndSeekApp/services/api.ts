@@ -306,6 +306,58 @@ class ApiService {
     return response.json();
   }
 
+  async getPendingClueRequests(gameId: string, teamId: string) {
+    const response = await fetch(`${API_BASE_URL}/clues/${gameId}/teams/${teamId}/requests`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch pending clue requests');
+    }
+    return response.json();
+  }
+
+  async respondToClueRequest(requestId: string, teamId: string, responseData: string) {
+    const response = await fetch(`${API_BASE_URL}/clues/requests/${requestId}/respond`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teamId, responseData }),
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to submit clue response');
+      } catch (_) {
+        throw new Error('Failed to submit clue response');
+      }
+    }
+    return response.json();
+  }
+
+  async uploadSelfie(requestId: string, teamId: string, fileUri: string) {
+    const formData = new FormData();
+    // React Native FormData file object shape; cast to any to appease TypeScript
+    formData.append(
+      'file',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ({ uri: fileUri, name: 'selfie.jpg', type: 'image/jpeg' } as any)
+    );
+    formData.append('requestId', requestId);
+    formData.append('teamId', teamId);
+
+    const response = await fetch(`${API_BASE_URL}/uploads/selfie`, {
+      method: 'POST',
+      // Don't set Content-Type manually; let fetch set multipart boundary
+      body: formData as any,
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to upload selfie');
+      } catch (_) {
+        throw new Error('Failed to upload selfie');
+      }
+    }
+    return response.json();
+  }
+
   async purchaseClue(clueTypeId: string, gameId: string, purchasingTeamId: string, description: string) {
     const response = await fetch(`${API_BASE_URL}/clues/purchase`, {
       method: 'POST',
@@ -314,18 +366,41 @@ class ApiService {
       },
       body: JSON.stringify({ clueTypeId, gameId, purchasingTeamId, description }),
     });
-    
+
     if (!response.ok) {
-      throw new Error('Failed to purchase clue');
+      // Try to extract error message from backend
+      try {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const err = await response.json();
+          throw new Error(err?.error || `Failed to purchase clue (HTTP ${response.status})`);
+        } else {
+          const text = await response.text();
+          throw new Error(text || `Failed to purchase clue (HTTP ${response.status})`);
+        }
+      } catch (parseErr) {
+        throw new Error('Failed to purchase clue');
+      }
     }
-    
+
     return response.json();
   }
 
   async getClueHistory(gameId: string, teamId: string): Promise<Clue[]> {
     const response = await fetch(`${API_BASE_URL}/clues/${gameId}/teams/${teamId}/history`);
     if (!response.ok) {
-      throw new Error('Failed to fetch clue history');
+      try {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const err = await response.json();
+          throw new Error(err?.error || 'Failed to fetch clue history');
+        } else {
+          const text = await response.text();
+          throw new Error(text || 'Failed to fetch clue history');
+        }
+      } catch (_) {
+        throw new Error('Failed to fetch clue history');
+      }
     }
     return response.json();
   }
