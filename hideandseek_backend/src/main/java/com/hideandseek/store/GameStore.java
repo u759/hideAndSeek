@@ -6,6 +6,8 @@ import com.hideandseek.model.Challenge;
 import com.hideandseek.model.Curse;
 import com.hideandseek.model.ClueType;
 import com.hideandseek.model.PurchasedClue;
+import com.hideandseek.model.ClueRequest;
+import com.hideandseek.model.ClueResponse;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -25,6 +27,9 @@ public class GameStore {
     private List<ClueType> clueTypes = new ArrayList<>();
     // Store clues per game and per team (seeker)
     private final Map<String, List<PurchasedClue>> teamClueHistory = new ConcurrentHashMap<>();
+    // Store async clue requests and responses
+    private final Map<String, ClueRequest> clueRequests = new ConcurrentHashMap<>();
+    private final Map<String, List<ClueResponse>> clueResponses = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();
 
@@ -355,5 +360,92 @@ public class GameStore {
     public List<PurchasedClue> getClueHistoryForTeam(String gameId, String teamId) {
         String key = gameId + ":" + teamId;
         return teamClueHistory.getOrDefault(key, new ArrayList<>());
+    }
+    
+    // Async clue request methods
+    public void addClueRequest(ClueRequest request) {
+        clueRequests.put(request.getId(), request);
+    }
+    
+    public ClueRequest getClueRequest(String requestId) {
+        return clueRequests.get(requestId);
+    }
+    
+    public List<ClueRequest> getPendingClueRequestsForTeam(String gameId, String teamId) {
+        return clueRequests.values().stream()
+                .filter(req -> req.getGameId().equals(gameId) && 
+                              req.getTargetHiderTeamId().equals(teamId) && 
+                              "pending".equals(req.getStatus()) &&
+                              !req.isExpired())
+                .collect(java.util.stream.Collectors.toList());
+    }
+    
+    public void updateClueRequest(ClueRequest request) {
+        clueRequests.put(request.getId(), request);
+    }
+    
+    public List<ClueRequest> getExpiredClueRequests() {
+        return clueRequests.values().stream()
+                .filter(req -> "pending".equals(req.getStatus()) && req.isExpired())
+                .collect(java.util.stream.Collectors.toList());
+    }
+    
+    public void addClueResponse(ClueResponse response) {
+        String key = response.getRequestingTeamId() + ":" + response.getGameId();
+        clueResponses.computeIfAbsent(key, k -> new ArrayList<>()).add(response);
+    }
+    
+    public List<ClueResponse> getUndeliveredClueResponsesForTeam(String gameId, String teamId) {
+        String key = teamId + ":" + gameId;
+        return clueResponses.getOrDefault(key, new ArrayList<>()).stream()
+                .filter(response -> !response.isDelivered())
+                .collect(java.util.stream.Collectors.toList());
+    }
+    
+    public void markClueResponseAsDelivered(String requestId, String teamId, String gameId) {
+        String key = teamId + ":" + gameId;
+        List<ClueResponse> responses = clueResponses.get(key);
+        if (responses != null) {
+            responses.stream()
+                    .filter(response -> response.getRequestId().equals(requestId))
+                    .forEach(response -> response.setDelivered(true));
+        }
+    }
+    
+    // Find closest hider team to requesting seeker team
+    public Team getClosestHiderTeam(String gameId, String requestingTeamId) {
+        Game game = getGame(gameId);
+        if (game == null) return null;
+        
+        Team requestingTeam = getTeam(gameId, requestingTeamId);
+        if (requestingTeam == null || requestingTeam.getLocation() == null) return null;
+        
+        return game.getTeams().stream()
+                .filter(team -> "hider".equals(team.getRole()) && team.getLocation() != null)
+                .min((h1, h2) -> {
+                    double dist1 = calculateDistance(requestingTeam.getLocation(), h1.getLocation());
+                    double dist2 = calculateDistance(requestingTeam.getLocation(), h2.getLocation());
+                    return Double.compare(dist1, dist2);
+                })
+                .orElse(null);
+    }
+    
+    // Utility method to calculate distance between team locations
+    private double calculateDistance(Team.TeamLocation loc1, Team.TeamLocation loc2) {
+        double lat1 = Math.toRadians(loc1.getLatitude());
+        double lon1 = Math.toRadians(loc1.getLongitude());
+        double lat2 = Math.toRadians(loc2.getLatitude());
+        double lon2 = Math.toRadians(loc2.getLongitude());
+
+        double dlat = lat2 - lat1;
+        double dlon = lon2 - lon1;
+
+        double a = Math.sin(dlat / 2) * Math.sin(dlat / 2) +
+                Math.cos(lat1) * Math.cos(lat2) *
+                        Math.sin(dlon / 2) * Math.sin(dlon / 2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        double radius = 6371000; // Earth's radius in meters
+
+        return radius * c;
     }
 }

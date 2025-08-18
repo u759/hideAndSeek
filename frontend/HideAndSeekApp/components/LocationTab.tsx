@@ -26,11 +26,12 @@ const LocationTab: React.FC<LocationTabProps> = ({ game, currentTeam, onRefresh 
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Add this hook to update location every 10s
+  // Add this hook to update location every 10s for both hiders and seekers
+  // Seekers need location for distance-based clue targeting
   useLocationTracker({
     teamId: currentTeam.id,
     gameId: game.id,
-    isHider: currentTeam.role === 'hider',
+    isHider: true, // Enable for all teams (hiders AND seekers)
     isActive: game.status === 'active',
     onLocationSent: (loc) => {
       setLocation(loc);
@@ -197,7 +198,10 @@ const LocationTab: React.FC<LocationTabProps> = ({ game, currentTeam, onRefresh 
         <View style={styles.header}>
           <Text style={styles.title}>Location Sharing</Text>
           <Text style={styles.subtitle}>
-            Your location is automatically shared with seekers
+            {currentTeam.role === 'hider' 
+              ? 'Your location is automatically shared with seekers'
+              : 'Your location is required for distance-based clue targeting'
+            }
           </Text>
         </View>
 

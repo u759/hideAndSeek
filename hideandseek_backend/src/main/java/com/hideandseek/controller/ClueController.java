@@ -65,4 +65,38 @@ public class ClueController {
             return ResponseEntity.internalServerError().body(Map.of("error", "Failed to purchase clue"));
         }
     }
+    
+    @GetMapping("/{gameId}/teams/{teamId}/requests")
+    public ResponseEntity<?> getPendingClueRequests(@PathVariable String gameId, @PathVariable String teamId) {
+        try {
+            var requests = clueService.getPendingClueRequests(gameId, teamId);
+            return ResponseEntity.ok(requests);
+        } catch (Exception e) {
+            log.error("Error fetching pending clue requests", e);
+            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to fetch pending clue requests"));
+        }
+    }
+    
+    @PostMapping("/requests/{requestId}/respond")
+    public ResponseEntity<?> respondToClueRequest(@PathVariable String requestId, @RequestBody Map<String, Object> request) {
+        try {
+            String teamId = (String) request.get("teamId");
+            String responseData = (String) request.get("responseData");
+            
+            if (teamId == null || responseData == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Missing required fields: teamId, responseData"));
+            }
+            
+            var result = clueService.respondToClueRequest(requestId, teamId, responseData);
+            return ResponseEntity.ok(result);
+            
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error responding to clue request", e);
+            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to respond to clue request"));
+        }
+    }
 }

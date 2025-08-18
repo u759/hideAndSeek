@@ -7,27 +7,31 @@ import ApiService from '../services/api';
 interface LocationTrackerProps {
   teamId: string;
   gameId: string;
-  isHider: boolean;
+  // Back-compat: if isHider is true, tracking is enabled (original behavior)
+  // New: enabled allows tracking for any role (e.g., seekers)
+  isHider?: boolean;
+  enabled?: boolean;
   isActive: boolean;
   onLocationSent?: (location: Location.LocationObject) => void;
 }
 
-const useLocationTracker = ({ teamId, gameId, isHider, isActive, onLocationSent }: LocationTrackerProps) => {
+const useLocationTracker = ({ teamId, gameId, isHider, enabled, isActive, onLocationSent }: LocationTrackerProps) => {
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    console.log('useLocationTracker effect triggered:', { isHider, isActive, teamId, gameId });
-    
-    if (!isHider || !teamId || !gameId) {
-      console.log('Stopping location tracking - not a hider or missing IDs');
+    const shouldTrack = Boolean(enabled) || Boolean(isHider);
+    console.log('useLocationTracker effect triggered:', { shouldTrack, isActive, teamId, gameId });
+
+    if (!shouldTrack || !teamId || !gameId) {
+      console.log('Stopping location tracking - disabled or missing IDs');
       stopLocationTracking();
       return;
     }
 
     // Only track location when game is active
     if (isActive) {
-      console.log('Starting location tracking for hider (game is active)');
+      console.log('Starting location tracking (game is active)');
       startLocationTracking();
     } else {
       console.log('Stopping location tracking - game is not active (status: paused/waiting/ended)');
@@ -44,12 +48,12 @@ const useLocationTracker = ({ teamId, gameId, isHider, isActive, onLocationSent 
     try {
       console.log('Requesting location permissions...');
       // Request location permissions
-      const { status } = await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         console.log('Location permission denied');
         Alert.alert(
           'Location Permission Required',
-          'Hiders must share their location to play. Please enable location access.'
+      'Location access is required for gameplay. Please enable location access.'
         );
         return;
       }

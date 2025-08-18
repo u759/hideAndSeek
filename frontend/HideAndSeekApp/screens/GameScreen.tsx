@@ -10,6 +10,7 @@ import CursesTab from '../components/CursesTab';
 import CluesTab from '../components/CluesTab';
 import LocationTab from '../components/LocationTab';
 import FindHidersTab from '../components/FindHidersTab';
+import HiderClueListener from '../components/HiderClueListener';
 import { RootStackParamList, TabParamList, Game, Team } from '../types';
 import ApiService from '../services/api';
 import useLocationTracker from '../hooks/useLocationTracker';
@@ -117,11 +118,15 @@ const GameTabs: React.FC<{
         <>
           <Tab.Screen name="Location">
             {() => (
-              <LocationTab 
-                game={game} 
-                currentTeam={currentTeam} 
-                onRefresh={onRefresh}
-              />
+              <>
+                <LocationTab 
+                  game={game} 
+                  currentTeam={currentTeam} 
+                  onRefresh={onRefresh}
+                />
+                {/* Listen for clue requests and show modal for selfie/text responses */}
+                <HiderClueListener gameId={gameId} teamId={currentTeam.id} />
+              </>
             )}
           </Tab.Screen>
         </>
