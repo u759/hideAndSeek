@@ -477,6 +477,24 @@ class ApiService {
     
     return response.json();
   }
+
+  // Push notifications
+  async registerPushToken(gameId: string, teamId: string, token: string) {
+    const response = await fetch(`${API_BASE_URL}/push/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId, teamId, token }),
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to register push token');
+      } catch (_) {
+        throw new Error('Failed to register push token');
+      }
+    }
+    return response.json();
+  }
 }
 
 export default new ApiService();

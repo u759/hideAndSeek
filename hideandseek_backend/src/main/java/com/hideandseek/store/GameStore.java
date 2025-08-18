@@ -30,6 +30,8 @@ public class GameStore {
     // Store async clue requests and responses
     private final Map<String, ClueRequest> clueRequests = new ConcurrentHashMap<>();
     private final Map<String, List<ClueResponse>> clueResponses = new ConcurrentHashMap<>();
+    // Store Expo push tokens per game/team (key: gameId:teamId)
+    private final Map<String, Set<String>> teamPushTokens = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();
 
@@ -410,6 +412,17 @@ public class GameStore {
                     .filter(response -> response.getRequestId().equals(requestId))
                     .forEach(response -> response.setDelivered(true));
         }
+    }
+
+    // Push token management
+    public void registerPushToken(String gameId, String teamId, String token) {
+        String key = gameId + ":" + teamId;
+        teamPushTokens.computeIfAbsent(key, k -> new java.util.HashSet<>()).add(token);
+    }
+
+    public Set<String> getPushTokens(String gameId, String teamId) {
+        String key = gameId + ":" + teamId;
+        return teamPushTokens.getOrDefault(key, java.util.Collections.emptySet());
     }
     
     // Find closest hider team to requesting seeker team

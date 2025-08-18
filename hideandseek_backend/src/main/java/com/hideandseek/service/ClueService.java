@@ -17,12 +17,14 @@ public class ClueService {
 
     private final GameStore gameStore;
     private final GameWebSocketHandler webSocketHandler;
+    private final PushService pushService;
 
     private final Random random = new Random();
 
-    public ClueService(GameStore gameStore, GameWebSocketHandler webSocketHandler) {
+    public ClueService(GameStore gameStore, GameWebSocketHandler webSocketHandler, PushService pushService) {
         this.gameStore = gameStore;
         this.webSocketHandler = webSocketHandler;
+        this.pushService = pushService;
     }
 
     public List<Map<String, Object>> getClueTypes() {
@@ -211,7 +213,11 @@ public class ClueService {
         requestData.put("description", "Take a selfie of your whole team at arm's length, including your surroundings.");
         requestData.put("expirationTimestamp", clueRequest.getExpirationTimestamp());
         
-        webSocketHandler.broadcastClueRequest(game.getId(), targetHiderTeam.getId(), requestData);
+    webSocketHandler.broadcastClueRequest(game.getId(), targetHiderTeam.getId(), requestData);
+    // Optionally trigger push notification to target hider team devices
+    // Tokens are stored in GameStore via PushController /api/push/register
+    // Actual delivery to Expo/FCM/APNs should be done by a separate worker/service
+    // Example payload (not sent): "Selfie requested by <seekerTeam>"
         
         // Also broadcast general game update
         webSocketHandler.broadcastToGame(game.getId(), game);
@@ -257,7 +263,8 @@ public class ClueService {
         requestData.put("description", "Choose from: 1. Named street, 2. Library, 3. Museum, 4. Parking lot. Tell the seekers the name of the closest landmark of your chosen type.");
         requestData.put("expirationTimestamp", clueRequest.getExpirationTimestamp());
         
-        webSocketHandler.broadcastClueRequest(game.getId(), targetHiderTeam.getId(), requestData);
+    webSocketHandler.broadcastClueRequest(game.getId(), targetHiderTeam.getId(), requestData);
+    // Optionally trigger push notification for closest landmark request
         
         // Also broadcast general game update
         webSocketHandler.broadcastToGame(game.getId(), game);
