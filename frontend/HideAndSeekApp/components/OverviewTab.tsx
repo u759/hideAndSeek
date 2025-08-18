@@ -162,6 +162,27 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                       <Text style={styles.hiderCurseTimer}>{minutesRemaining}m left</Text>
                     </View>
                     <Text style={styles.hiderCurseDescription}>{ac.curse.description}</Text>
+                    {ac.completed ? (
+                      <Text style={styles.completedBadge}>Completed ✔︎</Text>
+                    ) : (
+                      <TouchableOpacity
+                        style={[styles.fullWidthButton, styles.startButton, { marginTop: 8, paddingVertical: 14 }]}
+                        onPress={async () => {
+                          try {
+                            await ApiService.markCurseCompleted(game.id, currentTeam.id, ac.curse.id);
+                            Alert.alert('Marked', 'Curse marked as completed.');
+                            onRefresh();
+                          } catch (e) {
+                            Alert.alert('Error', e instanceof Error ? e.message : 'Failed to mark completed');
+                          }
+                        }}
+                      >
+                        <View style={styles.controlButtonContentCentered}>
+                          <Ionicons name="checkmark-circle-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+                          <Text style={styles.controlButtonText}>Mark Completed</Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 );
               })}
@@ -414,6 +435,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
   },
+  controlButtonContentCentered: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -565,6 +591,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 4,
   },
+  fullWidthButton: {
+  alignSelf: 'stretch',
+  width: '100%',
+  // ensure the button occupies the full width of the card's inner area
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  borderRadius: 8,
+  alignItems: 'center',
+  flexDirection: 'row',
+  justifyContent: 'center',
+  },
   controlButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -669,6 +706,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  alignItems: 'stretch',
   },
   hiderCurseHeader: {
     flexDirection: 'row',
@@ -694,6 +732,16 @@ const styles = StyleSheet.create({
   hiderCurseDescription: {
     fontSize: 14,
     color: '#34495e',
+  },
+  completedBadge: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    backgroundColor: '#e8f5e9',
+    color: '#2e7d32',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    fontWeight: '700',
   },
 });
 

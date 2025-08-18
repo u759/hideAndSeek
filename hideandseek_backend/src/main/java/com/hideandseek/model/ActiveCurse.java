@@ -4,6 +4,8 @@ public class ActiveCurse {
     private Curse curse;
     private long startTime;     // Timestamp in milliseconds
     private long endTime;       // Timestamp in milliseconds (for frontend compatibility)
+    private boolean completed;  // Whether the hider marked this curse as completed
+    private Long completedAt;   // When it was marked completed (ms)
     
     // Default constructor
     public ActiveCurse() {}
@@ -42,5 +44,21 @@ public class ActiveCurse {
     
     public void setDuration(int durationMinutes) {
         this.endTime = this.startTime + (durationMinutes * 60 * 1000);
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    public Long getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Long completedAt) {
+        this.completedAt = completedAt;
     }
 }

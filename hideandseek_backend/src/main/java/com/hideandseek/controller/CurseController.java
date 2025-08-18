@@ -41,4 +41,16 @@ public class CurseController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @PostMapping("/complete")
+    public ResponseEntity<?> markCurseCompleted(@RequestBody Map<String, Object> body) {
+        try {
+            String gameId = (String) body.get("gameId");
+            String teamId = (String) body.get("teamId");
+            String curseId = (String) body.get("curseId");
+            return ResponseEntity.ok(curseService.markCurseCompleted(gameId, teamId, curseId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

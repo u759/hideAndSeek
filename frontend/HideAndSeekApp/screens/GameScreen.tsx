@@ -11,6 +11,7 @@ import CluesTab from '../components/CluesTab';
 import LocationTab from '../components/LocationTab';
 import FindHidersTab from '../components/FindHidersTab';
 import HiderClueListener from '../components/HiderClueListener';
+import SeekerClueListener from '../components/SeekerClueListener';
 import { RootStackParamList, TabParamList, Game, Team } from '../types';
 import ApiService from '../services/api';
 import useLocationTracker from '../hooks/useLocationTracker';
@@ -135,6 +136,10 @@ const GameTabs: React.FC<{
     {/* Mount the hider clue listener outside tabs so it runs immediately */}
     {currentTeam.role === 'hider' && (
       <HiderClueListener gameId={gameId} teamId={currentTeam.id} />
+    )}
+    {/* Mount the seeker listener so they get popups for incoming clues on any tab */}
+    {currentTeam.role === 'seeker' && (
+      <SeekerClueListener gameId={gameId} teamId={currentTeam.id} />
     )}
     </>
   );

@@ -11,6 +11,8 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { Game, Team } from '../types';
 import ApiService from '../services/api';
+import useGameWebSocket from '../hooks/useGameWebSocket';
+import { getWebsocketUrl } from '../config/api';
 
 interface CursesTabProps {
   game: Game;
@@ -78,10 +80,32 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
   const [availableTargets, setAvailableTargets] = useState<Team[]>([]);
   const [showTargetModal, setShowTargetModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Periodically refresh game data too so UI reflects expired curses
+  useEffect(() => {
+    const id = setInterval(() => onRefresh(), 15000);
+    return () => clearInterval(id);
+  }, [onRefresh]);
 
   useEffect(() => {
     fetchAvailableTargets();
+    const id = setInterval(fetchAvailableTargets, 15000); // refresh targets every 15s
+    return () => clearInterval(id);
   }, []);
+
+  // Listen for websocket game updates and refresh available targets when relevant
+  const wsUrl = getWebsocketUrl();
+
+  useGameWebSocket({
+    wsUrl,
+    gameId: game.id,
+    onMessage: (data: any) => {
+      // refresh targets when game state or curses change
+      if (data?.type === 'game_update' || data?.type === 'curse_update' || data?.type === 'clue_response') {
+        fetchAvailableTargets();
+        onRefresh();
+      }
+    },
+  });
 
   const fetchAvailableTargets = async () => {
     try {
@@ -99,7 +123,7 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
       
       Alert.alert(
         'Curse Applied!', 
-        `Successfully applied "${result.curse.title}" to ${result.targetTeam.name}!\n\nCost: ${result.curse.tokenCount} tokens`
+        `Successfully applied "${result.curse.title}" to ${result.targetTeam.name}!`
       );
       
       setShowTargetModal(false);
@@ -175,6 +199,8 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
             getActiveAppliedCurses().map((appliedCurse, index) => {
               const timeRemaining = Math.max(0, appliedCurse.endTime - Date.now());
               const minutesRemaining = Math.ceil(timeRemaining / 60000);
+              const targetTeam = game.teams.find(t => t.id === appliedCurse.targetTeamId);
+              const isCompleted = !!targetTeam?.activeCurses?.some(ac => ac.curse.id === appliedCurse.curse.id && ac.endTime > Date.now() && ac.completed);
               
               return (
                 <View key={index} style={styles.activeCurseCard}>
@@ -184,6 +210,9 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
                   </View>
                   <Text style={styles.curseTarget}>Target: {appliedCurse.targetTeamName}</Text>
                   <Text style={styles.curseCardDescription}>{appliedCurse.curse.description}</Text>
+                  {isCompleted && (
+                    <Text style={styles.completedBadge}>Completed ✔︎</Text>
+                  )}
                   <Text style={styles.curseCost}>Cost: {appliedCurse.curse.token_count} tokens</Text>
                 </View>
               );
@@ -199,11 +228,12 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
           {(() => {
             const allActiveCurses = game.teams
               .filter(team => team.role === 'hider' && team.activeCurses && team.activeCurses.length > 0)
-              .flatMap(team => 
+              .flatMap(team =>
                 team.activeCurses.map(activeCurse => ({
                   ...activeCurse,
                   teamName: team.name,
-                  teamId: team.id
+                  teamId: team.id,
+                  completed: activeCurse.completed,
                 }))
               );
 
@@ -225,6 +255,9 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
                   </View>
                   <Text style={styles.curseTarget}>Cursed Team: {curse.teamName}</Text>
                   <Text style={styles.curseCardDescription}>{curse.curse.description}</Text>
+                  {curse.completed && (
+                    <Text style={styles.completedBadge}>Completed ✔︎</Text>
+                  )}
                 </View>
               );
             });
@@ -392,6 +425,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#7f8c8d',
     fontStyle: 'italic',
+  },
+  completedBadge: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: '#e8f5e9',
+    color: '#2e7d32',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    fontWeight: '700',
   },
   errorContainer: {
     flex: 1,
