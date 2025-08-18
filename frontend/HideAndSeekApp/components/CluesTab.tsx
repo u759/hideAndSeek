@@ -16,6 +16,7 @@ import ApiService from '../services/api';
 import useLocationTracker from '../hooks/useLocationTracker';
 import { API_BASE_URL } from '../config/api';
 import useGameWebSocket from '../hooks/useGameWebSocket';
+import { getWebsocketUrl } from '../config/api';
 
 interface CluesTabProps {
   game: Game;
@@ -42,7 +43,7 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
   }, [game.id]);
 
   // Seeker-side WebSocket to refresh on clue responses with auto-reconnect + heartbeat
-  const wsUrl = useMemo(() => API_BASE_URL.replace(/\/?api$/, '').replace(/^http/, 'ws') + '/ws', []);
+  const wsUrl = useMemo(() => getWebsocketUrl(), []);
   useGameWebSocket({
     wsUrl,
     gameId: currentTeam.role === 'seeker' ? game.id : '',

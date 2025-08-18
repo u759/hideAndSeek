@@ -35,6 +35,8 @@ export interface ActiveCurse {
   curse: Curse;
   startTime: number;
   endTime: number;
+  completed?: boolean;
+  completedAt?: number;
 }
 
 export interface AppliedCurse {

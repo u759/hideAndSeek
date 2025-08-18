@@ -119,4 +119,34 @@ public class CurseService {
                 })
                 .toList();
     }
+
+    public Map<String, Object> markCurseCompleted(String gameId, String hiderTeamId, String curseId) {
+        Game game = gameStore.getGame(gameId);
+        if (game == null) throw new IllegalArgumentException("Game not found");
+
+        Team team = gameStore.getTeam(gameId, hiderTeamId);
+        if (team == null) throw new IllegalArgumentException("Team not found");
+        if (!"hider".equals(team.getRole())) throw new IllegalStateException("Only hiders can complete curses");
+
+        long now = System.currentTimeMillis();
+        // Clean expired first
+        team.getActiveCurses().removeIf(ac -> ac.getEndTime() <= now);
+        var active = team.getActiveCurses().stream()
+                .filter(ac -> ac.getCurse() != null && ac.getCurse().getId().equals(curseId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Active curse not found or already expired"));
+
+        if (active.isCompleted()) {
+            throw new IllegalStateException("Curse already marked as completed");
+        }
+        active.setCompleted(true);
+        active.setCompletedAt(now);
+
+        gameStore.updateGame(game);
+        webSocketHandler.broadcastToGame(gameId, game);
+        return Map.of(
+                "team", team,
+                "activeCurse", active
+        );
+    }
 }

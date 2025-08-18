@@ -295,6 +295,23 @@ class ApiService {
     return response.json();
   }
 
+  async markCurseCompleted(gameId: string, teamId: string, curseId: string) {
+    const response = await fetch(`${API_BASE_URL}/curse/complete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId, teamId, curseId }),
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to mark curse completed');
+      } catch (_) {
+        throw new Error('Failed to mark curse completed');
+      }
+    }
+    return response.json();
+  }
+
   // Clue endpoints
   async getClueTypes(): Promise<ClueType[]> {
     const response = await fetch(`${API_BASE_URL}/clues/types`);

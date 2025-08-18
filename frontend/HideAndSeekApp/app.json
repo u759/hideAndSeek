@@ -15,7 +15,9 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": ["location"],
+        "UIBackgroundModes": [
+          "location"
+        ],
         "NSLocationAlwaysAndWhenInUseUsageDescription": "We use your location to enable gameplay while hiding.",
         "NSLocationWhenInUseUsageDescription": "We use your location to enable gameplay while hiding.",
         "NSLocationAlwaysUsageDescription": "We use your location to enable gameplay while hiding.",
@@ -37,18 +39,21 @@
       "notification": {
         "icon": "./assets/icon.png",
         "color": "#003366"
-      }
+      },
+      "package": "com.ayydeen.HideAndSeekApp"
     },
     "plugins": [
-      ["expo-notifications"]
+      [
+        "expo-notifications"
+      ]
     ],
-    "extra": {
-      "eas": {
-        "projectId": "00000000-0000-0000-0000-000000000000"
-      }
-    },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1b524363-7f8a-4739-974d-d9ffd3135b91"
+      }
     }
   }
 }

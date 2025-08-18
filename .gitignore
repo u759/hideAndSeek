@@ -38,3 +38,5 @@
 **/*.tsbuildinfo
 
 **/uploads/**
+
+**/android/**

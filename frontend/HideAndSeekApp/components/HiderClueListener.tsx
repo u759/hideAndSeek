@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { API_BASE_URL } from '../config/api';
+import { getWebsocketUrl } from '../config/api';
 import ApiService from '../services/api';
 import useGameWebSocket from '../hooks/useGameWebSocket';
 
@@ -21,19 +21,13 @@ interface Props {
   teamId: string;
 }
 
-// Derive WebSocket URL from API_BASE_URL (http://host:port/api -> ws://host:port/ws)
-const getWsUrl = () => {
-  const httpBase = API_BASE_URL.replace(/\/?api$/, '');
-  return httpBase.replace(/^http/, 'ws') + '/ws';
-};
-
 const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
   const [visible, setVisible] = useState(false);
   const [request, setRequest] = useState<ClueRequestPayload | null>(null);
   const [textResponse, setTextResponse] = useState('');
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
-  const wsUrl = useMemo(getWsUrl, []);
+  const wsUrl = useMemo(() => getWebsocketUrl(), []);
 
   useGameWebSocket({
     wsUrl,
