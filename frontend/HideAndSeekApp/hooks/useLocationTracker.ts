@@ -2,6 +2,9 @@ import { useEffect, useRef } from 'react';
 import * as Location from 'expo-location';
 import { Alert } from 'react-native';
 import ApiService from '../services/api';
+import * as TaskManager from 'expo-task-manager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BACKGROUND_LOCATION_TASK } from '../backgroundTasks';
 
 
 interface LocationTrackerProps {
@@ -33,14 +36,18 @@ const useLocationTracker = ({ teamId, gameId, isHider, enabled, isActive, onLoca
     if (isActive) {
       console.log('Starting location tracking (game is active)');
       startLocationTracking();
+      // Also start background updates so tracking continues when app is backgrounded
+      startBackgroundUpdates();
     } else {
       console.log('Stopping location tracking - game is not active (status: paused/waiting/ended)');
       stopLocationTracking();
+      stopBackgroundUpdates();
     }
 
     return () => {
       console.log('Cleaning up location tracking');
-      stopLocationTracking();
+  stopLocationTracking();
+  stopBackgroundUpdates();
     };
   }, [isHider, isActive, teamId, gameId]);
 
@@ -104,6 +111,46 @@ const useLocationTracker = ({ teamId, gameId, isHider, enabled, isActive, onLoca
       clearInterval(intervalRef.current);
       intervalRef.current = null;
       console.log('Location timer cleared');
+    }
+  };
+
+  const startBackgroundUpdates = async () => {
+    try {
+      const { status: fg } = await Location.requestForegroundPermissionsAsync();
+      const { status: bg } = await Location.requestBackgroundPermissionsAsync();
+      if (fg !== 'granted' || bg !== 'granted') {
+        console.log('Background location permission not granted');
+        return;
+      }
+      // Persist IDs for the background task to access
+      await AsyncStorage.setItem('bg_teamId', teamId);
+      await AsyncStorage.setItem('bg_gameId', gameId);
+      const started = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+      if (!started) {
+        await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
+          accuracy: Location.Accuracy.Balanced,
+          timeInterval: 15000, // 15s
+          distanceInterval: 10,
+          showsBackgroundLocationIndicator: true,
+          foregroundService: {
+            notificationTitle: 'UBCeek: location active',
+            notificationBody: 'Sharing your location for gameplay',
+          },
+        });
+      }
+    } catch (e) {
+      console.log('Failed to start background updates', e);
+    }
+  };
+
+  const stopBackgroundUpdates = async () => {
+    try {
+      const started = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+      if (started) {
+        await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+      }
+    } catch (e) {
+      // ignore
     }
   };
 

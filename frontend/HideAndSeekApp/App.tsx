@@ -12,6 +12,8 @@ import GameLobbyScreen from './screens/GameLobbyScreen';
 import TeamJoinScreen from './screens/TeamJoinScreen';
 import GameScreen from './screens/GameScreen';
 import { RootStackParamList } from './types';
+// Ensure background tasks are registered on app init
+import './backgroundTasks';
 
 const Stack = createStackNavigator<RootStackParamList>();
 

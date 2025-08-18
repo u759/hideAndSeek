@@ -13,14 +13,39 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["location"],
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We use your location to enable gameplay while hiding.",
+        "NSLocationWhenInUseUsageDescription": "We use your location to enable gameplay while hiding.",
+        "NSLocationAlwaysUsageDescription": "We use your location to enable gameplay while hiding.",
+        "NSUserTrackingUsageDescription": "We use notifications to alert you to game events."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE"
+      ],
+      "notification": {
+        "icon": "./assets/icon.png",
+        "color": "#003366"
+      }
+    },
+    "plugins": [
+      ["expo-notifications"]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

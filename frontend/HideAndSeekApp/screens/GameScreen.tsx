@@ -14,6 +14,7 @@ import HiderClueListener from '../components/HiderClueListener';
 import { RootStackParamList, TabParamList, Game, Team } from '../types';
 import ApiService from '../services/api';
 import useLocationTracker from '../hooks/useLocationTracker';
+import usePushNotifications from '../hooks/usePushNotifications';
 
 type GameScreenRouteProp = RouteProp<RootStackParamList, 'Game'>;
 
@@ -33,8 +34,11 @@ const GameTabs: React.FC<{
     isHider: currentTeam.role === 'hider',
     isActive: game.status === 'active',
   });
+  // Register push notifications token for this team/game
+  usePushNotifications(gameId, teamId);
 
   return (
+    <>
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
@@ -118,20 +122,21 @@ const GameTabs: React.FC<{
         <>
           <Tab.Screen name="Location">
             {() => (
-              <>
-                <LocationTab 
-                  game={game} 
-                  currentTeam={currentTeam} 
-                  onRefresh={onRefresh}
-                />
-                {/* Listen for clue requests and show modal for selfie/text responses */}
-                <HiderClueListener gameId={gameId} teamId={currentTeam.id} />
-              </>
+              <LocationTab 
+                game={game} 
+                currentTeam={currentTeam} 
+                onRefresh={onRefresh}
+              />
             )}
           </Tab.Screen>
         </>
       )}
     </Tab.Navigator>
+    {/* Mount the hider clue listener outside tabs so it runs immediately */}
+    {currentTeam.role === 'hider' && (
+      <HiderClueListener gameId={gameId} teamId={currentTeam.id} />
+    )}
+    </>
   );
 };
 
