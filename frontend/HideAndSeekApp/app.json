@@ -36,7 +36,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-  "googleServicesFile": "./google-services.json",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
@@ -92,7 +92,8 @@
         {
           "minimumInterval": 15
         }
-      ]
+      ],
+      "expo-maps"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
