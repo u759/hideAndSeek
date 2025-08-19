@@ -92,8 +92,7 @@
         {
           "minimumInterval": 15
         }
-      ],
-      "expo-maps"
+      ]
     ],
     "web": {
       "favicon": "./assets/favicon.png"
