@@ -10,129 +10,217 @@ type Options = {
   missAfterMs?: number;
 };
 
-export default function useGameWebSocket({
-  wsUrl,
-  gameId,
-  onMessage,
-  heartbeatMs = 15000,
-  missAfterMs = 25000,
-}: Options) {
-  const wsRef = useRef<WebSocket | null>(null);
-  const [connected, setConnected] = useState(false);
-  const shouldReconnectRef = useRef(true);
-  const backoffRef = useRef(1000); // start at 1s, max 30s
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const lastActivityRef = useRef<number>(Date.now());
+// Simple shared connection manager per wsUrl+gameId to avoid multiple sockets per screen
+type Manager = {
+  key: string;
+  ws: WebSocket | null;
+  status: 'idle' | 'connecting' | 'open' | 'closed';
+  subscribers: Set<(data: any) => void>;
+  statusSubs: Set<(connected: boolean) => void>;
+  reconnectTimer: ReturnType<typeof setTimeout> | null;
+  heartbeatTimer: ReturnType<typeof setInterval> | null;
+  backoff: number;
+  shouldReconnect: boolean;
+  connect: () => void;
+  disconnect: () => void;
+  send: (payload: any) => void;
+  appStateSub: { remove: () => void } | null;
+};
 
-  const clearTimers = () => {
-    if (reconnectTimerRef.current) {
-      clearTimeout(reconnectTimerRef.current);
-      reconnectTimerRef.current = null;
-    }
-    if (heartbeatTimerRef.current) {
-      clearInterval(heartbeatTimerRef.current);
-      heartbeatTimerRef.current = null;
-    }
+const managers = new Map<string, Manager>();
+
+function getManager(key: string, wsUrl: string, gameId: string, heartbeatMs: number): Manager {
+  const existing = managers.get(key);
+  if (existing) return existing;
+
+  const mgr: Manager = {
+    key,
+    ws: null,
+    status: 'idle',
+    subscribers: new Set(),
+    statusSubs: new Set(),
+    reconnectTimer: null,
+    heartbeatTimer: null,
+    backoff: 1000,
+    shouldReconnect: true,
+    connect: () => {},
+    disconnect: () => {},
+    send: (_: any) => {},
+    appStateSub: null,
   };
 
-  const send = useCallback((payload: any) => {
-    try {
-      if (wsRef.current && (wsRef.current as any).readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify(payload));
-      }
-    } catch (_) {
-      // ignore
-    }
-  }, []);
+  const clearTimers = () => {
+    if (mgr.reconnectTimer) { clearTimeout(mgr.reconnectTimer); mgr.reconnectTimer = null; }
+    if (mgr.heartbeatTimer) { clearInterval(mgr.heartbeatTimer); mgr.heartbeatTimer = null; }
+  };
 
-  const startHeartbeat = useCallback(() => {
-    if (heartbeatTimerRef.current) return;
-    heartbeatTimerRef.current = setInterval(() => {
-      const now = Date.now();
-      // If we've been inactive (no message/pong) for too long, force reconnect
-      if (now - lastActivityRef.current > missAfterMs) {
-        try { wsRef.current?.close(); } catch {}
-        return;
-      }
-      // Send ping
-      send({ type: 'ping', t: Date.now() });
-    }, heartbeatMs);
-  }, [heartbeatMs, missAfterMs, send]);
+  const notifyStatus = (isOpen: boolean) => {
+    mgr.statusSubs.forEach((fn) => {
+      try { fn(isOpen); } catch {}
+    });
+  };
 
-  const scheduleReconnect = useCallback(() => {
-    if (!shouldReconnectRef.current) return;
-    if (reconnectTimerRef.current) return; // already scheduled
-    const delay = Math.min(backoffRef.current, 30000);
-    reconnectTimerRef.current = setTimeout(() => {
-      reconnectTimerRef.current = null;
-      backoffRef.current = Math.min(backoffRef.current * 2, 30000);
-      connect();
+  const scheduleReconnect = () => {
+    if (!mgr.shouldReconnect) return;
+    if (mgr.reconnectTimer) return;
+    const delay = Math.min(mgr.backoff, 30000);
+    mgr.reconnectTimer = setTimeout(() => {
+      mgr.reconnectTimer = null;
+      mgr.backoff = Math.min(mgr.backoff * 2, 30000);
+      mgr.connect();
     }, delay);
-  }, []);
+  };
 
-  const onOpen = useCallback(() => {
-    setConnected(true);
-    backoffRef.current = 1000; // reset backoff
-    lastActivityRef.current = Date.now();
-    // join game room
-    send({ type: 'join', gameId });
-    startHeartbeat();
-  }, [gameId, send, startHeartbeat]);
+  const startHeartbeat = () => {
+    if (mgr.heartbeatTimer) return;
+    mgr.heartbeatTimer = setInterval(() => {
+      // Keep-alive ping; don't force-close if no pong (backend might not reply)
+      try {
+        if (mgr.ws && (mgr.ws as any).readyState === WebSocket.OPEN) {
+          mgr.ws.send(JSON.stringify({ type: 'ping', t: Date.now() }));
+        } else if (mgr.shouldReconnect) {
+          // If WebSocket is not open but we should reconnect, try to reconnect
+          console.log('WebSocket not open during heartbeat, attempting reconnect');
+          mgr.connect();
+        }
+      } catch (e) {
+        console.log('Heartbeat error:', e);
+        if (mgr.shouldReconnect) {
+          scheduleReconnect();
+        }
+      }
+    }, Math.max(heartbeatMs, 25000));
+  };
 
-  const onCloseOrError = useCallback(() => {
-    setConnected(false);
-    clearTimers();
-    scheduleReconnect();
-  }, [scheduleReconnect]);
-
-  const connect = useCallback(() => {
+  mgr.connect = () => {
+    if (!mgr.shouldReconnect) return;
+    if (!gameId) return; // don't connect without a room id
+    if (mgr.status === 'connecting' || (mgr.ws && (mgr.ws as any).readyState === WebSocket.OPEN)) {
+      return;
+    }
     try {
-  // Close any existing socket before opening a new one
-  try { wsRef.current?.close(); } catch {}
+      // Close any stale socket
+      try { mgr.ws?.close(); } catch {}
+      mgr.status = 'connecting';
       const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
-      (ws as any).onopen = onOpen;
+      mgr.ws = ws;
+      (ws as any).onopen = () => {
+        mgr.status = 'open';
+        mgr.backoff = 1000;
+        notifyStatus(true);
+        // Join room
+        try { ws.send(JSON.stringify({ type: 'join', gameId })); } catch {}
+        startHeartbeat();
+      };
       (ws as any).onmessage = (ev: MessageEvent) => {
-        lastActivityRef.current = Date.now();
         try {
           const data = JSON.parse((ev as any).data);
-          if (data?.type !== 'pong') {
-            onMessage?.(data);
-          }
-        } catch {
-          // ignore malformed
-        }
+          if (data?.type === 'pong') return;
+          mgr.subscribers.forEach((fn) => { try { fn(data); } catch {} });
+        } catch {}
+      };
+      const onCloseOrError = () => {
+        mgr.status = 'closed';
+        notifyStatus(false);
+        clearTimers();
+        scheduleReconnect();
       };
       (ws as any).onerror = onCloseOrError;
       (ws as any).onclose = onCloseOrError;
     } catch {
-      onCloseOrError();
+      scheduleReconnect();
     }
-  }, [onCloseOrError, onOpen, onMessage, wsUrl]);
+  };
+
+  mgr.disconnect = () => {
+    mgr.shouldReconnect = false;
+    clearTimers();
+    try { mgr.ws?.close(); } catch {}
+    mgr.ws = null;
+    mgr.status = 'closed';
+    notifyStatus(false);
+    try { mgr.appStateSub?.remove(); } catch {}
+    mgr.appStateSub = null;
+  };
+
+  mgr.send = (payload: any) => {
+    try {
+      if (mgr.ws && (mgr.ws as any).readyState === WebSocket.OPEN) {
+        mgr.ws.send(JSON.stringify(payload));
+      }
+    } catch {}
+  };
+
+  // Single AppState listener per manager
+  mgr.appStateSub = AppState.addEventListener('change', (state: AppStateStatus) => {
+    console.log('App state changed to:', state);
+    if (state === 'active') {
+      // Ensure connection on foreground
+      console.log('App became active, checking WebSocket connection');
+      if (!(mgr.ws && (mgr.ws as any).readyState === WebSocket.OPEN)) {
+        console.log('WebSocket not connected, reconnecting');
+        mgr.connect();
+      } else {
+        console.log('WebSocket already connected');
+      }
+    } else if (state === 'background') {
+      // Keep connection; heartbeat will maintain it
+      console.log('App went to background, maintaining WebSocket connection');
+      // Send a ping to ensure the connection is still alive
+      try {
+        if (mgr.ws && (mgr.ws as any).readyState === WebSocket.OPEN) {
+          mgr.ws.send(JSON.stringify({ type: 'ping', t: Date.now() }));
+        }
+      } catch (e) {
+        console.log('Failed to send background ping:', e);
+      }
+    }
+  });
+
+  managers.set(key, mgr);
+  // Kick off connection
+  mgr.connect();
+  return mgr;
+}
+
+export default function useGameWebSocket({
+  wsUrl,
+  gameId,
+  onMessage,
+  heartbeatMs = 30000,
+  missAfterMs = 120000, // retained for API compat; no longer used to force close
+}: Options) {
+  const [connected, setConnected] = useState(false);
+  const mgrRef = useRef<Manager | null>(null);
+
+  const send = useCallback((payload: any) => {
+    mgrRef.current?.send(payload);
+  }, []);
 
   useEffect(() => {
-    shouldReconnectRef.current = true;
-    connect();
-    const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
-      if (state === 'active') {
-        // when returning to foreground, ensure connectivity
-        if (!(wsRef.current && (wsRef.current as any).readyState === WebSocket.OPEN)) {
-          clearTimers();
-          connect();
-        }
-      }
-    });
+    // Skip if no gameId to prevent unwanted connections
+    if (!wsUrl || !gameId) return;
+    const key = `${wsUrl}|${gameId}`;
+    const mgr = getManager(key, wsUrl, gameId, heartbeatMs);
+    mgrRef.current = mgr;
+
+    const sub = (data: any) => {
+      try { onMessage?.(data); } catch {}
+    };
+    const statusSub = (isOpen: boolean) => setConnected(isOpen);
+    mgr.subscribers.add(sub);
+    mgr.statusSubs.add(statusSub);
+
+    // Ensure connected (idempotent)
+    mgr.connect();
 
     return () => {
-      shouldReconnectRef.current = false;
-      clearTimers();
-      try { wsRef.current && send({ type: 'leave', gameId }); } catch {}
-      try { wsRef.current?.close(); } catch {}
-      wsRef.current = null;
-      sub.remove();
+      mgr.subscribers.delete(sub);
+      mgr.statusSubs.delete(statusSub);
+      // Do not fully disconnect to allow other screens to keep using it
+      // Manager will stay alive until app exit; optional: could add ref counting
     };
-  }, [gameId, wsUrl]);
+  }, [wsUrl, gameId, heartbeatMs, onMessage]);
 
   return { connected, send };
 }

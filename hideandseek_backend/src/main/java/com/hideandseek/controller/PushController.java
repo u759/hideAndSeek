@@ -27,4 +27,16 @@ public class PushController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PostMapping("/test")
+    public ResponseEntity<?> sendTestNotification(@RequestBody Map<String, Object> body) {
+        try {
+            String gameId = (String) body.get("gameId");
+            String teamId = (String) body.get("teamId");
+            pushService.sendTestNotification(gameId, teamId);
+            return ResponseEntity.ok(Map.of("status", "sent"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

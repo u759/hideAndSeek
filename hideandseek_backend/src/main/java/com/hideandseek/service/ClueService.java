@@ -4,8 +4,6 @@ import com.hideandseek.model.*;
 import com.hideandseek.store.GameStore;
 import com.hideandseek.websocket.GameWebSocketHandler;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,13 +11,13 @@ import java.util.stream.Collectors;
 @Service
 public class ClueService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClueService.class);
+    // (no logger currently used)
 
     private final GameStore gameStore;
     private final GameWebSocketHandler webSocketHandler;
     private final PushService pushService;
 
-    private final Random random = new Random();
+    // No randomness currently used in this service
 
     public ClueService(GameStore gameStore, GameWebSocketHandler webSocketHandler, PushService pushService) {
         this.gameStore = gameStore;
@@ -167,6 +165,8 @@ public class ClueService {
         
         // Broadcast update
         webSocketHandler.broadcastToGame(game.getId(), game);
+    // Push notify targeted hider team about the used clue (anonymous seeker)
+    pushService.notifyClueRequested(game.getId(), targetHiderTeam.getId(), clueType.getId(), clueType.getName());
         
         Map<String, Object> result = new HashMap<>();
         result.put("id", purchasedClue.getId());
@@ -208,16 +208,15 @@ public class ClueService {
         requestData.put("id", requestId);
         requestData.put("clueTypeId", clueType.getId());
         requestData.put("clueTypeName", clueType.getName());
-        requestData.put("requestingTeamName", requestingTeam.getName());
+        // Do NOT reveal the seeker in push/WS to hiders (anonymous)
+        requestData.put("requestingTeamName", "Seeker Team");
         requestData.put("responseType", "photo");
         requestData.put("description", "Take a selfie of your whole team at arm's length, including your surroundings.");
         requestData.put("expirationTimestamp", clueRequest.getExpirationTimestamp());
         
     webSocketHandler.broadcastClueRequest(game.getId(), targetHiderTeam.getId(), requestData);
-    // Optionally trigger push notification to target hider team devices
-    // Tokens are stored in GameStore via PushController /api/push/register
-    // Actual delivery to Expo/FCM/APNs should be done by a separate worker/service
-    // Example payload (not sent): "Selfie requested by <seekerTeam>"
+    // Push notify only the targeted hider team
+    pushService.notifyClueRequested(game.getId(), targetHiderTeam.getId(), clueType.getId(), clueType.getName());
         
         // Also broadcast general game update
         webSocketHandler.broadcastToGame(game.getId(), game);
@@ -258,13 +257,15 @@ public class ClueService {
         requestData.put("id", requestId);
         requestData.put("clueTypeId", clueType.getId());
         requestData.put("clueTypeName", clueType.getName());
-        requestData.put("requestingTeamName", requestingTeam.getName());
+        // Do NOT reveal the seeker in push/WS to hiders (anonymous)
+        requestData.put("requestingTeamName", "Seeker Team");
         requestData.put("responseType", "text");
         requestData.put("description", "Choose from: 1. Named street, 2. Library, 3. Museum, 4. Parking lot. Tell the seekers the name of the closest landmark of your chosen type.");
         requestData.put("expirationTimestamp", clueRequest.getExpirationTimestamp());
         
     webSocketHandler.broadcastClueRequest(game.getId(), targetHiderTeam.getId(), requestData);
-    // Optionally trigger push notification for closest landmark request
+    // Push notify only the targeted hider team
+    pushService.notifyClueRequested(game.getId(), targetHiderTeam.getId(), clueType.getId(), clueType.getName());
         
         // Also broadcast general game update
         webSocketHandler.broadcastToGame(game.getId(), game);
@@ -297,6 +298,8 @@ public class ClueService {
         
         // Broadcast update
         webSocketHandler.broadcastToGame(game.getId(), game);
+    // Push notify targeted hider team about the used clue (anonymous seeker)
+    pushService.notifyClueRequested(game.getId(), targetHiderTeam.getId(), clueType.getId(), clueType.getName());
         
         Map<String, Object> result = new HashMap<>();
         result.put("id", purchasedClue.getId());
@@ -325,6 +328,8 @@ public class ClueService {
         
         // Broadcast update
         webSocketHandler.broadcastToGame(game.getId(), game);
+    // Push notify targeted hider team about the used clue (anonymous seeker)
+    pushService.notifyClueRequested(game.getId(), targetHiderTeam.getId(), clueType.getId(), clueType.getName());
         
         Map<String, Object> result = new HashMap<>();
         result.put("id", purchasedClue.getId());

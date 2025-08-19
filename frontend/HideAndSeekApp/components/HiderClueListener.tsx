@@ -26,6 +26,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
   const [request, setRequest] = useState<ClueRequestPayload | null>(null);
   const [textResponse, setTextResponse] = useState('');
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  // no library browsing; only camera capture
 
   const wsUrl = useMemo(() => getWebsocketUrl(), []);
 
@@ -109,30 +110,17 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
     }
   };
 
-  const pickImage = async (fromCamera: boolean) => {
+  const openCamera = async () => {
     try {
-      if (fromCamera) {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Camera permission needed');
-          return;
-        }
-        const result = await ImagePicker.launchCameraAsync({ quality: 0.6, base64: false });
-        if (!result.canceled) {
-          const uri = result.assets?.[0]?.uri;
-          if (uri) await upload(uri);
-        }
-      } else {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Library permission needed');
-          return;
-        }
-        const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.6, base64: false });
-        if (!result.canceled) {
-          const uri = result.assets?.[0]?.uri;
-          if (uri) await upload(uri);
-        }
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Camera permission needed');
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({ quality: 0.6, base64: false });
+      if (!result.canceled) {
+        const uri = result.assets?.[0]?.uri;
+        if (uri) await upload(uri);
       }
     } catch (e: any) {
       Alert.alert('Selfie failed', e?.message || 'Unknown error');
@@ -187,11 +175,8 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
 
           {isPhoto && (
             <View style={styles.row}>
-              <Pressable onPress={() => pickImage(true)} style={[styles.button, styles.primary]}>
-                <Text style={styles.buttonText}>Take Photo</Text>
-              </Pressable>
-              <Pressable onPress={() => pickImage(false)} style={[styles.button, styles.secondary]}>
-                <Text style={styles.buttonText}>Choose</Text>
+              <Pressable onPress={openCamera} style={[styles.button, styles.primary]}>
+                <Text style={styles.buttonText}>Open Camera</Text>
               </Pressable>
             </View>
           )}
@@ -201,6 +186,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
           </Pressable>
         </View>
       </SafeAreaView>
+
     </Modal>
   );
 };
