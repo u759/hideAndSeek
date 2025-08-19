@@ -67,7 +67,9 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
   const loadClueHistory = async () => {
     try {
       const history = await ApiService.getClueHistory(game.id, currentTeam.id);
-      setPurchasedClues(history);
+  // Ensure newest clues appear first in the list
+  const sorted = (history || []).slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  setPurchasedClues(sorted);
     } catch (error) {
   console.error('Failed to load clue history:', error);
   const message = (error as any)?.message || 'Failed to fetch clue history';
@@ -201,10 +203,20 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
     );
   };
 
+  const [visibleClueIds, setVisibleClueIds] = useState<Set<string>>(new Set());
+
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: any[] }) => {
+    const ids = new Set(viewableItems.map((v) => v.item?.id).filter(Boolean));
+    setVisibleClueIds(ids);
+  }).current;
+
   const renderPurchasedClue = ({ item }: { item: Clue }) => {
     const timeAgo = new Date(item.timestamp).toLocaleTimeString();
     const isImage = typeof item.text === 'string' && /\/api\/uploads\/files\//.test(item.text);
-    
+    // Only render the full image when the item is currently visible to the user
+    const shouldRenderImage = isImage && visibleClueIds.has(item.id);
+
     return (
       <View style={styles.purchasedClueCard}>
         <View style={styles.purchasedClueHeader}>
@@ -213,11 +225,18 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
         </View>
         <Text style={styles.purchasedClueContent}>{item.text}</Text>
         {isImage && (
-          <Image
-            source={{ uri: item.text }}
-            style={{ width: '100%', height: 240, borderRadius: 8, marginTop: 8 }}
-            resizeMode="cover"
-          />
+          shouldRenderImage ? (
+            <Image
+              source={{ uri: item.text }}
+              style={{ width: '100%', height: 240, borderRadius: 8, marginTop: 8 }}
+              resizeMode="cover"
+            />
+          ) : (
+            // lightweight placeholder to indicate an image exists without loading it
+            <View style={{ width: '100%', height: 120, borderRadius: 8, marginTop: 8, backgroundColor: '#eee', alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: '#666' }}>Image (tap to view)</Text>
+            </View>
+          )
         )}
         <Text style={styles.purchasedClueCost}>Cost: {item.cost} tokens</Text>
       </View>
@@ -280,6 +299,10 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
               keyExtractor={(item) => item.id}
               scrollEnabled={false}
               showsVerticalScrollIndicator={false}
+              initialNumToRender={4}
+              windowSize={5}
+              onViewableItemsChanged={onViewableItemsChanged}
+              viewabilityConfig={viewabilityConfig}
             />
           </View>
         )}

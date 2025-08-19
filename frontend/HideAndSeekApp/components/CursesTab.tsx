@@ -152,6 +152,9 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
     );
   }
 
+  // disable if the team doesn't have enough tokens
+  const insufficientTokens = (currentTeam.tokens ?? 0) < 10;
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
@@ -171,16 +174,19 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
           </View>
           
           <TouchableOpacity
-            style={[styles.applyButton, (availableTargets.length === 0 || loading) && styles.disabledButton]}
+            style={[
+              styles.applyButton,
+              (availableTargets.length === 0 || loading || insufficientTokens) && styles.disabledButton,
+            ]}
             onPress={() => {
               fetchAvailableTargets();
               setShowTargetModal(true);
             }}
-            disabled={availableTargets.length === 0 || loading}
+            disabled={availableTargets.length === 0 || loading || insufficientTokens}
           >
             <MaterialIcons name="flash-on" size={24} color="white" />
             <Text style={styles.applyButtonText}>
-              {loading ? 'Applying...' : 'Apply Curse (10 tokens)'}
+              {loading ? 'Applying...' : insufficientTokens ? 'Need 10 tokens' : 'Apply Curse (10 tokens)'}
             </Text>
           </TouchableOpacity>
           
