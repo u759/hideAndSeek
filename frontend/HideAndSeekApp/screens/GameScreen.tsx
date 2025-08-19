@@ -6,12 +6,16 @@ import { Ionicons } from '@expo/vector-icons';
 
 import OverviewTab from '../components/OverviewTab';
 import ChallengesTab from '../components/ChallengesTab';
+import CursesTab from '../components/CursesTab';
 import CluesTab from '../components/CluesTab';
 import LocationTab from '../components/LocationTab';
 import FindHidersTab from '../components/FindHidersTab';
+import HiderClueListener from '../components/HiderClueListener';
+import SeekerClueListener from '../components/SeekerClueListener';
 import { RootStackParamList, TabParamList, Game, Team } from '../types';
 import ApiService from '../services/api';
 import useLocationTracker from '../hooks/useLocationTracker';
+import usePushNotifications from '../hooks/usePushNotifications';
 
 type GameScreenRouteProp = RouteProp<RootStackParamList, 'Game'>;
 
@@ -31,8 +35,11 @@ const GameTabs: React.FC<{
     isHider: currentTeam.role === 'hider',
     isActive: game.status === 'active',
   });
+  // Register push notifications token for this team/game
+  usePushNotifications(gameId, teamId);
 
   return (
+    <>
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
@@ -42,6 +49,8 @@ const GameTabs: React.FC<{
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'Challenges') {
             iconName = focused ? 'card' : 'card-outline';
+          } else if (route.name === 'Curses') {
+            iconName = focused ? 'flash' : 'flash-outline';
           } else if (route.name === 'Clues') {
             iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'Location') {
@@ -80,6 +89,15 @@ const GameTabs: React.FC<{
               />
             )}
           </Tab.Screen>
+          <Tab.Screen name="Curses">
+            {() => (
+              <CursesTab 
+                game={game} 
+                currentTeam={currentTeam} 
+                onRefresh={onRefresh}
+              />
+            )}
+          </Tab.Screen>
           <Tab.Screen name="Clues">
             {() => (
               <CluesTab 
@@ -103,15 +121,6 @@ const GameTabs: React.FC<{
       
       {currentTeam.role === 'hider' && (
         <>
-          <Tab.Screen name="Challenges">
-            {() => (
-              <ChallengesTab
-                game={game}
-                currentTeam={currentTeam}
-                onRefresh={onRefresh}
-              />
-            )}
-          </Tab.Screen>
           <Tab.Screen name="Location">
             {() => (
               <LocationTab 
@@ -124,6 +133,15 @@ const GameTabs: React.FC<{
         </>
       )}
     </Tab.Navigator>
+    {/* Mount the hider clue listener outside tabs so it runs immediately */}
+    {currentTeam.role === 'hider' && (
+      <HiderClueListener gameId={gameId} teamId={currentTeam.id} />
+    )}
+    {/* Mount the seeker listener so they get popups for incoming clues on any tab */}
+    {currentTeam.role === 'seeker' && (
+      <SeekerClueListener gameId={gameId} teamId={currentTeam.id} />
+    )}
+    </>
   );
 };
 

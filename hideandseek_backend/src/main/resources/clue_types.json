@@ -1,0 +1,34 @@
+{
+  "clue_types": [
+    {
+      "id": "exact-location",
+      "name": "Exact location",
+      "description": "The Hiders' exact location on a map is sent to the Seekers.",
+      "cost": 15
+    },
+    {
+      "id": "selfie",
+      "name": "Selfie",
+      "description": "The Hiders must send the Seekers a selfie of their whole team at arm’s length, including their surroundings.",
+      "cost": 10
+    },
+    {
+      "id": "closest-landmark",
+      "name": "Closest landmark...",
+      "description": "The Seekers will chose one of the following landmarks.\n\n1. named street\n2. library\n3. museum\n4. parking lot\n\nThe Hiders must tell the Seekers the the name of the chosen landmark type.",
+      "cost": 8
+    },
+    {
+      "id": "relative-direction",
+      "name": "Relative direction",
+      "description": "The Seekers will learn the cardinal directions of any Hider teams within the clue range, relative to the Seeker’s current location.",
+      "cost": 5
+    },
+    {
+      "id": "distance-from-seekers",
+      "name": "Distance from Seekers",
+      "description": "The Seekers will learn their straight-line distance to any Hider teams within the clue range.",
+      "cost": 5
+    }
+  ]
+}

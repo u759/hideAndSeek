@@ -1,4 +1,4 @@
-import { Game, Team, DrawnCard, ClueType, Clue, Location } from '../types';
+import { Game, Team, DrawnCard, ClueType, Clue, Location, Curse } from '../types';
 import { API_BASE_URL } from '../config/api';
 
 class ApiService {
@@ -268,6 +268,50 @@ class ApiService {
     return response.json();
   }
 
+  // Curse endpoints
+  async applyCurse(gameId: string, seekerTeamId: string, targetTeamId: string) {
+    const response = await fetch(`${API_BASE_URL}/curse/apply`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ gameId, seekerTeamId, targetTeamId }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to apply curse');
+    }
+    
+    return response.json();
+  }
+
+  async getAvailableCurseTargets(gameId: string, seekerTeamId: string): Promise<Team[]> {
+    const response = await fetch(`${API_BASE_URL}/curse/targets/${gameId}/${seekerTeamId}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch available curse targets');
+    }
+    
+    return response.json();
+  }
+
+  async markCurseCompleted(gameId: string, teamId: string, curseId: string) {
+    const response = await fetch(`${API_BASE_URL}/curse/complete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId, teamId, curseId }),
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to mark curse completed');
+      } catch (_) {
+        throw new Error('Failed to mark curse completed');
+      }
+    }
+    return response.json();
+  }
+
   // Clue endpoints
   async getClueTypes(): Promise<ClueType[]> {
     const response = await fetch(`${API_BASE_URL}/clues/types`);
@@ -279,29 +323,132 @@ class ApiService {
     return response.json();
   }
 
-  async purchaseClue(clueTypeId: string, gameId: string, purchasingTeamId: string) {
+  async getPendingClueRequests(gameId: string, teamId: string) {
+    const response = await fetch(`${API_BASE_URL}/clues/${gameId}/teams/${teamId}/requests`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch pending clue requests');
+    }
+    return response.json();
+  }
+
+  async respondToClueRequest(requestId: string, teamId: string, responseData: string) {
+    const response = await fetch(`${API_BASE_URL}/clues/requests/${requestId}/respond`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teamId, responseData }),
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to submit clue response');
+      } catch (_) {
+        throw new Error('Failed to submit clue response');
+      }
+    }
+    return response.json();
+  }
+
+  async uploadSelfie(requestId: string, teamId: string, fileUri: string) {
+    const formData = new FormData();
+    // React Native FormData file object shape; cast to any to appease TypeScript
+    formData.append(
+      'file',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ({ uri: fileUri, name: 'selfie.jpg', type: 'image/jpeg' } as any)
+    );
+    formData.append('requestId', requestId);
+    formData.append('teamId', teamId);
+
+    const response = await fetch(`${API_BASE_URL}/uploads/selfie`, {
+      method: 'POST',
+      // Don't set Content-Type manually; let fetch set multipart boundary
+      body: formData as any,
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to upload selfie');
+      } catch (_) {
+        throw new Error('Failed to upload selfie');
+      }
+    }
+    return response.json();
+  }
+
+  async purchaseClue(clueTypeId: string, gameId: string, purchasingTeamId: string, description: string) {
     const response = await fetch(`${API_BASE_URL}/clues/purchase`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ clueTypeId, gameId, purchasingTeamId }),
+      body: JSON.stringify({ clueTypeId, gameId, purchasingTeamId, description }),
     });
-    
+
     if (!response.ok) {
-      throw new Error('Failed to purchase clue');
+      // Try to extract error message from backend
+      try {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const err = await response.json();
+          throw new Error(err?.error || `Failed to purchase clue (HTTP ${response.status})`);
+        } else {
+          const text = await response.text();
+          throw new Error(text || `Failed to purchase clue (HTTP ${response.status})`);
+        }
+      } catch (parseErr) {
+        throw new Error('Failed to purchase clue');
+      }
     }
-    
+
     return response.json();
   }
 
-  async getClueHistory(gameId: string): Promise<Clue[]> {
-    const response = await fetch(`${API_BASE_URL}/clues/${gameId}/history`);
-    
+  async getClueHistory(gameId: string, teamId: string): Promise<Clue[]> {
+    const response = await fetch(`${API_BASE_URL}/clues/${gameId}/teams/${teamId}/history`);
     if (!response.ok) {
-      throw new Error('Failed to fetch clue history');
+      try {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const err = await response.json();
+          throw new Error(err?.error || 'Failed to fetch clue history');
+        } else {
+          const text = await response.text();
+          throw new Error(text || 'Failed to fetch clue history');
+        }
+      } catch (_) {
+        throw new Error('Failed to fetch clue history');
+      }
     }
-    
+    return response.json();
+  }
+
+  async updateTeamRole(gameId: string, teamId: string, role: 'seeker' | 'hider') {
+    const response = await fetch(`${API_BASE_URL}/game/${gameId}/teams/${teamId}/role`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ role }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update team role');
+    }
+
+    return response.json();
+  }
+
+  async startNextRound(gameId: string) {
+    const response = await fetch(`${API_BASE_URL}/game/${gameId}/next-round`, {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to start next round');
+    }
+
     return response.json();
   }
 
@@ -322,8 +469,8 @@ class ApiService {
         const errorText = await response.text();
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
-      
-      const result = await response.json();
+      // Backend returns plain text, not JSON
+      const result = await response.text();
       console.log('Location updated successfully:', result);
       return result;
     } catch (error) {
@@ -345,6 +492,42 @@ class ApiService {
       throw new Error('Failed to calculate distance');
     }
     
+    return response.json();
+  }
+
+  // Push notifications
+  async registerPushToken(gameId: string, teamId: string, token: string) {
+    const response = await fetch(`${API_BASE_URL}/push/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId, teamId, token }),
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to register push token');
+      } catch (_) {
+        throw new Error('Failed to register push token');
+      }
+    }
+    return response.json();
+  }
+
+  // Test notification function
+  async sendTestNotification(gameId: string, teamId: string) {
+    const response = await fetch(`${API_BASE_URL}/push/test`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId, teamId }),
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to send test notification');
+      } catch (_) {
+        throw new Error('Failed to send test notification');
+      }
+    }
     return response.json();
   }
 }

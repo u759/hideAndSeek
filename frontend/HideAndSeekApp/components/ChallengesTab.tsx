@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,42 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
   const [drawnCard, setDrawnCard] = useState<DrawnCard | null>(null);
   const [loading, setLoading] = useState(false);
   const [showCardModal, setShowCardModal] = useState(false);
+  const [challengeTitleById, setChallengeTitleById] = useState<Record<string, string>>({});
+
+  // If the server reports an active challenge, reflect it as drawnCard
+  const serverActiveChallenge = currentTeam.activeChallenge;
+  useEffect(() => {
+    if (serverActiveChallenge && !drawnCard) {
+      // Normalize backend shape (token_reward or tokenReward) to frontend shape (token_count)
+      const apiCard: any = serverActiveChallenge.challenge || {};
+      const normalizedCard: Challenge = {
+        id: apiCard.id,
+        title: apiCard.title,
+        description: apiCard.description,
+        token_count: apiCard.token_count ?? apiCard.token_reward ?? apiCard.tokenReward ?? null,
+      };
+      setDrawnCard({ card: normalizedCard, type: 'challenge', remainingCards: 0 });
+    }
+    // If no server active challenge and we had local state, keep local state (user might be viewing during session)
+  }, [serverActiveChallenge?.challenge?.id, serverActiveChallenge?.startTime]);
+
+  // Build a map of challenge id -> title so we can render titles for completed IDs
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await ApiService.getChallengesAndCurses();
+        const map: Record<string, string> = {};
+        (data?.challenges || []).forEach((c: any) => {
+          if (c?.id && c?.title) map[String(c.id)] = c.title;
+        });
+        if (mounted) setChallengeTitleById(map);
+      } catch (_) {
+        // non-fatal
+      }
+    })();
+    return () => { mounted = false; };
+  }, [game.id]);
 
   const canDrawCard = () => {
     if (game.status !== 'active') {
@@ -30,6 +66,8 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
     if (currentTeam.vetoEndTime && Date.now() < currentTeam.vetoEndTime) {
       return false;
     }
+    // Block draw if server still has an active challenge
+    if (serverActiveChallenge) return false;
     return !drawnCard;
   };
 
@@ -47,11 +85,17 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
   const drawCard = async () => {
     setLoading(true);
     try {
-      const card = await ApiService.drawCard(
-        currentTeam.id,
-        game.id
-      );
-      setDrawnCard(card);
+      // include completedChallenges so backend can exclude them
+      const response = await ApiService.drawCard(currentTeam.id, game.id, currentTeam.completedChallenges);
+
+      // Normalize backend response to DrawnCard shape used by this component
+      const normalized: DrawnCard = {
+        card: response.card,
+        type: response.type,
+        remainingCards: (response as any).remainingChallenges,
+      };
+
+      setDrawnCard(normalized);
       setShowCardModal(true);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to draw card. Please try again.');
@@ -153,10 +197,12 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
         </Text>
         <Text style={styles.cardTitle}>{card.title}</Text>
         <Text style={styles.cardDescription}>{card.description}</Text>
-        {card.token_count && (
-          <Text style={styles.cardTokens}>
-            Tokens: {card.token_count}
-          </Text>
+        {isChallenge && card.token_count != null && (
+          <View style={styles.rewardContainer}>
+            <Text style={styles.cardTokens}>
+              🪙 Reward: {card.token_count} tokens
+            </Text>
+          </View>
         )}
       </View>
     );
@@ -263,12 +309,12 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
           </View>
         </View>
 
-        {currentTeam.completedChallenges.length > 0 && (
+    {currentTeam.completedChallenges.length > 0 && (
           <View style={styles.historySection}>
             <Text style={styles.historyTitle}>Completed Challenges</Text>
-            {currentTeam.completedChallenges.map((challengeTitle, index) => (
+      {currentTeam.completedChallenges.map((entry, index) => (
               <View key={index} style={styles.historyItem}>
-                <Text style={styles.historyText}>✅ {challengeTitle}</Text>
+        <Text style={styles.historyText}>✅ {challengeTitleById[entry] || entry}</Text>
               </View>
             ))}
           </View>
@@ -410,6 +456,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#27ae60',
+  },
+  rewardContainer: {
+    backgroundColor: '#e8f5e8',
+    padding: 8,
+    borderRadius: 6,
+    marginTop: 8,
+    alignItems: 'center',
   },
   cardActions: {
     flexDirection: 'row',
