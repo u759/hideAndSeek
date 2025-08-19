@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,10 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
+import { MaterialIcons, FontAwesome, Entypo, Ionicons } from '@expo/vector-icons';
 import { Game, Team } from '../types';
 import ApiService from '../services/api';
+import RoleSelectionModal from './RoleSelectionModal';
 
 interface OverviewTabProps {
   game: Game;
@@ -20,12 +22,39 @@ interface OverviewTabProps {
 
 const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh }) => {
   const [refreshing, setRefreshing] = React.useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [gameStats, setGameStats] = useState<any>(null);
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
     await onRefresh();
+    // Fetch game stats when game is ended
+    if (game.status === 'ended') {
+      try {
+        const stats = await ApiService.getGameStats(game.id);
+        setGameStats(stats);
+      } catch (error) {
+        console.error('Failed to fetch game stats:', error);
+      }
+    }
     setRefreshing(false);
-  }, [onRefresh]);
+  }, [onRefresh, game.status, game.id]);
+
+  // Fetch game stats when component mounts if game is ended
+  React.useEffect(() => {
+    if (game.status === 'ended') {
+      const fetchStats = async () => {
+        try {
+          const stats = await ApiService.getGameStats(game.id);
+          console.log('Game stats:', stats);
+          setGameStats(stats);
+        } catch (error) {
+          console.error('Failed to fetch game stats:', error);
+        }
+      };
+      fetchStats();
+    }
+  }, [game.status, game.id]);
 
   const handleGameAction = async (action: 'start' | 'pause' | 'resume' | 'end') => {
     try {
@@ -71,24 +100,39 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
     }
   };
 
+  const handleTestNotification = async () => {
+    try {
+      await ApiService.sendTestNotification(game.id, currentTeam.id);
+      Alert.alert('Test Sent', 'Check if you received a test notification!');
+    } catch (error) {
+      Alert.alert('Error', `Failed to send test notification: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Failed to send test notification:', error);
+    }
+  };
+
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString();
   };
 
   const getGameDuration = () => {
-    let duration = Date.now() - game.startTime;
-    
-    // Subtract total paused time
+    let duration;
+
+    if (game.status === 'ended' && game.endTime) {
+      duration = game.endTime - game.startTime;
+    } else {
+      duration = Date.now() - game.startTime;
+      if (game.status === 'paused' && game.pauseTime) {
+        duration -= (Date.now() - game.pauseTime);
+      }
+    }
+
     if (game.totalPausedDuration) {
       duration -= game.totalPausedDuration;
     }
     
-    // If currently paused, subtract current pause duration
-    if (game.status === 'paused' && game.pauseTime) {
-      duration -= (Date.now() - game.pauseTime);
-    }
-    
+    duration = Math.max(0, duration);
+
     const minutes = Math.floor(duration / 60000);
     const hours = Math.floor(minutes / 60);
     if (hours > 0) {
@@ -113,6 +157,49 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
           <Text style={styles.subtitle}>Round {game.round}</Text>
         </View>
 
+        {/* Prominent Active Curses for Hiders */}
+        {currentTeam.role === 'hider' && currentTeam.activeCurses && currentTeam.activeCurses.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.hiderCursesContainer}>
+              <Text style={styles.hiderCursesTitle}>⚡ You are Cursed</Text>
+              {currentTeam.activeCurses.map((ac, idx) => {
+                const timeRemaining = Math.max(0, ac.endTime - Date.now());
+                const minutesRemaining = Math.ceil(timeRemaining / 60000);
+                return (
+                  <View key={idx} style={styles.hiderCurseCard}>
+                    <View style={styles.hiderCurseHeader}>
+                      <Text style={styles.hiderCurseTitle}>{ac.curse.title}</Text>
+                      <Text style={styles.hiderCurseTimer}>{minutesRemaining}m left</Text>
+                    </View>
+                    <Text style={styles.hiderCurseDescription}>{ac.curse.description}</Text>
+                    {ac.completed ? (
+                      <Text style={styles.completedBadge}>Completed ✔︎</Text>
+                    ) : (
+                      <TouchableOpacity
+                        style={[styles.fullWidthButton, styles.startButton, { marginTop: 8, paddingVertical: 14 }]}
+                        onPress={async () => {
+                          try {
+                            await ApiService.markCurseCompleted(game.id, currentTeam.id, ac.curse.id);
+                            Alert.alert('Marked', 'Curse marked as completed.');
+                            onRefresh();
+                          } catch (e) {
+                            Alert.alert('Error', e instanceof Error ? e.message : 'Failed to mark completed');
+                          }
+                        }}
+                      >
+                        <View style={styles.controlButtonContentCentered}>
+                          <Ionicons name="checkmark-circle-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+                          <Text style={styles.controlButtonText}>Mark Completed</Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Game Status</Text>
           <View style={styles.statusCard}>
@@ -124,11 +211,15 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
             </View>
             <View style={styles.statusRow}>
               <Text style={styles.statusLabel}>Duration:</Text>
-              <Text style={styles.statusValue}>{getGameDuration()}</Text>
+              <Text style={styles.statusValue}>
+                {game.status === 'waiting' ? '--' : getGameDuration()}
+              </Text>
             </View>
             <View style={styles.statusRow}>
               <Text style={styles.statusLabel}>Started:</Text>
-              <Text style={styles.statusValue}>{formatTime(game.startTime)}</Text>
+              <Text style={styles.statusValue}>
+                {game.status === 'waiting' ? '--' : formatTime(game.startTime)}
+              </Text>
             </View>
           </View>
         </View>
@@ -141,9 +232,23 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                 style={[styles.controlButton, styles.startButton]}
                 onPress={() => handleGameAction('start')}
               >
-                <Text style={styles.controlButtonText}>🎮 Start Game</Text>
+                <View style={styles.controlButtonContent}>
+                  <MaterialIcons name="play-circle-outline" size={24} color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={styles.controlButtonText}>Start Game</Text>
+                </View>
               </TouchableOpacity>
             )}
+            
+            {/* Test Notification Button */}
+            <TouchableOpacity
+              style={[styles.controlButton, { backgroundColor: '#6B73FF' }]}
+              onPress={() => handleTestNotification()}
+            >
+              <View style={styles.controlButtonContent}>
+                <Ionicons name="notifications-outline" size={24} color="#fff" style={{ marginRight: 8 }} />
+                <Text style={styles.controlButtonText}>Test Notification</Text>
+              </View>
+            </TouchableOpacity>
             
             {game.status === 'active' && (
               <>
@@ -151,13 +256,19 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                   style={[styles.controlButton, styles.pauseButton]}
                   onPress={() => handleGameAction('pause')}
                 >
-                  <Text style={styles.controlButtonText}>⏸️ Pause Game</Text>
+                  <View style={styles.controlButtonContent}>
+                    <MaterialIcons name="pause-circle-outline" size={24} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.controlButtonText}>Pause Game</Text>
+                  </View>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.controlButton, styles.endButton]}
                   onPress={() => handleGameAction('end')}
                 >
-                  <Text style={styles.controlButtonText}>🛑 End Game</Text>
+                  <View style={styles.controlButtonContent}>
+                    <MaterialIcons name="cancel" size={24} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.controlButtonText}>End Game</Text>
+                  </View>
                 </TouchableOpacity>
               </>
             )}
@@ -165,23 +276,41 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
             {game.status === 'paused' && (
               <>
                 <TouchableOpacity
+                  style={[styles.controlButton, styles.roleButton]}
+                  onPress={() => setShowRoleModal(true)}
+                >
+                  <View style={styles.controlButtonContent}>
+                    <MaterialIcons name="autorenew" size={24} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.controlButtonText}>Setup Next Round</Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
                   style={[styles.controlButton, styles.resumeButton]}
                   onPress={() => handleGameAction('resume')}
                 >
-                  <Text style={styles.controlButtonText}>▶️ Resume Game</Text>
+                  <View style={styles.controlButtonContent}>
+                    <MaterialIcons name="play-arrow" size={24} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.controlButtonText}>Resume Game</Text>
+                  </View>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.controlButton, styles.endButton]}
                   onPress={() => handleGameAction('end')}
                 >
-                  <Text style={styles.controlButtonText}>🛑 End Game</Text>
+                  <View style={styles.controlButtonContent}>
+                    <MaterialIcons name="cancel" size={24} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.controlButtonText}>End Game</Text>
+                  </View>
                 </TouchableOpacity>
               </>
             )}
             
             {game.status === 'ended' && (
               <View style={styles.gameEndedInfo}>
-                <Text style={styles.gameEndedInfoText}>🏁 Game has ended</Text>
+                <View style={styles.controlButtonContent}>
+                  <FontAwesome name="flag" size={24} color="#7f8c8d" style={{ marginRight: 8 }} />
+                  <Text style={styles.gameEndedInfoText}>Game has ended</Text>
+                </View>
               </View>
             )}
           </View>
@@ -205,10 +334,12 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                 <Text style={styles.statValue}>{currentTeam.completedChallenges.length}</Text>
                 <Text style={styles.statLabel}>Challenges</Text>
               </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{currentTeam.activeCurses.length}</Text>
-                <Text style={styles.statLabel}>Active Curses</Text>
-              </View>
+              {currentTeam.role === 'hider' && (
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{currentTeam.activeCurses.length}</Text>
+                  <Text style={styles.statLabel}>Active Curses</Text>
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -232,9 +363,13 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
           
           {game.status === 'ended' && (
             <View style={styles.gameEndedBanner}>
-              <Text style={styles.gameEndedText}>🎉 Game Over!</Text>
-              {hiderTeams.length === 1 && (
-                <Text style={styles.winnerText}>{hiderTeams[0].name} wins!</Text>
+              <View style={styles.controlButtonContent}>
+                <Text style={styles.gameEndedText}>🎉 Game Over!</Text>
+              </View>
+              {gameStats?.winner && (
+                <Text style={styles.winnerText}>
+                  {gameStats.winner.name} wins with {gameStats.winner.totalHiderTimeFormatted} of hiding time!
+                </Text>
               )}
             </View>
           )}
@@ -269,6 +404,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
           ))}
         </View>
 
+        
+
         {currentTeam.role === 'seeker' && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -287,6 +424,14 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
           </View>
         )}
       </ScrollView>
+
+      <RoleSelectionModal
+        visible={showRoleModal}
+        game={game}
+        currentTeam={currentTeam}
+        onClose={() => setShowRoleModal(false)}
+        onRefresh={onRefresh}
+      />
     </SafeAreaView>
   );
 };
@@ -305,6 +450,17 @@ const getTeamColor = (role: string) => {
 };
 
 const styles = StyleSheet.create({
+  controlButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  controlButtonContentCentered: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -456,6 +612,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 4,
   },
+  fullWidthButton: {
+  alignSelf: 'stretch',
+  width: '100%',
+  // ensure the button occupies the full width of the card's inner area
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  borderRadius: 8,
+  alignItems: 'center',
+  flexDirection: 'row',
+  justifyContent: 'center',
+  },
   controlButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -469,6 +636,9 @@ const styles = StyleSheet.create({
   },
   resumeButton: {
     backgroundColor: '#3498db',
+  },
+  roleButton: {
+    backgroundColor: '#9b59b6',
   },
   endButton: {
     backgroundColor: '#e74c3c',
@@ -484,6 +654,115 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#7f8c8d',
     fontWeight: '600',
+  },
+  curseCard: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#e74c3c',
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  curseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  curseTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2c3e50',
+    flex: 1,
+  },
+  curseTimer: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#e74c3c',
+    backgroundColor: '#fee',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  curseTarget: {
+    fontSize: 14,
+    color: '#7f8c8d',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  curseDescription: {
+    fontSize: 14,
+    color: '#34495e',
+    lineHeight: 18,
+  },
+  hiderCursesContainer: {
+  backgroundColor: '#fff7f7',
+  borderWidth: 1,
+  borderColor: '#f5c6cb',
+  padding: 12,
+  borderRadius: 10,
+  width: '100%',
+  alignSelf: 'stretch',
+  },
+  hiderCursesTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#c0392b',
+    marginBottom: 8,
+  },
+  hiderCurseCard: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#c0392b',
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  alignItems: 'stretch',
+  },
+  hiderCurseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  hiderCurseTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#2c3e50',
+    flex: 1,
+  },
+  hiderCurseTimer: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#fff',
+    backgroundColor: '#c0392b',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  hiderCurseDescription: {
+    fontSize: 14,
+    color: '#34495e',
+  },
+  completedBadge: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    backgroundColor: '#e8f5e9',
+    color: '#2e7d32',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    fontWeight: '700',
   },
 });
 

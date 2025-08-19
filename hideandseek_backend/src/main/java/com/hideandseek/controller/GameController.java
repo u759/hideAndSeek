@@ -15,6 +15,15 @@ import java.util.Map;
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class GameController {
+    @GetMapping("/game/{gameId}/stats")
+    public ResponseEntity<?> getGameStats(@PathVariable String gameId) {
+        try {
+            Map<String, Object> stats = gameService.getGameStats(gameId);
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to get game stats"));
+        }
+    }
 
     @Autowired
     private GameService gameService;
@@ -123,12 +132,14 @@ public class GameController {
     }
 
     @PostMapping("/game/{gameId}/next-round")
-    public ResponseEntity<Game> nextRound(@PathVariable String gameId) {
+    public ResponseEntity<?> nextRound(@PathVariable String gameId) {
         try {
             Game game = gameService.nextRound(gameId);
             return ResponseEntity.ok(game);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to start next round"));
         }
     }
 
@@ -158,6 +169,31 @@ public class GameController {
             return ResponseEntity.ok(team);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PatchMapping("/game/{gameId}/teams/{teamId}/role")
+    public ResponseEntity<?> updateTeamRole(
+            @PathVariable String gameId,
+            @PathVariable String teamId,
+            @RequestBody Map<String, String> request) {
+        try {
+            String newRole = request.get("role");
+            if (!"seeker".equals(newRole) && !"hider".equals(newRole)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid role. Must be 'seeker' or 'hider'"));
+            }
+            
+            Game game = gameService.getGame(gameId);
+            if (!"paused".equals(game.getStatus())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Can only change roles when game is paused"));
+            }
+            
+            Team team = gameService.updateTeamRole(gameId, teamId, newRole);
+            return ResponseEntity.ok(team);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to update team role"));
         }
     }
 
@@ -221,14 +257,16 @@ public class GameController {
     }
 
     @PostMapping("/game/{gameId}/teams/{hiderId}/found")
-    public ResponseEntity<Team> markTeamFound(
+    public ResponseEntity<?> markTeamFound(
             @PathVariable String gameId,
             @PathVariable String hiderId) {
         try {
-            Team team = gameService.markTeamFound(gameId, hiderId);
-            return ResponseEntity.ok(team);
+            Map<String, Object> result = gameService.markTeamFoundWithGameInfo(gameId, hiderId);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to mark hider as found"));
         }
     }
 }

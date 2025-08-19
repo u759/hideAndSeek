@@ -12,30 +12,46 @@ public class Team {
     @JsonProperty("location")
     private TeamLocation location;    // Nested location object to match frontend structure
     private List<String> completedChallenges = new ArrayList<>();
+    private List<String> completedCurses = new ArrayList<>();
     private ActiveChallenge activeChallenge;  // Current challenge
     private List<ActiveCurse> activeCurses = new ArrayList<>();
+    @JsonProperty("appliedCurses")
+    private List<AppliedCurse> appliedCurses = new ArrayList<>(); // Curses this team has applied to others (seekers only)
     @JsonProperty("vetoEndTime")
     private Long vetoEndTime;         // Timestamp when veto penalty ends
+    @JsonProperty("hiderStartTime")
+    private Long hiderStartTime;      // When this team became a hider (null if not hider)
+    @JsonProperty("totalHiderTime")
+    private long totalHiderTime = 0;  // Total milliseconds spent as hider across all rounds
     
     // Default constructor
     public Team() {}
     
     // Constructor with all fields
     public Team(String id, String name, String role, int tokens, TeamLocation location, 
-                List<String> completedChallenges, ActiveChallenge activeChallenge, 
-                List<ActiveCurse> activeCurses, Long vetoEndTime) {
+                List<String> completedChallenges, List<String> completedCurses, ActiveChallenge activeChallenge, 
+                List<ActiveCurse> activeCurses, List<AppliedCurse> appliedCurses, Long vetoEndTime, Long hiderStartTime, long totalHiderTime) {
         this.id = id;
         this.name = name;
         this.role = role;
         this.tokens = tokens;
         this.location = location;
         this.completedChallenges = completedChallenges != null ? completedChallenges : new ArrayList<>();
+        this.completedCurses = completedCurses != null ? completedCurses : new ArrayList<>();
         this.activeChallenge = activeChallenge;
         this.activeCurses = activeCurses != null ? activeCurses : new ArrayList<>();
+        this.appliedCurses = appliedCurses != null ? appliedCurses : new ArrayList<>();
         this.vetoEndTime = vetoEndTime;
+        this.hiderStartTime = hiderStartTime;
+        this.totalHiderTime = totalHiderTime;
+    }    // Getters and Setters
+    public List<String> getCompletedCurses() {
+        return completedCurses;
     }
 
-    // Getters and Setters
+    public void setCompletedCurses(List<String> completedCurses) {
+        this.completedCurses = completedCurses;
+    }
     public String getId() {
         return id;
     }
@@ -100,12 +116,40 @@ public class Team {
         this.activeCurses = activeCurses != null ? activeCurses : new ArrayList<>();
     }
 
+    public List<AppliedCurse> getAppliedCurses() {
+        return appliedCurses;
+    }
+
+    public void setAppliedCurses(List<AppliedCurse> appliedCurses) {
+        this.appliedCurses = appliedCurses != null ? appliedCurses : new ArrayList<>();
+    }
+
     public Long getVetoEndTime() {
         return vetoEndTime;
     }
 
     public void setVetoEndTime(Long vetoEndTime) {
         this.vetoEndTime = vetoEndTime;
+    }
+
+    public Long getHiderStartTime() {
+        return hiderStartTime;
+    }
+
+    public void setHiderStartTime(Long hiderStartTime) {
+        this.hiderStartTime = hiderStartTime;
+    }
+
+    public long getTotalHiderTime() {
+        return totalHiderTime;
+    }
+
+    public void setTotalHiderTime(long totalHiderTime) {
+        this.totalHiderTime = totalHiderTime;
+    }
+
+    public void addHiderTime(long timeToAdd) {
+        this.totalHiderTime += timeToAdd;
     }
     
     // Location object that matches frontend structure

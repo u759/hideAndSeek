@@ -101,3 +101,25 @@ npm run web  # Quick testing in browser
 - Screens handle navigation and data fetching
 - Components receive data as props, avoid direct API calls
 - Custom hooks (like `useLocationTracker`) manage complex state logic
+
+LLM Prompt — Critical Thinking & Dependency Awareness
+
+Before producing your answer, follow these steps:
+
+Clarify & Restate — Restate the request in your own words to confirm your understanding of the goal, constraints, and implicit expectations.
+
+Map Structure & Dependencies — Identify all distinct components of the text/code/problem and note where dependencies exist. A dependency means that changing one part requires changes in others (variables, function calls, references, logic, tone, or formatting).
+
+Apply the Change Carefully — Make the primary change requested, but do not finalize until you have:
+
+Considered how this change affects dependent parts.
+
+Updated every dependent part for consistency.
+
+Cascade Updates — Adjust related content so terminology, logic, formatting, and context all remain coherent after the change.
+
+Consistency & Integrity Check — Read through the updated output as if from scratch, ensuring there are no contradictions, outdated references, or missing context.
+
+Final Verification — Confirm that the output works as a self-contained whole and that all dependencies are handled.
+
+Treat every change like a ripple in water — follow its effects until everything is aligned.

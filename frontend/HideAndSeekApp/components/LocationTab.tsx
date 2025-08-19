@@ -11,6 +11,7 @@ import {
 import * as Location from 'expo-location';
 import { Game, Team } from '../types';
 import ApiService from '../services/api';
+import useLocationTracker from '../hooks/useLocationTracker';
 
 interface LocationTabProps {
   game: Game;
@@ -21,11 +22,33 @@ interface LocationTabProps {
 const LocationTab: React.FC<LocationTabProps> = ({ game, currentTeam, onRefresh }) => {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [locationEnabled, setLocationEnabled] = useState(false);
+  const [gpsActive, setGpsActive] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Add this hook to update location every 10s for both hiders and seekers
+  // Seekers need location for distance-based clue targeting
+  useLocationTracker({
+    teamId: currentTeam.id,
+    gameId: game.id,
+    isHider: true, // Enable for all teams (hiders AND seekers)
+    isActive: game.status === 'active',
+    onLocationSent: (loc) => {
+      setLocation(loc);
+      setLastUpdate(new Date());
+    },
+  });
+
   useEffect(() => {
     requestLocationPermission();
+    // Check GPS service status on mount and every 10s
+    const checkGps = async () => {
+      const enabled = await Location.hasServicesEnabledAsync();
+      setGpsActive(enabled);
+    };
+    checkGps();
+    const interval = setInterval(checkGps, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -123,14 +146,32 @@ const LocationTab: React.FC<LocationTabProps> = ({ game, currentTeam, onRefresh 
       const currentLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
-      
       setLocation(currentLocation);
-      await updateServerLocation(currentLocation);
-      
-      Alert.alert('Success', 'Location updated successfully!');
+      try {
+        await ApiService.updateLocation(
+          currentTeam.id,
+          currentLocation.coords.latitude,
+          currentLocation.coords.longitude,
+          game.id
+        );
+        setLastUpdate(new Date());
+        Alert.alert('Success', 'Location updated successfully!');
+      } catch (error: any) {
+        // Show full error object for debugging
+        let msg = 'Failed to update location.';
+        if (error?.message) {
+          msg = error.message;
+        } else if (typeof error === 'object' && error !== null) {
+          msg = JSON.stringify(error);
+        } else if (error) {
+          msg = String(error);
+        }
+        Alert.alert('Error', `Location update failed: ${msg}`);
+        console.error('ERROR  Location update failed:', error);
+      }
     } catch (error) {
-      Alert.alert('Error', 'Failed to update location. Please try again.');
-      console.error('Manual location update error:', error);
+      Alert.alert('Error', 'Failed to get current location. Please try again.');
+      console.error('Manual location fetch error:', error);
     }
   };
 
@@ -157,15 +198,18 @@ const LocationTab: React.FC<LocationTabProps> = ({ game, currentTeam, onRefresh 
         <View style={styles.header}>
           <Text style={styles.title}>Location Sharing</Text>
           <Text style={styles.subtitle}>
-            Your location is automatically shared with seekers
+            {currentTeam.role === 'hider' 
+              ? 'Your location is automatically shared with seekers'
+              : 'Your location is required for distance-based clue targeting'
+            }
           </Text>
         </View>
 
         <View style={styles.statusSection}>
           <Text style={styles.statusTitle}>Tracking Status</Text>
-          <View style={[styles.statusIndicator, locationEnabled ? styles.statusActive : styles.statusInactive]}>
+          <View style={[styles.statusIndicator, (game.status === 'active' && gpsActive) ? styles.statusActive : styles.statusInactive]}>
             <Text style={styles.statusText}>
-              {locationEnabled ? '🟢 Active' : '🔴 Inactive'}
+              {(game.status === 'active' && gpsActive) ? '🟢 Active' : '🔴 Inactive'}
             </Text>
           </View>
         </View>
@@ -221,10 +265,11 @@ const LocationTab: React.FC<LocationTabProps> = ({ game, currentTeam, onRefresh 
             </View>
 
             <TouchableOpacity 
-              style={styles.updateButton}
+              style={[styles.updateButton, game.status !== 'active' && styles.updateButtonDisabled]}
               onPress={manualLocationUpdate}
+              disabled={game.status !== 'active'}
             >
-              <Text style={styles.updateButtonText}>📍 Update Location Now</Text>
+              <Text style={[styles.updateButtonText, game.status !== 'active' && styles.updateButtonTextDisabled]}>📍 Update Location Now</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -438,10 +483,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+  updateButtonDisabled: {
+    backgroundColor: '#cccccc',
+  },
   updateButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  updateButtonTextDisabled: {
+    color: '#888',
   },
   loadingSection: {
     backgroundColor: '#fff',

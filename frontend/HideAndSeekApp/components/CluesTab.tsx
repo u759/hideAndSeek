@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,15 @@ import {
   SafeAreaView,
   Alert,
   FlatList,
+  Image,
 } from 'react-native';
 import { Game, Team, ClueType, Clue } from '../types';
+import * as ExpoLocation from 'expo-location';
 import ApiService from '../services/api';
+import useLocationTracker from '../hooks/useLocationTracker';
+import { API_BASE_URL } from '../config/api';
+import useGameWebSocket from '../hooks/useGameWebSocket';
+import { getWebsocketUrl } from '../config/api';
 
 interface CluesTabProps {
   game: Game;
@@ -23,10 +29,31 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
   const [purchasedClues, setPurchasedClues] = useState<Clue[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Ensure seekers share their location while game is active (required for distance-based clues)
+  useLocationTracker({
+    teamId: currentTeam.id,
+    gameId: game.id,
+    enabled: currentTeam.role === 'seeker',
+    isActive: game.status === 'active',
+  });
+
   useEffect(() => {
     loadClueTypes();
     loadClueHistory();
   }, [game.id]);
+
+  // Seeker-side WebSocket to refresh on clue responses with auto-reconnect + heartbeat
+  const wsUrl = useMemo(() => getWebsocketUrl(), []);
+  useGameWebSocket({
+    wsUrl,
+    gameId: currentTeam.role === 'seeker' ? game.id : '',
+    onMessage: (msg) => {
+      if (currentTeam.role !== 'seeker') return;
+      if (msg?.type === 'clueResponse' && msg?.requestingTeamId === currentTeam.id) {
+        loadClueHistory();
+      }
+    },
+  });
 
   const loadClueTypes = async () => {
     try {
@@ -39,10 +66,12 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
 
   const loadClueHistory = async () => {
     try {
-      const history = await ApiService.getClueHistory(game.id);
+      const history = await ApiService.getClueHistory(game.id, currentTeam.id);
       setPurchasedClues(history);
     } catch (error) {
-      console.error('Failed to load clue history:', error);
+  console.error('Failed to load clue history:', error);
+  const message = (error as any)?.message || 'Failed to fetch clue history';
+  Alert.alert('Clue History', message);
     }
   };
 
@@ -82,15 +111,39 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
           onPress: async () => {
             setLoading(true);
             try {
+              // Ensure seeker has a fresh server-side location before purchasing
+              if (currentTeam.role === 'seeker') {
+                try {
+                  const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
+                  if (status !== 'granted') {
+                    throw new Error('Location permission not granted');
+                  }
+                  const deviceLoc = await ExpoLocation.getCurrentPositionAsync({ accuracy: ExpoLocation.Accuracy.High });
+                  await ApiService.updateLocation(
+                    currentTeam.id,
+                    deviceLoc.coords.latitude,
+                    deviceLoc.coords.longitude,
+                    game.id
+                  );
+                } catch (locErr) {
+                  setLoading(false);
+                  Alert.alert(
+                    'Location Required',
+                    'We need your current location to target the closest hider for this clue. Please enable location permissions and try again.'
+                  );
+                  return;
+                }
+              }
               const result = await ApiService.purchaseClue(
                 clueType.id,
                 game.id,
-                currentTeam.id
+                currentTeam.id,
+                clueType.description
               );
               
               Alert.alert(
                 'Clue Purchased!',
-                `Clue: ${result.clue.content}`,
+                `Clue: ${result.text}`,
                 [
                   {
                     text: 'OK',
@@ -101,8 +154,9 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
                   }
                 ]
               );
-            } catch (error) {
-              Alert.alert('Error', 'Failed to purchase clue. Please try again.');
+            } catch (error: any) {
+              const message = error?.message || 'Failed to purchase clue. Please try again.';
+              Alert.alert('Error', message);
               console.error('Failed to purchase clue:', error);
             } finally {
               setLoading(false);
@@ -149,15 +203,23 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
 
   const renderPurchasedClue = ({ item }: { item: Clue }) => {
     const timeAgo = new Date(item.timestamp).toLocaleTimeString();
+    const isImage = typeof item.text === 'string' && /\/api\/uploads\/files\//.test(item.text);
     
     return (
       <View style={styles.purchasedClueCard}>
         <View style={styles.purchasedClueHeader}>
-          <Text style={styles.purchasedClueName}>{item.type.name}</Text>
+          <Text style={styles.purchasedClueName}>Purchased Clue</Text>
           <Text style={styles.purchasedClueTime}>{timeAgo}</Text>
         </View>
-        <Text style={styles.purchasedClueContent}>{item.content}</Text>
-        <Text style={styles.purchasedClueCost}>Cost: {item.type.cost} tokens</Text>
+        <Text style={styles.purchasedClueContent}>{item.text}</Text>
+        {isImage && (
+          <Image
+            source={{ uri: item.text }}
+            style={{ width: '100%', height: 240, borderRadius: 8, marginTop: 8 }}
+            resizeMode="cover"
+          />
+        )}
+        <Text style={styles.purchasedClueCost}>Cost: {item.cost} tokens</Text>
       </View>
     );
   };
@@ -187,7 +249,7 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
             </Text>
           ))}
           <Text style={styles.gameInfoNote}>
-            Clues will be assigned to a random hider team
+            Clues target the closest hider to your current location
           </Text>
         </View>
 

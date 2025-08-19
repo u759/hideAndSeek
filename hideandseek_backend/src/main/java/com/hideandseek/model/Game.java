@@ -10,6 +10,7 @@ public class Game {
     private Long startTime;           // Timestamp in milliseconds for frontend compatibility
     private Long pauseTime;           // Timestamp when game was paused (null if not paused)
     private Long totalPausedDuration; // Total time spent paused in milliseconds
+    private Long endTime;             // Timestamp when game ended
     @JsonProperty("round")
     private Integer round;            // Use "round" to match frontend expectation
     private String status;            // String status to match frontend
@@ -92,5 +93,13 @@ public class Game {
 
     public void setTotalPausedDuration(Long totalPausedDuration) {
         this.totalPausedDuration = totalPausedDuration;
+    }
+
+    public Long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Long endTime) {
+        this.endTime = endTime;
     }
 }

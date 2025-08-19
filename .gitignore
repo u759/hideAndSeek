@@ -32,6 +32,15 @@
 
 # local env files
 **/.env*.local
+**/.env*
 
 # typescript
 **/*.tsbuildinfo
+
+**/uploads/**
+
+**/android/**
+
+# Firebase configs (never commit secrets)
+**/google-services.json
+**/GoogleService-Info.plist

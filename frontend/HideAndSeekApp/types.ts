@@ -1,10 +1,12 @@
 export interface Challenge {
+  id: string;
   title: string;
   description: string;
   token_count: number | string | null;
 }
 
 export interface Curse {
+  id: string;
   title: string;
   description: string;
   token_count: number | string | null;
@@ -22,11 +24,25 @@ export interface Team {
   };
   completedChallenges: string[];
   activeCurses: ActiveCurse[];
+  appliedCurses: AppliedCurse[];
   vetoEndTime?: number;
+  totalHiderTime?: number;
+  // Server-side active challenge (must be vetoed or completed)
+  activeChallenge?: ActiveChallenge;
 }
 
 export interface ActiveCurse {
   curse: Curse;
+  startTime: number;
+  endTime: number;
+  completed?: boolean;
+  completedAt?: number;
+}
+
+export interface AppliedCurse {
+  curse: Curse;
+  targetTeamId: string;
+  targetTeamName: string;
   startTime: number;
   endTime: number;
 }
@@ -38,6 +54,7 @@ export interface Game {
   startTime: number;
   pauseTime?: number;
   totalPausedDuration?: number;
+  endTime?: number;
   round: number;
   status: 'waiting' | 'active' | 'paused' | 'ended';
 }
@@ -51,10 +68,8 @@ export interface ClueType {
 
 export interface Clue {
   id: string;
-  type: ClueType;
-  content: string;
-  targetTeamId: string;
-  purchasedBy: string;
+  text: string;
+  cost: number;
   timestamp: number;
 }
 
@@ -67,6 +82,12 @@ export interface DrawnCard {
 export interface Location {
   latitude: number;
   longitude: number;
+}
+
+export interface ActiveChallenge {
+  challenge: Challenge;
+  startTime: number;
+  completed: boolean;
 }
 
 // Navigation types
@@ -86,6 +107,7 @@ export type RootStackParamList = {
 export type TabParamList = {
   Overview: undefined;
   Challenges: undefined;
+  Curses: undefined;
   Clues: undefined;
   Location: undefined;
   FindHiders: undefined;
