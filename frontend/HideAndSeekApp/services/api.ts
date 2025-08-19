@@ -512,6 +512,24 @@ class ApiService {
     }
     return response.json();
   }
+
+  // Test notification function
+  async sendTestNotification(gameId: string, teamId: string) {
+    const response = await fetch(`${API_BASE_URL}/push/test`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId, teamId }),
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to send test notification');
+      } catch (_) {
+        throw new Error('Failed to send test notification');
+      }
+    }
+    return response.json();
+  }
 }
 
 export default new ApiService();

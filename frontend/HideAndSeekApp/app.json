@@ -16,11 +16,17 @@
       "supportsTablet": true,
       "infoPlist": {
         "UIBackgroundModes": [
-          "location"
+          "location",
+          "remote-notification",
+          "background-processing",
+          "background-fetch"
         ],
         "NSLocationAlwaysAndWhenInUseUsageDescription": "We use your location to enable gameplay while hiding.",
         "NSLocationWhenInUseUsageDescription": "We use your location to enable gameplay while hiding.",
         "NSLocationAlwaysUsageDescription": "We use your location to enable gameplay while hiding.",
+        "NSCameraUsageDescription": "We use the camera so hiders can take a selfie clue.",
+        "NSPhotoLibraryUsageDescription": "We need access to your photo library to let you share selfies with other players.",
+        "NSMicrophoneUsageDescription": "We use the microphone for video recording features.",
         "NSUserTrackingUsageDescription": "We use notifications to alert you to game events."
       }
     },
@@ -30,11 +36,20 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
+  "googleServicesFile": "./google-services.json",
       "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
-        "FOREGROUND_SERVICE"
+        "POST_NOTIFICATIONS",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
+        "WAKE_LOCK",
+        "RECEIVE_BOOT_COMPLETED",
+        "SYSTEM_ALERT_WINDOW"
       ],
       "notification": {
         "icon": "./assets/icon.png",
@@ -44,7 +59,30 @@
     },
     "plugins": [
       [
-        "expo-notifications"
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#003366",
+          "mode": "production"
+        }
+      ],
+      "expo-location",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app needs access to your photo library to let you share selfies with other players.",
+          "cameraPermission": "This app needs access to your camera to let you take selfies for game clues.",
+          "microphonePermission": "This app needs access to your microphone for video recording features."
+        }
+      ],
+      [
+        "expo-task-manager"
+      ],
+      [
+        "expo-background-fetch",
+        {
+          "backgroundFetchIntervalMs": 60000
+        }
       ]
     ],
     "web": {

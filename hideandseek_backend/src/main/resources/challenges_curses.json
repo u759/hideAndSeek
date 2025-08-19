@@ -179,6 +179,18 @@
       "description": "Find a book that contains the word “suspicious“, “among”, or “impostor”. The book’s title does not count.",
       "token_count": 15,
       "difficulty": "Hard Challenge"
+    },
+    {
+      "title": "Looney Lecture",
+      "description": "Find a lecture hall available to the public and have one team member give a 1-minute lecture to the other about a topic related to the building you are currently in. Your lecture does not have to be factual.",
+      "token_count": 10,
+      "difficulty": "Medium Challenge"
+    },
+    {
+      "title": "The High Ground",
+      "description": "Have one team member enter a multi-story building and wave to the other teammate through a non-ground floor window. The other team member must wave back to complete the challenge.",
+      "token_count": 20,
+      "difficulty": "Hard Challenge"
     }
   ],
   "curses": [

@@ -416,13 +416,33 @@ public class GameStore {
 
     // Push token management
     public void registerPushToken(String gameId, String teamId, String token) {
+        if (gameId == null || teamId == null || token == null || token.isBlank()) {
+            logger.warn("Invalid push token registration: gameId={}, teamId={}, token={}", gameId, teamId, token);
+            return;
+        }
+        
         String key = gameId + ":" + teamId;
-        teamPushTokens.computeIfAbsent(key, k -> new java.util.HashSet<>()).add(token);
+        teamPushTokens.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(token);
+        logger.info("Registered push token for game {} team {}: {}", gameId, teamId, token);
     }
 
     public Set<String> getPushTokens(String gameId, String teamId) {
+        if (gameId == null || teamId == null) {
+            logger.warn("Invalid push token lookup: gameId={}, teamId={}", gameId, teamId);
+            return Set.of();
+        }
+        
         String key = gameId + ":" + teamId;
-        return teamPushTokens.getOrDefault(key, java.util.Collections.emptySet());
+        Set<String> tokens = teamPushTokens.get(key);
+        Set<String> result = tokens != null ? tokens : Set.of();
+        
+        if (result.isEmpty()) {
+            logger.warn("No push tokens found for game {} team {}", gameId, teamId);
+        } else {
+            logger.debug("Found {} push tokens for game {} team {}", result.size(), gameId, teamId);
+        }
+        
+        return result;
     }
     
     // Find closest hider team to requesting seeker team

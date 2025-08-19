@@ -100,6 +100,16 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
     }
   };
 
+  const handleTestNotification = async () => {
+    try {
+      await ApiService.sendTestNotification(game.id, currentTeam.id);
+      Alert.alert('Test Sent', 'Check if you received a test notification!');
+    } catch (error) {
+      Alert.alert('Error', `Failed to send test notification: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Failed to send test notification:', error);
+    }
+  };
+
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString();
@@ -228,6 +238,17 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                 </View>
               </TouchableOpacity>
             )}
+            
+            {/* Test Notification Button */}
+            <TouchableOpacity
+              style={[styles.controlButton, { backgroundColor: '#6B73FF' }]}
+              onPress={() => handleTestNotification()}
+            >
+              <View style={styles.controlButtonContent}>
+                <Ionicons name="notifications-outline" size={24} color="#fff" style={{ marginRight: 8 }} />
+                <Text style={styles.controlButtonText}>Test Notification</Text>
+              </View>
+            </TouchableOpacity>
             
             {game.status === 'active' && (
               <>

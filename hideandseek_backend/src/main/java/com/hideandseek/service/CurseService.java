@@ -17,6 +17,9 @@ public class CurseService {
     @Autowired
     private GameWebSocketHandler webSocketHandler;
 
+    @Autowired
+    private PushService pushService;
+
     public Map<String, Object> curseTeam(String gameId, String seekerTeamId, String targetTeamId) {
         Game game = gameStore.getGame(gameId);
         if (game == null) {
@@ -92,6 +95,11 @@ public class CurseService {
 
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
+
+        // Push notification to all teams that a curse was applied to target (seeker anonymous)
+        try {
+            pushService.notifyCurseApplied(gameId, targetTeam.getId(), targetTeam.getName());
+        } catch (Exception ignored) {}
 
         Map<String, Object> result = new HashMap<>();
         result.put("seekerTeam", seekerTeam);

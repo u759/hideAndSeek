@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
 import * as Location from 'expo-location';
-import { Alert } from 'react-native';
+import { Alert, AppState } from 'react-native';
 import ApiService from '../services/api';
 import * as TaskManager from 'expo-task-manager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BACKGROUND_LOCATION_TASK } from '../backgroundTasks';
+import * as BackgroundFetch from 'expo-background-fetch';
 
 
 interface LocationTrackerProps {
@@ -21,6 +22,7 @@ interface LocationTrackerProps {
 const useLocationTracker = ({ teamId, gameId, isHider, enabled, isActive, onLocationSent }: LocationTrackerProps) => {
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const appStateRef = useRef(AppState.currentState);
 
   useEffect(() => {
     const shouldTrack = Boolean(enabled) || Boolean(isHider);
@@ -38,18 +40,22 @@ const useLocationTracker = ({ teamId, gameId, isHider, enabled, isActive, onLoca
       startLocationTracking();
       // Also start background updates so tracking continues when app is backgrounded
       startBackgroundUpdates();
+      // Register background fetch for additional reliability
+      registerBackgroundFetch();
     } else {
       console.log('Stopping location tracking - game is not active (status: paused/waiting/ended)');
       stopLocationTracking();
       stopBackgroundUpdates();
+      unregisterBackgroundFetch();
     }
 
     return () => {
       console.log('Cleaning up location tracking');
-  stopLocationTracking();
-  stopBackgroundUpdates();
+      stopLocationTracking();
+      stopBackgroundUpdates();
+      unregisterBackgroundFetch();
     };
-  }, [isHider, isActive, teamId, gameId]);
+  }, [isHider, enabled, isActive, teamId, gameId]);
 
   const startLocationTracking = async () => {
     try {
@@ -135,8 +141,10 @@ const useLocationTracker = ({ teamId, gameId, isHider, enabled, isActive, onLoca
           foregroundService: {
             notificationTitle: 'UBCeek: location active',
             notificationBody: 'Sharing your location for gameplay',
+            notificationColor: '#003366',
           },
         });
+        console.log('Background location updates started');
       }
     } catch (e) {
       console.log('Failed to start background updates', e);
@@ -148,7 +156,30 @@ const useLocationTracker = ({ teamId, gameId, isHider, enabled, isActive, onLoca
       const started = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
       if (started) {
         await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+        console.log('Background location updates stopped');
       }
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  const registerBackgroundFetch = async () => {
+    try {
+      await BackgroundFetch.registerTaskAsync('BACKGROUND_SYNC_TASK', {
+        minimumInterval: 60000, // 1 minute
+        stopOnTerminate: false,
+        startOnBoot: true,
+      });
+      console.log('Background fetch registered');
+    } catch (e) {
+      console.log('Failed to register background fetch', e);
+    }
+  };
+
+  const unregisterBackgroundFetch = async () => {
+    try {
+      await BackgroundFetch.unregisterTaskAsync('BACKGROUND_SYNC_TASK');
+      console.log('Background fetch unregistered');
     } catch (e) {
       // ignore
     }
