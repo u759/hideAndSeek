@@ -71,6 +71,14 @@ export interface Clue {
   text: string;
   cost: number;
   timestamp: number;
+  clueTypeId?: string;
+  responseType?: string;
+  targetHiderTeamId?: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+    teamName: string;
+  };
 }
 
 export interface DrawnCard {

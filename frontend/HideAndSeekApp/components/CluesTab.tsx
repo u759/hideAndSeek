@@ -17,6 +17,7 @@ import useLocationTracker from '../hooks/useLocationTracker';
 import { API_BASE_URL } from '../config/api';
 import useGameWebSocket from '../hooks/useGameWebSocket';
 import { getWebsocketUrl } from '../config/api';
+import MapModal from './MapModal';
 
 interface CluesTabProps {
   game: Game;
@@ -28,6 +29,14 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
   const [clueTypes, setClueTypes] = useState<ClueType[]>([]);
   const [purchasedClues, setPurchasedClues] = useState<Clue[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // Map modal state for exact location clues
+  const [mapModalVisible, setMapModalVisible] = useState(false);
+  const [mapLocation, setMapLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    teamName?: string;
+  } | null>(null);
 
   // Ensure seekers share their location while game is active (required for distance-based clues)
   useLocationTracker({
@@ -143,19 +152,32 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
                 clueType.description
               );
               
-              Alert.alert(
-                'Clue Purchased!',
-                `Clue: ${result.text}`,
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => {
-                      onRefresh();
-                      loadClueHistory();
+              // Check if this is an exact location clue with coordinate data
+              if (clueType.id === 'exact-location' && result.location) {
+                setMapLocation({
+                  latitude: result.location.latitude,
+                  longitude: result.location.longitude,
+                  teamName: result.location.teamName,
+                });
+                setMapModalVisible(true);
+                onRefresh();
+                loadClueHistory();
+              } else {
+                // Show regular alert for other clue types
+                Alert.alert(
+                  'Clue Purchased!',
+                  `Clue: ${result.text}`,
+                  [
+                    {
+                      text: 'OK',
+                      onPress: () => {
+                        onRefresh();
+                        loadClueHistory();
+                      }
                     }
-                  }
-                ]
-              );
+                  ]
+                );
+              }
             } catch (error: any) {
               const message = error?.message || 'Failed to purchase clue. Please try again.';
               Alert.alert('Error', message);
@@ -216,14 +238,48 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
     const isImage = typeof item.text === 'string' && /\/api\/uploads\/files\//.test(item.text);
     // Only render the full image when the item is currently visible to the user
     const shouldRenderImage = isImage && visibleClueIds.has(item.id);
+    
+    // Check if this is an exact location clue with location data
+    const isExactLocationClue = item.clueTypeId === 'exact-location' && item.location;
+    
+    const handleLocationCluePress = () => {
+      if (item.location) {
+        setMapLocation({
+          latitude: item.location.latitude,
+          longitude: item.location.longitude,
+          teamName: item.location.teamName,
+        });
+        setMapModalVisible(true);
+      }
+    };
 
     return (
-      <View style={styles.purchasedClueCard}>
+      <TouchableOpacity
+        style={[styles.purchasedClueCard, isExactLocationClue && styles.locationClueCard]}
+        onPress={isExactLocationClue ? handleLocationCluePress : undefined}
+        disabled={!isExactLocationClue}
+      >
         <View style={styles.purchasedClueHeader}>
-          <Text style={styles.purchasedClueName}>Purchased Clue</Text>
+          <Text style={styles.purchasedClueName}>
+            {isExactLocationClue ? 'Exact Location Clue' : 'Purchased Clue'}
+          </Text>
           <Text style={styles.purchasedClueTime}>{timeAgo}</Text>
         </View>
-        <Text style={styles.purchasedClueContent}>{item.text}</Text>
+        
+        {isExactLocationClue && item.location ? (
+          <View>
+            <Text style={styles.purchasedClueContent}>
+              Location of {item.location.teamName}
+            </Text>
+            <Text style={styles.coordinatesText}>
+              {item.location.latitude.toFixed(6)}, {item.location.longitude.toFixed(6)}
+            </Text>
+            <Text style={styles.mapHint}>📍 Tap to view on map</Text>
+          </View>
+        ) : (
+          <Text style={styles.purchasedClueContent}>{item.text}</Text>
+        )}
+        
         {isImage && (
           shouldRenderImage ? (
             <Image
@@ -239,7 +295,7 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
           )
         )}
         <Text style={styles.purchasedClueCost}>Cost: {item.cost} tokens</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -315,6 +371,20 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
           </View>
         )}
       </ScrollView>
+      
+      {/* Map Modal for exact location clues */}
+      {mapLocation && (
+        <MapModal
+          visible={mapModalVisible}
+          onClose={() => {
+            setMapModalVisible(false);
+            setMapLocation(null);
+          }}
+          latitude={mapLocation.latitude}
+          longitude={mapLocation.longitude}
+          teamName={mapLocation.teamName}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -516,6 +586,23 @@ const styles = StyleSheet.create({
     color: '#856404',
     textAlign: 'center',
     fontWeight: '600',
+  },
+  locationClueCard: {
+    backgroundColor: '#e3f2fd',
+    borderLeftColor: '#2196f3',
+  },
+  coordinatesText: {
+    fontSize: 12,
+    fontFamily: 'monospace',
+    color: '#555',
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  mapHint: {
+    fontSize: 12,
+    color: '#2196f3',
+    fontStyle: 'italic',
+    marginTop: 4,
   },
 });
 

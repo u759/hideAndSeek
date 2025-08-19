@@ -71,6 +71,16 @@ public class ClueService {
             map.put("clueTypeId", clue.getClueTypeId());
             map.put("responseType", clue.getResponseType());
             map.put("targetHiderTeamId", clue.getTargetHiderTeamId());
+            
+            // Include location data for exact location clues
+            if (clue.getLatitude() != null && clue.getLongitude() != null) {
+                Map<String, Object> location = new HashMap<>();
+                location.put("latitude", clue.getLatitude());
+                location.put("longitude", clue.getLongitude());
+                location.put("teamName", clue.getTargetTeamName());
+                map.put("location", location);
+            }
+            
             result.add(map);
         }
 
@@ -155,7 +165,9 @@ public class ClueService {
         
         var purchasedClue = new PurchasedClue(
                 clueId, clueType.getId(), requestingTeam.getId(), game.getId(),
-                clueText, clueType.getCost(), "completed", null, "location", targetHiderTeam.getId()
+                clueText, clueType.getCost(), "completed", null, "location", targetHiderTeam.getId(),
+                targetHiderTeam.getLocation().getLatitude(), targetHiderTeam.getLocation().getLongitude(),
+                targetHiderTeam.getName()
         );
         
         // Deduct tokens and save clue

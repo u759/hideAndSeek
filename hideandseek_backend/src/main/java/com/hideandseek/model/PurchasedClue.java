@@ -12,6 +12,11 @@ public class PurchasedClue {
     private String requestId; // For async clues, links to ClueRequest
     private String responseType; // "text", "photo", "location", "automatic"
     private String targetHiderTeamId; // For clues targeting specific hider teams
+    
+    // Location data for exact location clues
+    private Double latitude;
+    private Double longitude;
+    private String targetTeamName;
 
     // Default constructor
     public PurchasedClue() {
@@ -46,6 +51,26 @@ public class PurchasedClue {
         this.requestId = requestId;
         this.responseType = responseType;
         this.targetHiderTeamId = targetHiderTeamId;
+    }
+    
+    // Constructor for location clues with coordinate data
+    public PurchasedClue(String id, String clueTypeId, String teamId, String gameId, String clueText, 
+                        int cost, String status, String requestId, String responseType, String targetHiderTeamId,
+                        Double latitude, Double longitude, String targetTeamName) {
+        this.id = id;
+        this.clueTypeId = clueTypeId;
+        this.teamId = teamId;
+        this.gameId = gameId;
+        this.clueText = clueText;
+        this.cost = cost;
+        this.timestamp = System.currentTimeMillis();
+        this.status = status;
+        this.requestId = requestId;
+        this.responseType = responseType;
+        this.targetHiderTeamId = targetHiderTeamId;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.targetTeamName = targetTeamName;
     }
 
     // Getters and Setters
@@ -135,5 +160,29 @@ public class PurchasedClue {
     
     public void setTargetHiderTeamId(String targetHiderTeamId) {
         this.targetHiderTeamId = targetHiderTeamId;
+    }
+    
+    public Double getLatitude() {
+        return latitude;
+    }
+    
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+    
+    public Double getLongitude() {
+        return longitude;
+    }
+    
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+    
+    public String getTargetTeamName() {
+        return targetTeamName;
+    }
+    
+    public void setTargetTeamName(String targetTeamName) {
+        this.targetTeamName = targetTeamName;
     }
 }
