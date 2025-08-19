@@ -63,10 +63,19 @@
         {
           "icon": "./assets/icon.png",
           "color": "#003366",
-          "mode": "production"
+          "mode": "production",
+          "defaultChannel": "default"
         }
       ],
-      "expo-location",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "We use your location to enable gameplay while hiding and seeking.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
       [
         "expo-image-picker",
         {
@@ -79,9 +88,9 @@
         "expo-task-manager"
       ],
       [
-        "expo-background-fetch",
+        "expo-background-task",
         {
-          "backgroundFetchIntervalMs": 60000
+          "minimumInterval": 15
         }
       ]
     ],

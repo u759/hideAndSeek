@@ -77,15 +77,15 @@ const SeekerClueListener: React.FC<Props> = ({ gameId, teamId }) => {
           .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0];
         if (!newest) return;
         if ((newest.timestamp || 0) <= lastSeenTsRef.current) return;
-        // Only popup for selfie or closest-landmark; infer by content if needed
+        // Only popup for selfie clues (we can reliably detect by URL pattern)
+        // For closest-landmark, we rely on the WebSocket message which has proper clueTypeId
         const looksLikeImage = /\/api\/uploads\/files\//.test(newest.text);
-        const isRelevant = looksLikeImage || /closest|landmark/i.test(newest.text);
-        if (isRelevant) {
+        if (looksLikeImage) {
           // We don't have the original response meta here, but we can synthesize minimal payload
           setPayload({
             requestId: 'history',
-            clueTypeId: looksLikeImage ? 'selfie' : 'closest-landmark',
-            responseType: looksLikeImage ? 'photo' : 'text',
+            clueTypeId: 'selfie',
+            responseType: 'photo',
             responseData: newest.text,
             timestamp: newest.timestamp,
           });
@@ -107,8 +107,15 @@ const SeekerClueListener: React.FC<Props> = ({ gameId, teamId }) => {
 
   if (!payload) return null;
 
+  // Only show this custom modal for selfie and closest-landmark clues.
+  const allowedClue = payload.clueTypeId === 'selfie' || payload.clueTypeId === 'closest-landmark';
+  if (!allowedClue) {
+    // For other clue types, do not render the custom popup here.
+    return null;
+  }
+
   const isImage = payload.clueTypeId === 'selfie' || /\/api\/uploads\/files\//.test(payload.responseData);
-  const title = payload.clueTypeId === 'selfie' ? 'Selfie received' : 'Closest landmark clue';
+  const title = payload.clueTypeId === 'selfie' ? 'Selfie received' : 'Clue';
 
   return (
     <Modal visible={visible} animationType="slide" transparent>

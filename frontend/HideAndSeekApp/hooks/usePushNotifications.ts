@@ -5,14 +5,14 @@ import Constants from 'expo-constants';
 import ApiService from '../services/api';
 import { Platform } from 'react-native';
 
-// Configure foreground behavior
+// Configure foreground behavior for highest priority
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
     shouldShowBanner: true,
     shouldShowList: true,
+    shouldShowAlert: true,
   }),
 });
 
@@ -37,14 +37,31 @@ export default function usePushNotifications(gameId: string, teamId: string) {
           return;
         }
 
-        // Android: ensure a notification channel exists
+        // Android: ensure a notification channel exists with highest priority
         if (Platform.OS === 'android') {
           await Notifications.setNotificationChannelAsync('default', {
-            name: 'General',
+            name: 'UBCeek Game Updates',
             importance: Notifications.AndroidImportance.MAX,
             sound: 'default',
             vibrationPattern: [250, 250, 500],
             lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+            enableLights: true,
+            enableVibrate: true,
+            bypassDnd: true, // Bypass Do Not Disturb mode
+            showBadge: true,
+          });
+
+          // Create a high priority channel specifically for game alerts
+          await Notifications.setNotificationChannelAsync('game-alerts', {
+            name: 'Game Alerts',
+            importance: Notifications.AndroidImportance.MAX,
+            sound: 'default',
+            vibrationPattern: [500, 500, 500],
+            lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+            enableLights: true,
+            enableVibrate: true,
+            bypassDnd: true,
+            showBadge: true,
           });
         }
 
