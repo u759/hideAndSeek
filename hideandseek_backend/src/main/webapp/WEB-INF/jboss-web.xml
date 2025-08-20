@@ -8,9 +8,6 @@
     <!-- Context root for the application -->
     <context-root>/hideandseek</context-root>
     
-    <!-- Enable class loading isolation -->
-    <class-loading>
-        <module-name>deployment.hideandseek.war</module-name>
-    </class-loading>
+    <!-- Class loading configuration moved to jboss-deployment-structure.xml -->
     
 </jboss-web>

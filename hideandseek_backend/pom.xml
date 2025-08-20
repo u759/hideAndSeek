@@ -28,9 +28,9 @@
         <url/>
     </scm>
     <properties>
-        <java.version>21</java.version>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <wildfly.version>37.0.0.Final</wildfly.version>
     </properties>
@@ -85,17 +85,16 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- SLF4J for logging - WildFly compatible -->
+        <!-- SLF4J for logging - will be provided by WildFly in server profile -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
         
-        <!-- Logback for local development (WildFly will use its own logging) -->
+        <!-- Logback for local development only (excluded in WildFly profile) -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <!-- Test dependencies -->
@@ -188,6 +187,13 @@
                     <scope>provided</scope>
                 </dependency>
                 
+                <!-- SLF4J API - provided by WildFly -->
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+                
                 <!-- Spring Boot Starter Web with exclusions for WildFly -->
                 <dependency>
                     <groupId>org.springframework.boot</groupId>
@@ -213,7 +219,54 @@
                             <groupId>org.springframework.boot</groupId>
                             <artifactId>spring-boot-starter-tomcat</artifactId>
                         </exclusion>
+                        <exclusion>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-logging</artifactId>
+                        </exclusion>
                     </exclusions>
+                </dependency>
+                
+                <!-- WebFlux with all server exclusions for WildFly -->
+                <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-webflux</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-reactor-netty</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>io.projectreactor.netty</groupId>
+                            <artifactId>reactor-netty-http</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>io.projectreactor.netty</groupId>
+                            <artifactId>reactor-netty-core</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-logging</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                
+                <!-- Validation with logging exclusions -->
+                <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-validation</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-logging</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                
+                <!-- Exclude Logback completely for WildFly -->
+                <dependency>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                    <scope>provided</scope>
                 </dependency>
             </dependencies>
         </profile>
