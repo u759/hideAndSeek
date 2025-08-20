@@ -70,13 +70,13 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
     try {
       if (action === 'start') {
         await ApiService.startGame(game.id);
-        Alert.alert('Success', 'Game started!');
+        //Alert.alert('Success', 'Game started!');
       } else if (action === 'pause') {
         await ApiService.pauseGame(game.id);
-        Alert.alert('Success', 'Game paused!');
+        //Alert.alert('Success', 'Game paused!');
       } else if (action === 'resume') {
         await ApiService.resumeGame(game.id);
-        Alert.alert('Success', 'Game resumed!');
+        //Alert.alert('Success', 'Game resumed!');
       } else if (action === 'end') {
         Alert.alert(
           'End Game',
