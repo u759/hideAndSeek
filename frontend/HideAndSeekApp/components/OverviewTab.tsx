@@ -58,54 +58,57 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
 
   const handleGameAction = async (action: 'start' | 'pause' | 'resume' | 'end') => {
     try {
-      let updatedGame: Game;
-      
-      try {
-        let updatedGame: Game | undefined;
-        if (action === 'start') {
-          updatedGame = await ApiService.startGame(game.id);
-          Alert.alert('Success', 'Game started!');
-        } else if (action === 'pause') {
-          updatedGame = await ApiService.pauseGame(game.id);
-          Alert.alert('Success', 'Game paused!');
-        } else if (action === 'resume') {
-          updatedGame = await ApiService.resumeGame(game.id);
-          Alert.alert('Success', 'Game resumed!');
-        } else if (action === 'end') {
-          Alert.alert(
-            'End Game',
-            'Are you sure you want to end this game? This cannot be undone.',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'End Game',
-                style: 'destructive',
-                onPress: async () => {
-                  updatedGame = await ApiService.endGame(game.id);
+      if (action === 'start') {
+        await ApiService.startGame(game.id);
+        Alert.alert('Success', 'Game started!');
+      } else if (action === 'pause') {
+        await ApiService.pauseGame(game.id);
+        Alert.alert('Success', 'Game paused!');
+      } else if (action === 'resume') {
+        await ApiService.resumeGame(game.id);
+        Alert.alert('Success', 'Game resumed!');
+      } else if (action === 'end') {
+        Alert.alert(
+          'End Game',
+          'Are you sure you want to end this game? This cannot be undone.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'End Game',
+              style: 'destructive',
+              onPress: async () => {
+                try {
+                  await ApiService.endGame(game.id);
                   Alert.alert('Success', 'Game ended!');
-                  onRefresh();
-                },
+                  // No need to call onRefresh - WebSocket will update automatically
+                } catch (error) {
+                  Alert.alert('Error', 'Failed to end game. Please try again.');
+                  console.error('Failed to end game:', error);
+                }
               },
-            ]
-          );
-          return;
-        }
-        onRefresh(); // Refresh the game data
-      } catch (error) {
-        let errorMessage = `Failed to ${action} game. Please try again.`;
-        if (error instanceof Error && error.message) {
-          errorMessage = error.message;
-        }
-        Alert.alert('Error', errorMessage);
-        console.error(`Failed to ${action} game:`, error);
+            },
+          ]
+        );
+        return;
       }
+      // No need to call onRefresh - WebSocket will update automatically
+    } catch (error) {
+      let errorMessage = `Failed to ${action} game. Please try again.`;
+      if (error instanceof Error && error.message) {
+        errorMessage = error.message;
+      }
+      Alert.alert('Error', errorMessage);
+      console.error(`Failed to ${action} game:`, error);
+    }
+  };
+
+  const handleTestNotification = async () => {
+    try {
+      await ApiService.sendTestNotification(game.id, currentTeam.id);
+      Alert.alert('Test Sent', 'Check if you received a test notification!');
     } catch (error) {
       Alert.alert('Error', `Failed to send test notification: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          let errorMessage = `Failed to ${action} game. Please try again.`;
-          if (error instanceof Error && error.message) {
-            errorMessage = error.message;
-          }
-          Alert.alert('Error', errorMessage);
+      console.error('Failed to send test notification:', error);
     }
   };
 

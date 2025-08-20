@@ -36,7 +36,7 @@ const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
     setLoading(true);
     try {
       await ApiService.updateTeamRole(game.id, currentTeam.id, newRole);
-      onRefresh(); // Refresh to show updated team assignments
+      // No need to call onRefresh - parent will get WebSocket update automatically
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to update role');
     } finally {
@@ -49,8 +49,8 @@ const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
     try {
       await ApiService.startNextRound(game.id);
       Alert.alert('Success', 'Next round started!');
-      onRefresh();
       onClose();
+      // No need to call onRefresh - parent will get WebSocket update automatically
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to start next round');
     } finally {

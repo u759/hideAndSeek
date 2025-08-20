@@ -139,7 +139,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
                 setDrawnCard(null);
                 setShowCardModal(false);
                 setCustomTokenInput('0');
-                onRefresh();
+                // No need to call onRefresh - parent will get WebSocket update automatically
               }
             }
           ]
@@ -168,7 +168,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
             onPress: () => {
               setDrawnCard(null);
               setShowCardModal(false);
-              onRefresh();
+              // No need to call onRefresh - parent will get WebSocket update automatically
             }
           }
         ]
@@ -213,7 +213,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
                     onPress: () => {
                       setDrawnCard(null);
                       setShowCardModal(false);
-                      onRefresh();
+                      // No need to call onRefresh - parent will get WebSocket update automatically
                     }
                   }
                 ]

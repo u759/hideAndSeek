@@ -13,6 +13,7 @@ import { useNavigation, useRoute, RouteProp, useIsFocused } from '@react-navigat
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList, Game, Team } from '../types';
 import ApiService from '../services/api';
+import useGameState from '../hooks/useGameState';
 
 type TeamJoinScreenRouteProp = RouteProp<RootStackParamList, 'TeamJoin'>;
 type TeamJoinScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TeamJoin'>;
@@ -22,62 +23,23 @@ const TeamJoinScreen: React.FC = () => {
   const route = useRoute<TeamJoinScreenRouteProp>();
   const { gameId, gameCode } = route.params;
   
-  const [game, setGame] = useState<Game | null>(null);
-  const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
-
   const isFocused = useIsFocused();
-  const pollingRef = useRef<any>(null);
 
-  // Load game when component focuses and poll periodically while focused
+  // Use centralized game state management with WebSocket updates
+  const { game, loading, error, connected, refresh } = useGameState({
+    gameId,
+    enabled: isFocused, // Only connect when screen is focused
+  });
+
+  // Handle errors (e.g., invalid game code)
   useEffect(() => {
-    const startPolling = async () => {
-      // initial load
-      await loadGame();
-
-      // clear any existing polling
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-      }
-
-      // poll every 5 seconds while focused
-      pollingRef.current = setInterval(() => {
-        if (isFocused) {
-          loadGame();
-        }
-      }, 5000);
-    };
-
-    if (isFocused) {
-      startPolling();
-    } else {
-      // stop polling when unfocused
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
-      }
-    }
-
-    return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
-      }
-    };
-  }, [isFocused, gameId]);
-
-  const loadGame = async () => {
-    try {
-      const gameData = await ApiService.getGame(gameId);
-      setGame(gameData);
-    } catch (error) {
+    if (error) {
       Alert.alert('Error', 'Failed to load game. Please check the game code.');
       console.error('Failed to load game:', error);
       navigation.goBack();
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error, navigation]);
 
   const joinTeam = async (team: Team) => {
     setJoining(true);

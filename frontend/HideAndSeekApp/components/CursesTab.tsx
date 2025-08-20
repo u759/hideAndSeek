@@ -80,16 +80,9 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
   const [availableTargets, setAvailableTargets] = useState<Team[]>([]);
   const [showTargetModal, setShowTargetModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  // Periodically refresh game data too so UI reflects expired curses
-  useEffect(() => {
-    const id = setInterval(() => onRefresh(), 15000);
-    return () => clearInterval(id);
-  }, [onRefresh]);
 
   useEffect(() => {
     fetchAvailableTargets();
-    const id = setInterval(fetchAvailableTargets, 15000); // refresh targets every 15s
-    return () => clearInterval(id);
   }, []);
 
   // Listen for websocket game updates and refresh available targets when relevant
@@ -100,9 +93,9 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
     gameId: game.id,
     onMessage: (data: any) => {
       // refresh targets when game state or curses change
-      if (data?.type === 'game_update' || data?.type === 'curse_update' || data?.type === 'clue_response') {
+      if (data?.type === 'gameUpdate' || data?.type === 'curse_update' || data?.type === 'clue_response') {
         fetchAvailableTargets();
-        onRefresh();
+        // No need to call onRefresh - parent will get WebSocket update automatically
       }
     },
   });
@@ -128,7 +121,7 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
       
       setShowTargetModal(false);
       await fetchAvailableTargets(); // Refresh available targets
-      await onRefresh(); // Refresh game data
+      // No need to call onRefresh - parent will get WebSocket update automatically
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to apply curse');
     } finally {

@@ -55,7 +55,7 @@ const FindHidersTab: React.FC<FindHidersTabProps> = ({ game, currentTeam, onRefr
                   {
                     text: 'OK',
                     onPress: () => {
-                      onRefresh();
+                      // No need to call onRefresh - parent will get WebSocket update automatically
                       loadGameStats();
                     }
                   }
@@ -114,7 +114,7 @@ const FindHidersTab: React.FC<FindHidersTabProps> = ({ game, currentTeam, onRefr
         style={styles.content}
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={() => {
-            onRefresh();
+            // No need to call onRefresh - parent will get WebSocket update automatically
             loadGameStats();
           }} />
         }
