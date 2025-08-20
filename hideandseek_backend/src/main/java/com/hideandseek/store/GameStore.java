@@ -260,11 +260,26 @@ public class GameStore {
     }
 
     public void updateGame(Game game) {
-        games.put(game.getId(), game);
+        if (game != null) {
+            game.updateActivity(); // Update last activity timestamp
+            games.put(game.getId(), game);
+        }
     }
 
     public void deleteGame(String gameId) {
+        // Remove the game itself
         games.remove(gameId);
+        
+        // Clean up all associated data to prevent memory leaks
+        teamClueHistory.entrySet().removeIf(entry -> entry.getKey().startsWith(gameId + ":"));
+        clueRequests.entrySet().removeIf(entry -> entry.getKey().startsWith(gameId + ":"));
+        clueResponses.entrySet().removeIf(entry -> entry.getKey().startsWith(gameId + ":"));
+        teamPushTokens.entrySet().removeIf(entry -> entry.getKey().startsWith(gameId + ":"));
+        
+        // Clean up device-to-team mappings for this game
+        deviceToActiveTeam.entrySet().removeIf(entry -> entry.getValue().startsWith(gameId + ":"));
+        
+        logger.info("Cleaned up all data for game {}", gameId);
     }
 
     public Team getTeam(String gameId, String teamId) {
