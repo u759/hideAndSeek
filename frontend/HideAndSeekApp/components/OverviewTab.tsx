@@ -289,14 +289,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                 {game.status === 'waiting' ? '--' : formatTime(game.startTime)}
               </Text>
             </View>
-            {game.roundLengthMinutes && (
-              <View style={styles.statusRow}>
-                <Text style={styles.statusLabel}>Round Duration Limit:</Text>
-                <Text style={styles.statusValue}>
-                  {game.roundLengthMinutes} minutes
-                </Text>
-              </View>
-            )}
             {game.roundLengthMinutes && getRemainingTime() && (
               <View style={styles.statusRow}>
                 <Text style={styles.statusLabel}>Round Time Remaining:</Text>

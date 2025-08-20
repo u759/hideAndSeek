@@ -32,6 +32,8 @@ public class GameStore {
     private final Map<String, List<ClueResponse>> clueResponses = new ConcurrentHashMap<>();
     // Store Expo push tokens per game/team (key: gameId:teamId)
     private final Map<String, Set<String>> teamPushTokens = new ConcurrentHashMap<>();
+    // Track which team each device token is currently active with (key: token -> gameId:teamId)
+    private final Map<String, String> deviceToActiveTeam = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();
 
@@ -436,9 +438,77 @@ public class GameStore {
             return;
         }
         
-        String key = gameId + ":" + teamId;
-        teamPushTokens.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(token);
-        logger.info("Registered push token for game {} team {}: {}", gameId, teamId, token);
+        // Clean up previous registration for this device token
+        String previousTeamKey = deviceToActiveTeam.get(token);
+        if (previousTeamKey != null) {
+            Set<String> previousTokens = teamPushTokens.get(previousTeamKey);
+            if (previousTokens != null) {
+                previousTokens.remove(token);
+                logger.info("Removed token {} from previous team {}", token, previousTeamKey);
+                // Clean up empty token sets
+                if (previousTokens.isEmpty()) {
+                    teamPushTokens.remove(previousTeamKey);
+                }
+            }
+        }
+        
+        // Register token with new team
+        String newTeamKey = gameId + ":" + teamId;
+        teamPushTokens.computeIfAbsent(newTeamKey, k -> ConcurrentHashMap.newKeySet()).add(token);
+        deviceToActiveTeam.put(token, newTeamKey);
+        
+        logger.info("Registered push token for game {} team {}: {} (cleaned up previous: {})", 
+                gameId, teamId, token, previousTeamKey != null ? previousTeamKey : "none");
+    }
+    
+    public void unregisterPushToken(String gameId, String teamId, String token) {
+        if (gameId == null || teamId == null || token == null || token.isBlank()) {
+            logger.warn("Invalid push token unregistration: gameId={}, teamId={}, token={}", gameId, teamId, token);
+            return;
+        }
+        
+        String teamKey = gameId + ":" + teamId;
+        Set<String> tokens = teamPushTokens.get(teamKey);
+        if (tokens != null) {
+            tokens.remove(token);
+            logger.info("Unregistered push token from game {} team {}: {}", gameId, teamId, token);
+            // Clean up empty token sets
+            if (tokens.isEmpty()) {
+                teamPushTokens.remove(teamKey);
+            }
+        }
+        
+        // Remove from active device tracking if this was the active team
+        String activeTeamKey = deviceToActiveTeam.get(token);
+        if (teamKey.equals(activeTeamKey)) {
+            deviceToActiveTeam.remove(token);
+            logger.info("Removed token {} from active device tracking", token);
+        }
+    }
+    
+    public void unregisterAllTokensForDevice(String token) {
+        if (token == null || token.isBlank()) {
+            logger.warn("Invalid token for device cleanup: {}", token);
+            return;
+        }
+        
+        // Remove from active tracking
+        String activeTeamKey = deviceToActiveTeam.remove(token);
+        
+        // Remove from all teams in all games
+        int removedCount = 0;
+        for (Map.Entry<String, Set<String>> entry : teamPushTokens.entrySet()) {
+            if (entry.getValue().remove(token)) {
+                removedCount++;
+                // Clean up empty token sets
+                if (entry.getValue().isEmpty()) {
+                    teamPushTokens.remove(entry.getKey());
+                }
+            }
+        }
+        
+        logger.info("Removed token {} from {} teams (was active in: {})", 
+                token, removedCount, activeTeamKey != null ? activeTeamKey : "none");
     }
 
     public Set<String> getPushTokens(String gameId, String teamId) {

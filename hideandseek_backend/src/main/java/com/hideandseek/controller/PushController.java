@@ -27,6 +27,30 @@ public class PushController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+    
+    @PostMapping("/unregister")
+    public ResponseEntity<?> unregister(@RequestBody Map<String, Object> body) {
+        try {
+            String gameId = (String) body.get("gameId");
+            String teamId = (String) body.get("teamId");
+            String token = (String) body.get("token");
+            pushService.unregisterToken(gameId, teamId, token);
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/unregister-device")
+    public ResponseEntity<?> unregisterDevice(@RequestBody Map<String, Object> body) {
+        try {
+            String token = (String) body.get("token");
+            pushService.unregisterDeviceFromAllTeams(token);
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 
     @PostMapping("/test")
     public ResponseEntity<?> sendTestNotification(@RequestBody Map<String, Object> body) {

@@ -26,6 +26,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
   const [request, setRequest] = useState<ClueRequestPayload | null>(null);
   const [textResponse, setTextResponse] = useState('');
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [lastDismissedTime, setLastDismissedTime] = useState<number>(0);
   // no library browsing; only camera capture
 
   const wsUrl = useMemo(() => getWebsocketUrl(), []);
@@ -69,13 +70,42 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
     };
   }, [gameId, teamId]);
 
+  // Periodic check to reopen modal for pending requests (if dismissed)
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      // Only check if modal is not visible and some time has passed since last dismissal
+      if (!visible && Date.now() - lastDismissedTime > 10000) { // 10 second cooldown
+        try {
+          const list: ClueRequestPayload[] = await ApiService.getPendingClueRequests(gameId, teamId);
+          if (list && list.length > 0) {
+            const req = list[0];
+            setRequest(req);
+            setVisible(true);
+            updateTimer(req.expirationTimestamp || null);
+          }
+        } catch (_) {
+          // ignore
+        }
+      }
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [gameId, teamId, visible, lastDismissedTime]);
+
   // Countdown timer
   useEffect(() => {
     if (timeLeft == null) return;
-    if (timeLeft <= 0) return;
+    if (timeLeft <= 0) {
+      // Timer expired - close modal and don't reopen for this request
+      if (visible) {
+        Alert.alert('Time Expired', 'The clue request has expired. Your location may be revealed to seekers.');
+        dismiss();
+      }
+      return;
+    }
     const id = setInterval(() => setTimeLeft((t) => (t == null ? null : Math.max(0, t - 1))), 1000);
     return () => clearInterval(id);
-  }, [timeLeft]);
+  }, [timeLeft, visible]);
 
   const updateTimer = (expiration: number | null) => {
     if (!expiration) {
@@ -91,6 +121,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
     setRequest(null);
     setTextResponse('');
     setTimeLeft(null);
+    setLastDismissedTime(Date.now()); // Record dismissal time
   };
 
   const submitText = async () => {
@@ -180,7 +211,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
           )}
 
           <Pressable onPress={dismiss} style={styles.linkBtn}>
-            <Text style={styles.link}>Later</Text>
+            <Text style={styles.link}>Dismiss (will reopen in 10s)</Text>
           </Pressable>
         </View>
       </SafeAreaView>

@@ -46,6 +46,20 @@ public class PushService {
         }
         gameStore.registerPushToken(gameId, teamId, token);
     }
+    
+    public void unregisterToken(String gameId, String teamId, String token) {
+        if (gameId == null || teamId == null || token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Missing gameId, teamId, or token");
+        }
+        gameStore.unregisterPushToken(gameId, teamId, token);
+    }
+    
+    public void unregisterDeviceFromAllTeams(String token) {
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Missing token");
+        }
+        gameStore.unregisterAllTokensForDevice(token);
+    }
 
     public Set<String> getTokens(String gameId, String teamId) {
         return gameStore.getPushTokens(gameId, teamId);
@@ -112,7 +126,10 @@ public class PushService {
     public void notifyClueRequested(String gameId, String targetHiderTeamId, String clueTypeId, String clueTypeName) {
         try {
             Set<String> tokens = gameStore.getPushTokens(gameId, targetHiderTeamId);
-            if (tokens == null || tokens.isEmpty()) return;
+            if (tokens == null || tokens.isEmpty()) {
+                logger.warn("No push tokens found for hider team {} in game {}", targetHiderTeamId, gameId);
+                return;
+            }
             String title = "Clue requested on you";
             String body = "Heads up: '" + clueTypeName + "' was requested on your team.";
             Map<String, Object> data = Map.of(
@@ -122,9 +139,55 @@ public class PushService {
                     "clueTypeId", clueTypeId,
                     "clueTypeName", clueTypeName
             );
+            logger.info("Sending clue request notification to {} devices for hider team {} in game {}", 
+                    tokens.size(), targetHiderTeamId, gameId);
             sendToTokens(tokens, title, body, data);
         } catch (Exception e) {
             logger.warn("Failed to send clue request notification: {}", e.toString());
+        }
+    }
+
+    public void notifyClueTimeoutReward(String gameId, String requestingTeamId, String targetHiderTeamId, String clueTypeName, String hiderTeamName) {
+        try {
+            // Notify the requesting seeker team about their reward
+            Set<String> seekerTokens = gameStore.getPushTokens(gameId, requestingTeamId);
+            if (seekerTokens != null && !seekerTokens.isEmpty()) {
+                String seekerTitle = "Timeout Reward!";
+                String seekerBody = "You received exact location of " + hiderTeamName + " because they didn't respond to your " + clueTypeName + " request in time.";
+                Map<String, Object> seekerData = Map.of(
+                        "event", "clue_timeout_reward",
+                        "gameId", gameId,
+                        "requestingTeamId", requestingTeamId,
+                        "targetHiderTeamId", targetHiderTeamId,
+                        "clueTypeName", clueTypeName,
+                        "hiderTeamName", hiderTeamName,
+                        "recipient", "seeker"
+                );
+                logger.info("Sending timeout reward notification to {} seeker devices for team {} in game {}", 
+                        seekerTokens.size(), requestingTeamId, gameId);
+                sendToTokens(seekerTokens, seekerTitle, seekerBody, seekerData);
+            }
+
+            // Notify the target hider team about their penalty
+            Set<String> hiderTokens = gameStore.getPushTokens(gameId, targetHiderTeamId);
+            if (hiderTokens != null && !hiderTokens.isEmpty()) {
+                String hiderTitle = "Clue Timeout Penalty";
+                String hiderBody = "Your exact location was revealed to seekers because you didn't respond to the " + clueTypeName + " request in time.";
+                Map<String, Object> hiderData = Map.of(
+                        "event", "clue_timeout_penalty",
+                        "gameId", gameId,
+                        "requestingTeamId", requestingTeamId,
+                        "targetHiderTeamId", targetHiderTeamId,
+                        "clueTypeName", clueTypeName,
+                        "hiderTeamName", hiderTeamName,
+                        "recipient", "hider"
+                );
+                logger.info("Sending timeout penalty notification to {} hider devices for team {} in game {}", 
+                        hiderTokens.size(), targetHiderTeamId, gameId);
+                sendToTokens(hiderTokens, hiderTitle, hiderBody, hiderData);
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to send clue timeout reward/penalty notifications: {}", e.toString());
         }
     }
 

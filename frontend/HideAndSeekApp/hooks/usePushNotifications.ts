@@ -19,6 +19,8 @@ Notifications.setNotificationHandler({
 export default function usePushNotifications(gameId: string, teamId: string) {
   useEffect(() => {
     let mounted = true;
+    let currentToken: string | null = null;
+    let previousTeamId: string | null = null;
     
     // Add notification listeners
     const notificationListener = Notifications.addNotificationReceivedListener(notification => {
@@ -90,10 +92,14 @@ export default function usePushNotifications(gameId: string, teamId: string) {
         const token = tokenResp.data;
         if (!mounted || !token) return;
 
+        currentToken = token;
         console.log('Registering push token:', token);
-        // Register on backend
+        
+        // If this is a team switch, the backend will automatically clean up the previous registration
+        // Register with new team (this includes automatic cleanup of previous team)
         await ApiService.registerPushToken(gameId, teamId, token);
-        console.log('Push token registered successfully');
+        console.log('Push token registered successfully for team:', teamId);
+        previousTeamId = teamId;
       } catch (e) {
         // non-fatal
         console.log('Push registration failed', e);
@@ -101,11 +107,15 @@ export default function usePushNotifications(gameId: string, teamId: string) {
     };
     
     if (gameId && teamId) register();
-    
+
     return () => {
       mounted = false;
       notificationListener.remove();
       responseListener.remove();
+      
+      // Optional: Unregister when component unmounts
+      // Note: We don't unregister here because the user might just be navigating
+      // The automatic cleanup on next registration is sufficient
     };
   }, [gameId, teamId]);
 }
