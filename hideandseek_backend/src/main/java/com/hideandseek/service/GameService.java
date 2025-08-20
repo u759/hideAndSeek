@@ -93,6 +93,16 @@ public class GameService {
 
     public Game startGame(String gameId) {
         Game game = getGame(gameId);
+        // Validate that there's at least 1 seeker and 1 hider before starting
+        long seekers = game.getTeams().stream().filter(t -> "seeker".equals(t.getRole())).count();
+        long hiders = game.getTeams().stream().filter(t -> "hider".equals(t.getRole())).count();
+        if (seekers < 1) {
+            throw new IllegalStateException("Need at least 1 seeker to start the game");
+        }
+        if (hiders < 1) {
+            throw new IllegalStateException("Need at least 1 hider to start the game");
+        }
+
         game.setStatus("active");
         long currentTime = System.currentTimeMillis();
         game.setStartTime(currentTime);
@@ -142,7 +152,18 @@ public class GameService {
         
         String previousStatus = game.getStatus();
         long currentTime = System.currentTimeMillis();
-
+        // If we're transitioning to active from any non-active state (start/resume),
+        // ensure there is at least one seeker and one hider configured.
+        if ("active".equals(status) && !"active".equals(previousStatus)) {
+            long seekers = game.getTeams().stream().filter(t -> "seeker".equals(t.getRole())).count();
+            long hiders = game.getTeams().stream().filter(t -> "hider".equals(t.getRole())).count();
+            if (seekers < 1) {
+                throw new IllegalStateException("You need at least one seeker team to start/resume the game");
+            }
+            if (hiders < 1) {
+                throw new IllegalStateException("You need at least one hider team to start/resume the game");
+            }
+        }
         // Handle pause time tracking
         if ("paused".equals(status) && "active".equals(previousStatus)) {
             // Game is being paused - accumulate hiding time for all active hiders

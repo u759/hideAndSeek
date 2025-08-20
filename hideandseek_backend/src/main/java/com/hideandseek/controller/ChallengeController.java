@@ -62,6 +62,21 @@ public class ChallengeController {
         }
     }
 
+    @PostMapping("/complete-custom")
+    public ResponseEntity<Map<String, Object>> completeChallengeWithCustomTokens(@RequestBody Map<String, Object> request) {
+        try {
+            String challengeTitle = (String) request.get("challengeTitle");
+            String teamId = (String) request.get("teamId");
+            String gameId = (String) request.get("gameId");
+            Integer customTokens = (Integer) request.get("customTokens");
+            
+            Map<String, Object> result = challengeService.completeChallengeWithCustomTokens(gameId, teamId, challengeTitle, customTokens);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/veto")
     public ResponseEntity<Map<String, Object>> vetoChallenge(@RequestBody Map<String, Object> request) {
         try {

@@ -10,6 +10,8 @@ export interface Curse {
   title: string;
   description: string;
   token_count: number | string | null;
+  time_seconds?: number;
+  penalty?: number;
 }
 
 export interface Team {

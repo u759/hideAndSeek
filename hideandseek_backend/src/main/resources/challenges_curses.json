@@ -1,267 +1,199 @@
 {
   "challenges": [
     {
-      "title": "Alarm Clock",
-      "description": "Start a stopwatch and have one team member count to 30 seconds without assistance. If the stopwatch is within 1 second of 30 seconds when they stop, you succeed. Otherwise, you must restart.",
-      "token_count": 5,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Six Feet Under",
-      "description": "Travel downwards using an elevator.",
-      "token_count": 6,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Two Birds One Stone",
-      "description": "Find and capture two birds in the same photo. The birds do not have to be real live birds. You may not produce any images of birds yourself.",
-      "token_count": 10,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Big Bad Wolf",
-      "description": "Create a free-standing structure with a minimum of 6 sticks, then topple it using only your breath.",
-      "token_count": 7,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Anagrams",
-      "description": "Roll a die. Using the corresponding set of letters, create 15 unique words. You may not use a letter more than once per word, and you may not attempt this challenge while moving.\n\n1. F I E S T A       \t4) D E C O Y S\n2. C E A S E D     \t5) A C C E N T\n3. S T I N K Y\t6) A R C A N E",
-      "token_count": 8,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Day Clubbing",
-      "description": "Find a poster advertising one of UBC's clubs, and advertise the club to the camera for 30 seconds.",
-      "token_count": null,
-      "difficulty": "Medium Challenge"
-    },
-    {
-      "title": "Critter Companion",
-      "description": "Find 3 bugs and become friends with them.\n\nFor each bug, you must capture it on camera, introduce yourselves to the bug, and finally give it a name.",
-      "token_count": null,
-      "difficulty": "No Difficulty"
-    },
-    {
-      "title": "Flamingo",
-      "description": "Both team members must stand still on one foot, without support, for 90 seconds non-stop.",
-      "token_count": 6,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Piggyback",
-      "description": "One team member must piggyback another team member for 100 steps. You may switch who is piggybacking at any time.",
-      "token_count": 5,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Media Marketing",
-      "description": "Create a 30 second video advertising one of UBC’s faculties in front its respective building. At least 25 seconds of the video must include speaking.",
-      "token_count": 10,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Stay in Shape",
-      "description": "Roll a die 5 times. For every roll, all team members must complete the exercise indicated by the die:\n1: 10 push-ups\n2: 20 jumping jacks\n3: 10 jump squats\n4: 20 mountain climbers\n5: 20 high knees\n6: 10 half-burpees",
-      "token_count": 7,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Perimeter Patrol",
-      "description": "Travel around the entire perimeter of a building on foot.",
-      "token_count": 5,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Spitting Bars",
-      "description": "Have one team member rap “The Church of Bobandy” at full speed with the original track in the background.\n\nYou must successfully memorize and rap at least 3 verses without mistakes in lyrics or timing.",
-      "token_count": 6,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Acting School",
-      "description": "Play 10 successful rounds of Charades. You may skip a word for any reason, however if more than 3 skips are used this challenge is vetoed.\n\nGenerate words using this website, on medium difficulty: [itsgamenight.com/charades-generator/](https://itsgamenight.com/charades-generator/)",
-      "token_count": 8,
-      "difficulty": "Medium Challenge"
-    },
-    {
-      "title": "Dicey Deed",
-      "description": "Roll a die. Visit the number of public trash cans indicated on the die and dispose something in each one.",
-      "token_count": null,
-      "difficulty": "Medium Challenge"
-    },
-    {
-      "title": "Bracket City",
-      "description": "Play The Atlantic Times’s \"Bracket City\" game. You must get a score above 50, otherwise this challenge is automatically vetoed.\n\nYou may not look up answers, and you may not move while attempting this challenge.",
-      "token_count": 11,
-      "difficulty": "Medium Challenge"
-    },
-    {
-      "title": "Crafty Connections",
-      "description": "Play The New York Times’s \"Connections\" game. Each set of words your team gets correct awards 4 tokens. You may not move or take transit while attempting this challenge.\n\nReward: [# correct word sets] × 4 Tokens",
-      "token_count": null,
-      "difficulty": "Medium Challenge"
-    },
-    {
-      "title": "Hammertime!",
-      "description": "Find and touch 5 stop signs.",
-      "token_count": 6,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Morse Message",
-      "description": "Use a Morse Code chart.\n\nHave one team member walk 50 steps away, generate a random 5 letter word, then broadcast it in Morse Code using their phone’s flashlight.\n\nThe other team member must correctly decode the word to complete the challenge.\n\nIf you fail, generate a new word and try again.",
-      "token_count": 6,
-      "difficulty": "Medium Challenge"
-    },
-    {
-      "title": "Cheapo",
-      "description": "Purchase an item that costs $3 or less from a retailer or vending machine.",
-      "token_count": 12,
-      "difficulty": "Medium Challenge"
-    },
-    {
-      "title": "Parking Police",
-      "description": "Find a car parked on a line, in a no parking zone, or in an accessibility space (without a permit).",
-      "token_count": 10,
-      "difficulty": "Medium Challenge"
-    },
-    {
-      "title": "Ample Parking",
-      "description": "Find a parking lot with at least 5 adjacent empty spaces in a straight line.",
-      "token_count": 10,
-      "difficulty": "Easy Challenge"
-    },
-    {
-      "title": "Bottle Flipper",
-      "description": "Acquire a disposable plastic bottle. Using this bottle, successfully perform a bottle flip.",
-      "token_count": 10,
-      "difficulty": "Medium Challenge"
-    },
-    {
-      "title": "Dry Out",
-      "description": "Have a team member get their hands wet, then wait until they are fully dry.",
-      "token_count": 10,
-      "difficulty": "Hard Challenge"
-    },
-    {
-      "title": "You Are Here",
-      "description": "Find a physical map/directory and point our your current location on that map.",
-      "token_count": 10,
-      "difficulty": "Hard Challenge"
-    },
-    {
-      "title": "Quality Control",
-      "description": "Find a marked location on Google Maps that’s rated less than 4.3 stars and take a selfie in front of it. You may not rate any location yourself to fulfill the star requirement.",
-      "token_count": 13,
-      "difficulty": "Hard Challenge"
-    },
-    {
-      "title": "Paper Racer",
-      "description": "Acquire paper (or any thin, paper-like material) and construct a paper airplane.",
-      "token_count": 15,
-      "difficulty": "Hard Challenge"
-    },
-    {
-      "title": "Letter List",
-      "description": "Go to any retail establishment. Find and list 16 products that start with different letters of the alphabet.",
-      "token_count": 10,
-      "difficulty": "Medium Challenge"
-    },
-    {
-      "title": "Bookworm",
-      "description": "Find books in a store or library whose authors' initials match each team member’s initials. (For example, John Doe must find a book written by someone with the initials “J.D.”.)",
-      "token_count": 12,
-      "difficulty": "Hard Challenge"
-    },
-    {
-      "title": "Crewmate's Study",
-      "description": "Find a book that contains the word “suspicious“, “among”, or “impostor”. The book’s title does not count.",
+      "title": "The High Ground",
+      "description": "Have one team member enter a multi-story building and wave to the other teammate through a non-ground floor window. The other team member must wave back to complete the challenge.",
       "token_count": 15,
       "difficulty": "Hard Challenge"
     },
     {
       "title": "Looney Lecture",
       "description": "Find a lecture hall available to the public and have one team member give a 1-minute lecture to the other about a topic related to the building you are currently in. Your lecture does not have to be factual.",
+      "token_count": 14,
+      "difficulty": "Hard Challenge"
+    },
+    {
+      "title": "Critter Companion",
+      "description": "Find 3 bugs and become friends with them.\n\nFor each bug, you must capture it on camera, introduce yourselves to the bug, and finally give it a name.",
       "token_count": 10,
       "difficulty": "Medium Challenge"
     },
     {
-      "title": "The High Ground",
-      "description": "Have one team member enter a multi-story building and wave to the other teammate through a non-ground floor window. The other team member must wave back to complete the challenge.",
+      "title": "Flamingo",
+      "description": "Both team members must stand still on one foot, without support, for 90 seconds non-stop.",
+      "token_count": 5,
+      "difficulty": "Easy Challenge"
+    },
+    {
+      "title": "Acting School",
+      "description": "Play 5 successful rounds of Charades. You may skip a word for any reason, however if more than 3 skips are used this challenge is vetoed.\n\nGenerate words using this website, on medium difficulty: [itsgamenight.com/charades-generator/](https://itsgamenight.com/charades-generator/ \"‌\").",
+      "token_count": 8,
+      "difficulty": "Easy Challenge"
+    },
+    {
+      "title": "Bracket City",
+      "description": "Play The Atlantic Times’s \"Bracket City\" game. You must get a score above 50, otherwise this challenge is automatically vetoed.\n\nYou may not look up answers, and you may not move while attempting this challenge.",
+      "token_count": 11,
+      "difficulty": "Easy Challenge"
+    },
+    {
+      "title": "Morse Message",
+      "description": "Use a Morse Code chart.\n\nHave one team member walk 50 steps away, generate a random 5 letter word, then broadcast it in Morse Code using their phone’s flashlight.\n\nThe other team member must correctly decode the word to complete the challenge.\n\nIf you fail, generate a new word and try again.",
+      "token_count": 12,
+      "difficulty": "Medium Challenge"
+    },
+    {
+      "title": "Crafty Connections",
+      "description": "Play The New York Times’s \"Connections\" game. Each set of words your team gets correct awards 4 tokens. You may not move or take transit while attempting this challenge.",
+      "token_count": null,
+      "difficulty": "Easy Challenge"
+    },
+    {
+      "title": "Paper Racer",
+      "description": "Acquire paper (or any thin, paper-like material) and construct a paper airplane.",
+      "token_count": 17,
+      "difficulty": "Hard Challenge"
+    },
+    {
+      "title": "Crewmate's Study",
+      "description": "Find a book that contains the word “suspicious“, “among”, or “impostor”. The book’s title does not count.",
       "token_count": 20,
+      "difficulty": "Hard Challenge"
+    },
+    {
+      "title": "Alarm Clock",
+      "description": "Start a stopwatch and have one team member count to 30 seconds without assistance. If the stopwatch is within 1 second of 30 seconds when they stop, you succeed. Otherwise, you must restart.",
+      "token_count": 5,
+      "difficulty": "Easy Challenge"
+    },
+    {
+      "title": "Ample Parking",
+      "description": "Find a parking lot with at least 5 adjacent empty spaces in a straight line.",
+      "token_count": 12,
+      "difficulty": "Medium Challenge"
+    },
+    {
+      "title": "Dry Out",
+      "description": "Have a team member get their hands wet, then wait until they are fully dry.",
+      "token_count": 13,
+      "difficulty": "Hard Challenge"
+    },
+    {
+      "title": "Bottle Flipper",
+      "description": "Acquire a disposable plastic bottle. Using this bottle, successfully perform a bottle flip.",
+      "token_count": 13,
+      "difficulty": "Medium Challenge"
+    },
+    {
+      "title": "Spitting Bars",
+      "description": "Have one team member rap “The Church of Bobandy” at full speed with the original track in the background.\n\nYou must successfully memorize and rap at least 3 verses without mistakes in lyrics or timing.",
+      "token_count": 7,
+      "difficulty": "Easy Challenge"
+    },
+    {
+      "title": "Cheapo",
+      "description": "Purchase an item that costs $3 or less from a retailer or vending machine.",
+      "token_count": 11,
+      "difficulty": "Medium Challenge"
+    },
+    {
+      "title": "Elevator Innovator",
+      "description": "Have one team member give an elevator pitch about elevators in an elevator.",
+      "token_count": 15,
+      "difficulty": "Hard Challenge"
+    },
+    {
+      "title": "Hammertime!",
+      "description": "Find and touch 5 stop signs.",
+      "token_count": 10,
+      "difficulty": "Easy Challenge"
+    },
+    {
+      "title": "You Are Here",
+      "description": "Find a physical map/directory and point our your current location on that map.",
+      "token_count": 14,
+      "difficulty": "Medium Challenge"
+    },
+    {
+      "title": "Quality Control",
+      "description": "Find a marked location on Google Maps that’s rated below 4 stars and take a selfie in front of it. You may not rate any location yourself to fulfill the star requirement.",
+      "token_count": 15,
+      "difficulty": "Hard Challenge"
+    },
+    {
+      "title": "Piggyback",
+      "description": "One team member must piggyback another team member for 100 steps. You may switch who is piggybacking at any time.",
+      "token_count": 6,
+      "difficulty": "Easy Challenge"
+    },
+    {
+      "title": "Letter List",
+      "description": "Go to any retail establishment. Find and list 16 products that start with different letters of the alphabet.",
+      "token_count": 16,
+      "difficulty": "Hard Challenge"
+    },
+    {
+      "title": "Bookworm",
+      "description": "Find books in a store or library whose authors' initials match each team member’s initials. (For example, John Doe must find a book written by someone with the initials “J.D.”.).",
+      "token_count": 18,
       "difficulty": "Hard Challenge"
     }
   ],
   "curses": [
     {
-      "title": "Christmas Cheer",
-      "description": "All team members must sing a Christmas carol together out loud for 3 minutes.",
+      "title": "Ransom!",
+      "description": "Your team must touch the fountain at Martha Piper Plaza before you are found, or else 5 minutes will be subtracted from your hiding time total.",
       "price": 10,
-      "time_seconds": 180,
+      "time_seconds": 300,
+      "penalty": 300,
       "difficulty": "Curse Challenge"
     },
     {
-      "title": "Touch Grass",
+      "title": "Unsheltered!",
+      "description": "Your team must stay outside for 10 minutes.",
+      "price": 10,
+      "time_seconds": 600,
+      "penalty": 0,
+      "difficulty": "Curse Challenge"
+    },
+    {
+      "title": "Blindfolded!",
+      "description": "One team member is blindfolded for 5 minutes.\n\n(Be responsible and stay safe. If you can’t make a blindfold, keeping your eyes shut is acceptable.).",
+      "price": 10,
+      "time_seconds": 300,
+      "penalty": 0,
+      "difficulty": "Curse Challenge"
+    },
+    {
+      "title": "Frozen!",
+      "description": "Your team is frozen in place for 3 minutes.",
+      "price": 10,
+      "time_seconds": 180,
+      "penalty": 0,
+      "difficulty": "Curse Challenge"
+    },
+    {
+      "title": "Lockdown!",
+      "description": "If your team is inside a building, you are locked inside and may not leave for 10 minutes.",
+      "price": 10,
+      "time_seconds": 600,
+      "penalty": 0,
+      "difficulty": "Curse Challenge"
+    },
+    {
+      "title": "Wordle!",
+      "description": "Attempt a game of Wordle. You may not move until you finish.\n\nYou are frozen for 30 seconds, multiplied by the amount of total entries made on the Wordle.\n(i.e. 6 guesses = frozen for 3 mins).",
+      "price": 10,
+      "time_seconds": 180,
+      "penalty": 0,
+      "difficulty": "Curse Challenge"
+    },
+    {
+      "title": "Touch Grass!",
       "description": "You have 3 minutes to touch grass. If you fail, your team is frozen for 3 minutes.",
       "price": 10,
       "time_seconds": 180,
-      "difficulty": "Curse Challenge"
-    },
-    {
-      "title": "What's the Wordle",
-      "description": "Attempt today’s Wordle. The number of guesses your team makes on the Wordle equals the amount of minutes you are frozen for.",
-      "price": 10,
-      "time_seconds": null,
-      "difficulty": "Curse Challenge"
-    },
-    {
-      "title": "Wet Floor",
-      "description": "You may not run for the next 25 minutes.",
-      "price": 10,
-      "time_seconds": 1500,
-      "difficulty": "Curse Challenge"
-    },
-    {
-      "title": "Caddy at Capacity",
-      "description": "For the next 10 minutes, one team member must carry all team members’ belongings, while the other team members may not carry anything except their phone.\n\n(Season 1 Challenge)",
-      "price": 10,
-      "time_seconds": 600,
-      "difficulty": "Curse Challenge"
-    },
-    {
-      "title": "Lockdown",
-      "description": "If Hiders are in a building, they are locked inside for 10 minutes.",
-      "price": 10,
-      "time_seconds": 600,
-      "difficulty": "Curse Challenge"
-    },
-    {
-      "title": "Freeze!",
-      "description": "The Hiders are frozen for 3 minutes.",
-      "price": 10,
-      "time_seconds": 180,
-      "difficulty": "Curse Challenge"
-    },
-    {
-      "title": "Blindfold",
-      "description": "One team member is blindfolded for 10 minutes.",
-      "price": 10,
-      "time_seconds": 600,
-      "difficulty": "Curse Challenge"
-    },
-    {
-      "title": "Vitamin D",
-      "description": "Hiders must stay outside for ten minutes.",
-      "price": 10,
-      "time_seconds": 600,
-      "difficulty": "Curse Challenge"
-    },
-    {
-      "title": "Ransom",
-      "description": "Hiders must visit the fountain before they are found, or else they are penalized 5 minutes",
-      "price": 10,
-      "time_seconds": 300,
+      "penalty": 180,
       "difficulty": "Curse Challenge"
     }
   ]

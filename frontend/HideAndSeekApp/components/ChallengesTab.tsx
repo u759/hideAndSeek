@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Alert,
   Modal,
+  TextInput,
 } from 'react-native';
 import { Game, Team, DrawnCard, Challenge, Curse } from '../types';
 import ApiService from '../services/api';
@@ -23,6 +24,8 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
   const [loading, setLoading] = useState(false);
   const [showCardModal, setShowCardModal] = useState(false);
   const [challengeTitleById, setChallengeTitleById] = useState<Record<string, string>>({});
+  const [customTokenInput, setCustomTokenInput] = useState<string>('0');
+  const [showVariableRewardInput, setShowVariableRewardInput] = useState(false);
 
   // If the server reports an active challenge, reflect it as drawnCard
   const serverActiveChallenge = currentTeam.activeChallenge;
@@ -97,6 +100,8 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
 
       setDrawnCard(normalized);
       setShowCardModal(true);
+      setCustomTokenInput('0'); // Reset custom token input for new cards
+      
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to draw card. Please try again.');
       console.error('Failed to draw card:', error);
@@ -108,6 +113,45 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
   const completeChallenge = async () => {
     if (!drawnCard || drawnCard.type !== 'challenge') return;
 
+    // Check if this is a dynamic challenge (null token_count)
+    if (drawnCard.card.token_count === null) {
+      const customTokens = parseInt(customTokenInput || '0', 10);
+      if (isNaN(customTokens) || customTokens < 0) {
+        Alert.alert('Error', 'Please enter a valid number of tokens (0 or greater).');
+        return;
+      }
+      
+      try {
+        const result = await ApiService.completeChallengeWithCustomTokens(
+          drawnCard.card.title,
+          currentTeam.id,
+          game.id,
+          customTokens
+        );
+        
+        Alert.alert(
+          'Challenge Completed!',
+          `${result.message} You earned ${result.tokensEarned} tokens.`,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setDrawnCard(null);
+                setShowCardModal(false);
+                setCustomTokenInput('0');
+                onRefresh();
+              }
+            }
+          ]
+        );
+      } catch (error: any) {
+        Alert.alert('Error', error.message || 'Failed to complete challenge.');
+        console.error('Failed to complete challenge:', error);
+      }
+      return;
+    }
+
+    // Regular challenge with fixed token_count
     try {
       const result = await ApiService.completeChallenge(
         drawnCard.card.title,
@@ -129,8 +173,14 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
           }
         ]
       );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to complete challenge.');
+    } catch (error: any) {
+      // Check if this error indicates a dynamic challenge
+      if (error.message?.includes('dynamic challenge')) {
+        // Retry with the custom token flow
+        completeChallenge();
+        return;
+      }
+      Alert.alert('Error', error.message || 'Failed to complete challenge.');
       console.error('Failed to complete challenge:', error);
     }
   };
@@ -197,11 +247,24 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
         </Text>
         <Text style={styles.cardTitle}>{card.title}</Text>
         <Text style={styles.cardDescription}>{card.description}</Text>
-        {isChallenge && card.token_count != null && (
+        {isChallenge && (
           <View style={styles.rewardContainer}>
             <Text style={styles.cardTokens}>
-              🪙 Reward: {card.token_count} tokens
+              🪙 Reward: {card.token_count === null ? 'Variable (you decide)' : `${card.token_count} tokens`}
             </Text>
+            {card.token_count === null && (
+              <View style={styles.variableRewardInput}>
+                <Text style={styles.inputLabel}>Enter tokens earned:</Text>
+                <TextInput
+                  style={styles.tokenInput}
+                  value={customTokenInput}
+                  onChangeText={setCustomTokenInput}
+                  placeholder="0"
+                  keyboardType="numeric"
+                  maxLength={3}
+                />
+              </View>
+            )}
           </View>
         )}
       </View>
@@ -461,7 +524,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e8f5e8',
     padding: 8,
     borderRadius: 6,
-    marginTop: 8,
+    marginTop: 0,
     alignItems: 'center',
   },
   cardActions: {
@@ -585,6 +648,26 @@ const styles = StyleSheet.create({
     color: '#856404',
     textAlign: 'center',
     fontWeight: '600',
+  },
+  variableRewardInput: {
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+  },
+  tokenInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 16,
+    textAlign: 'center',
+    backgroundColor: '#fff',
+    minWidth: 80,
   },
 });
 

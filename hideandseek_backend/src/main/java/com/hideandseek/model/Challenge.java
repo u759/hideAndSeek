@@ -7,14 +7,14 @@ public class Challenge {
     private String title;
     private String description;
     @JsonProperty("token_reward")
-    private int tokenReward;          // Use int instead of Object for consistency
+    private Integer tokenReward;          // Use Integer to allow null for dynamic challenges
     private Curse curse;              // Add curse field for penalties
     
     // Default constructor
     public Challenge() {}
     
     // Constructor with all fields
-    public Challenge(String id, String title, String description, int tokenReward, Curse curse) {
+    public Challenge(String id, String title, String description, Integer tokenReward, Curse curse) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -47,11 +47,11 @@ public class Challenge {
         this.description = description;
     }
     
-    public int getTokenReward() {
+    public Integer getTokenReward() {
         return tokenReward;
     }
     
-    public void setTokenReward(int tokenReward) {
+    public void setTokenReward(Integer tokenReward) {
         this.tokenReward = tokenReward;
     }
     

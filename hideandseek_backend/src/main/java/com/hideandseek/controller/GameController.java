@@ -79,12 +79,14 @@ public class GameController {
     }
 
     @PostMapping("/game/{gameId}/start")
-    public ResponseEntity<Game> startGame(@PathVariable String gameId) {
+    public ResponseEntity<?> startGame(@PathVariable String gameId) {
         try {
             Game game = gameService.startGame(gameId);
             return ResponseEntity.ok(game);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to start game"));
         }
     }
 
@@ -109,25 +111,29 @@ public class GameController {
     }
 
     @PostMapping("/game/{gameId}/resume")
-    public ResponseEntity<Game> resumeGame(@PathVariable String gameId) {
+    public ResponseEntity<?> resumeGame(@PathVariable String gameId) {
         try {
             Game game = gameService.updateGameStatus(gameId, "active");
             return ResponseEntity.ok(game);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to resume game"));
         }
     }
 
     @PatchMapping("/game/{gameId}/status")
-    public ResponseEntity<Game> updateGameStatus(
+    public ResponseEntity<?> updateGameStatus(
             @PathVariable String gameId,
             @RequestBody Map<String, String> request) {
         try {
             String status = request.get("status");
             Game game = gameService.updateGameStatus(gameId, status);
             return ResponseEntity.ok(game);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to update game status"));
         }
     }
 

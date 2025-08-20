@@ -216,6 +216,11 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
                   </View>
                   <Text style={styles.curseTarget}>Target: {appliedCurse.targetTeamName}</Text>
                   <Text style={styles.curseCardDescription}>{appliedCurse.curse.description}</Text>
+                  {appliedCurse.curse.penalty && appliedCurse.curse.penalty > 0 && !isCompleted && (
+                    <Text style={styles.penaltyWarning}>
+                      ⚠️ Penalty: +{appliedCurse.curse.penalty}s hiding time if not completed
+                    </Text>
+                  )}
                   {isCompleted && (
                     <Text style={styles.completedBadge}>Completed ✔︎</Text>
                   )}
@@ -261,6 +266,11 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
                   </View>
                   <Text style={styles.curseTarget}>Cursed Team: {curse.teamName}</Text>
                   <Text style={styles.curseCardDescription}>{curse.curse.description}</Text>
+                  {curse.curse.penalty && curse.curse.penalty > 0 && !curse.completed && (
+                    <Text style={styles.penaltyWarning}>
+                      ⚠️ Penalty: +{curse.curse.penalty}s hiding time if not completed
+                    </Text>
+                  )}
                   {curse.completed && (
                     <Text style={styles.completedBadge}>Completed ✔︎</Text>
                   )}
@@ -441,6 +451,17 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
     fontWeight: '700',
+  },
+  penaltyWarning: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: '#fff3e0',
+    color: '#f57c00',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    fontWeight: '600',
+    fontSize: 12,
   },
   errorContainer: {
     flex: 1,

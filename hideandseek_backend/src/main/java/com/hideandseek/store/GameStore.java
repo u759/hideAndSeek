@@ -70,6 +70,8 @@ public class GameStore {
                                     challenge.setTokenReward(1); // Default value
                                 }
                             }
+                        } else if (tokenValue == null) {
+                            challenge.setTokenReward(null); // Allow null for dynamic challenges
                         } else {
                             challenge.setTokenReward(1); // Default value
                         }
@@ -134,6 +136,19 @@ public class GameStore {
                             }
                         } else {
                             curse.setTimeSeconds(null);
+                        }
+                        // Parse penalty field for time penalties
+                        Object penaltyValue = curseData.get("penalty");
+                        if (penaltyValue instanceof Integer) {
+                            curse.setPenalty((Integer) penaltyValue);
+                        } else if (penaltyValue instanceof String) {
+                            try {
+                                curse.setPenalty(Integer.parseInt((String) penaltyValue));
+                            } catch (NumberFormatException e) {
+                                curse.setPenalty(null);
+                            }
+                        } else {
+                            curse.setPenalty(null);
                         }
                         curses.add(curse);
                     }

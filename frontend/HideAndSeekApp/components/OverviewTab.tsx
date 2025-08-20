@@ -60,20 +60,18 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
     try {
       let updatedGame: Game;
       
-      switch (action) {
-        case 'start':
+      try {
+        let updatedGame: Game | undefined;
+        if (action === 'start') {
           updatedGame = await ApiService.startGame(game.id);
           Alert.alert('Success', 'Game started!');
-          break;
-        case 'pause':
+        } else if (action === 'pause') {
           updatedGame = await ApiService.pauseGame(game.id);
           Alert.alert('Success', 'Game paused!');
-          break;
-        case 'resume':
+        } else if (action === 'resume') {
           updatedGame = await ApiService.resumeGame(game.id);
           Alert.alert('Success', 'Game resumed!');
-          break;
-        case 'end':
+        } else if (action === 'end') {
           Alert.alert(
             'End Game',
             'Are you sure you want to end this game? This cannot be undone.',
@@ -91,22 +89,23 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
             ]
           );
           return;
+        }
+        onRefresh(); // Refresh the game data
+      } catch (error) {
+        let errorMessage = `Failed to ${action} game. Please try again.`;
+        if (error instanceof Error && error.message) {
+          errorMessage = error.message;
+        }
+        Alert.alert('Error', errorMessage);
+        console.error(`Failed to ${action} game:`, error);
       }
-      
-      onRefresh(); // Refresh the game data
-    } catch (error) {
-      Alert.alert('Error', `Failed to ${action} game. Please try again.`);
-      console.error(`Failed to ${action} game:`, error);
-    }
-  };
-
-  const handleTestNotification = async () => {
-    try {
-      await ApiService.sendTestNotification(game.id, currentTeam.id);
-      Alert.alert('Test Sent', 'Check if you received a test notification!');
     } catch (error) {
       Alert.alert('Error', `Failed to send test notification: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      console.error('Failed to send test notification:', error);
+          let errorMessage = `Failed to ${action} game. Please try again.`;
+          if (error instanceof Error && error.message) {
+            errorMessage = error.message;
+          }
+          Alert.alert('Error', errorMessage);
     }
   };
 
@@ -378,24 +377,24 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>All Teams</Text>
           {seekerTeams.map((team) => (
-            <View key={team.id} style={[styles.teamCard, { borderColor: '#e74c3c' }]}>
+            <View key={team.id} style={[styles.teamCard, { borderColor: '#27ae60' }]}>
               <View style={styles.teamHeader}>
                 <Text style={styles.teamName}>
                   {team.name} {team.id === currentTeam.id ? '(You)' : ''}
                 </Text>
-                <Text style={[styles.teamRole, { color: '#e74c3c' }]}>SEEKER</Text>
+                <Text style={[styles.teamRole, { color: '#27ae60' }]}>SEEKER</Text>
               </View>
               <Text style={styles.teamInfo}>Tokens: {team.tokens}</Text>
             </View>
           ))}
           
           {hiderTeams.map((team) => (
-            <View key={team.id} style={[styles.teamCard, { borderColor: '#27ae60' }]}>
+            <View key={team.id} style={[styles.teamCard, { borderColor: '#e74c3c' }]}>
               <View style={styles.teamHeader}>
                 <Text style={styles.teamName}>
                   {team.name} {team.id === currentTeam.id ? '(You)' : ''}
                 </Text>
-                <Text style={[styles.teamRole, { color: '#27ae60' }]}>HIDER</Text>
+                <Text style={[styles.teamRole, { color: '#e74c3c' }]}>HIDER</Text>
               </View>
               <Text style={styles.teamInfo}>
                 Last seen: {team.location ? new Date(team.location.timestamp).toLocaleTimeString() : 'Unknown'}
@@ -446,7 +445,7 @@ const getStatusColor = (status: string) => {
 };
 
 const getTeamColor = (role: string) => {
-  return role === 'seeker' ? '#e74c3c' : '#27ae60';
+  return role === 'seeker' ? '#27ae60' : '#e74c3c';
 };
 
 const styles = StyleSheet.create({
