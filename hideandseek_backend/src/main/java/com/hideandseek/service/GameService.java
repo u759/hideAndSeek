@@ -175,13 +175,10 @@ public class GameService {
             }
         }
         
-        gameStore.updateGame(game);
+        updateGameActivity(game);
         
         // Send notification
         pushService.sendGameEventNotification(gameId, "Game Started!", "The hide and seek game has begun!");
-        
-        // Broadcast to WebSocket
-        webSocketHandler.broadcastToGame(gameId, game);
         
         return game;
     }
@@ -279,8 +276,7 @@ public class GameService {
             pushService.sendGameEventNotification(gameId, "Game Resumed", "The game has been resumed!");
         }
         
-        // Broadcast to WebSocket
-        webSocketHandler.broadcastToGame(gameId, game);
+        updateGameActivity(game);
         
         return game;
     }
@@ -412,10 +408,7 @@ public class GameService {
         }
         
         team.setCurrentLocation(location);
-        gameStore.updateGame(game);
-        
-        // Broadcast to WebSocket
-        webSocketHandler.broadcastToGame(gameId, game);
+        updateGameActivity(game);
         
         return team;
     }
@@ -488,10 +481,7 @@ public class GameService {
         team.getCompletedChallenges().add(challenge.getId());
         team.setActiveChallenge(null);
         
-        gameStore.updateGame(game);
-        
-        // Broadcast to WebSocket
-        webSocketHandler.broadcastToGame(gameId, game);
+        updateGameActivity(game);
         
         return team;
     }
@@ -739,5 +729,17 @@ public class GameService {
 
     public void deleteGame(String gameId) {
         gameStore.deleteGame(gameId);
+    }
+    
+    /**
+     * Helper method to update game activity and persist changes
+     */
+    private void updateGameActivity(Game game) {
+        if (game != null) {
+            game.updateActivity();
+            gameStore.updateGame(game);
+            // Broadcast updated game state
+            webSocketHandler.broadcastToGame(game.getId(), game);
+        }
     }
 }

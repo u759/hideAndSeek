@@ -88,12 +88,6 @@ public class GameController {
         }
     }
 
-    @GetMapping("/games")
-    public ResponseEntity<List<Game>> getAllGames() {
-        List<Game> games = gameService.getAllGames();
-        return ResponseEntity.ok(games);
-    }
-
     @PostMapping("/game/{gameId}/start")
     public ResponseEntity<?> startGame(@PathVariable String gameId) {
         try {
