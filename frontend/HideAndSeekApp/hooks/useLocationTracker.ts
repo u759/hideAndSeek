@@ -148,9 +148,17 @@ const useLocationTracker = ({ teamId, gameId, isHider, enabled, isActive, onLoca
       if (started) {
         await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
         console.log('Background location updates stopped');
+      } else {
+        console.log('Background location updates not active, nothing to stop');
       }
     } catch (error) {
-      console.error('Error stopping background location updates:', error);
+      // Suppress TaskNotFoundException - it means the task was already stopped or never started
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('TaskNotFoundException')) {
+        console.log('Background location task was not found (already stopped or never started)');
+      } else {
+        console.error('Error stopping background location updates:', error);
+      }
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useIsFocused } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList, Game, Team } from '../types';
 import ApiService from '../services/api';
@@ -26,9 +26,45 @@ const TeamJoinScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
 
+  const isFocused = useIsFocused();
+  const pollingRef = useRef<any>(null);
+
+  // Load game when component focuses and poll periodically while focused
   useEffect(() => {
-    loadGame();
-  }, [gameId]);
+    const startPolling = async () => {
+      // initial load
+      await loadGame();
+
+      // clear any existing polling
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+
+      // poll every 5 seconds while focused
+      pollingRef.current = setInterval(() => {
+        if (isFocused) {
+          loadGame();
+        }
+      }, 5000);
+    };
+
+    if (isFocused) {
+      startPolling();
+    } else {
+      // stop polling when unfocused
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    }
+
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, [isFocused, gameId]);
 
   const loadGame = async () => {
     try {

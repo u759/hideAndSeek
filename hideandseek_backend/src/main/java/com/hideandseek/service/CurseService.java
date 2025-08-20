@@ -4,6 +4,7 @@ import com.hideandseek.model.*;
 import com.hideandseek.store.GameStore;
 import com.hideandseek.websocket.GameWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -156,5 +157,65 @@ public class CurseService {
                 "team", team,
                 "activeCurse", active
         );
+    }
+
+    /**
+     * Process expired curses and apply penalties if they weren't completed
+     */
+    public void processExpiredCurses(String gameId) {
+        Game game = gameStore.getGame(gameId);
+        if (game == null) return;
+
+        long now = System.currentTimeMillis();
+        boolean gameUpdated = false;
+
+        for (Team team : game.getTeams()) {
+            if (!"hider".equals(team.getRole())) continue;
+
+            List<ActiveCurse> expiredCurses = new ArrayList<>();
+            Iterator<ActiveCurse> iterator = team.getActiveCurses().iterator();
+
+            while (iterator.hasNext()) {
+                ActiveCurse activeCurse = iterator.next();
+                if (activeCurse.getEndTime() <= now) {
+                    expiredCurses.add(activeCurse);
+                    iterator.remove(); // Remove expired curse
+                    gameUpdated = true;
+
+                    // Apply penalty if curse wasn't completed
+                    if (!activeCurse.isCompleted()) {
+                        Curse curse = activeCurse.getCurse();
+                        if (curse != null && curse.getPenalty() != null && curse.getPenalty() > 0) {
+                            // Add penalty seconds to total hider time
+                            long penaltyMs = curse.getPenalty() * 1000L;
+                            team.setTotalHiderTime(team.getTotalHiderTime() + penaltyMs);
+                            
+                            // Log the penalty application
+                            System.out.println(String.format("Applied %d second penalty to team %s for uncompleted curse: %s", 
+                                curse.getPenalty(), team.getName(), curse.getTitle()));
+                        }
+                    }
+                }
+            }
+        }
+
+        if (gameUpdated) {
+            gameStore.updateGame(game);
+            webSocketHandler.broadcastToGame(gameId, game);
+        }
+    }
+
+    /**
+     * Call this method periodically to clean up expired curses and apply penalties
+     * Runs every 30 seconds
+     */
+    @Scheduled(fixedDelay = 30000)
+    public void cleanupExpiredCurses() {
+        List<Game> allGames = gameStore.getAllGames();
+        for (Game game : allGames) {
+            if ("active".equals(game.getStatus())) {
+                processExpiredCurses(game.getId());
+            }
+        }
     }
 }

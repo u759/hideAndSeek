@@ -91,7 +91,9 @@ class ApiService {
     });
     
     if (!response.ok) {
-      throw new Error('Failed to start game');
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.error || 'Failed to start game';
+      throw new Error(errorMessage);
     }
     
     return response.json();
@@ -127,7 +129,9 @@ class ApiService {
     });
     
     if (!response.ok) {
-      throw new Error('Failed to resume game');
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.error || 'Failed to resume game';
+      throw new Error(errorMessage);
     }
     
     return response.json();
@@ -230,7 +234,8 @@ class ApiService {
     }
     
     if (!response.ok) {
-      throw new Error('Failed to draw card');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || errorData.message || 'Failed to draw card');
     }
     
     return response.json();
@@ -247,6 +252,23 @@ class ApiService {
     
     if (!response.ok) {
       throw new Error('Failed to complete challenge');
+    }
+    
+    return response.json();
+  }
+
+  async completeChallengeWithCustomTokens(challengeTitle: string, teamId: string, gameId: string, customTokens: number) {
+    const response = await fetch(`${API_BASE_URL}/challenges/complete-custom`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ challengeTitle, teamId, gameId, customTokens }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to complete challenge with custom tokens');
     }
     
     return response.json();

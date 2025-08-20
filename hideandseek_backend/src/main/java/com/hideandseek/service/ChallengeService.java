@@ -81,7 +81,10 @@ public class ChallengeService {
 
         // Seekers can only draw challenges (no curses anymore)
         if (availableChallenges.isEmpty()) {
-            throw new IllegalStateException("No more challenges available for this team.");
+            // If all challenges have been completed, reset the completed list and allow drawing again
+            team.setCompletedChallenges(new ArrayList<>());
+            availableChallenges = new ArrayList<>(allChallenges);
+            gameStore.updateGame(game);
         }
 
     Challenge drawnChallenge = availableChallenges.get(new Random().nextInt(availableChallenges.size()));
@@ -142,7 +145,83 @@ public class ChallengeService {
         }
 
         Challenge challenge = active.getChallenge();
-        int tokensEarned = challenge.getTokenReward();
+        Integer tokensEarned = challenge.getTokenReward();
+
+        // For dynamic challenges (null token_count), require custom token input
+        if (tokensEarned == null) {
+            throw new IllegalStateException("This is a dynamic challenge. Use the custom token completion endpoint.");
+        }
+
+        // Update team state: tokens, completed list (normalize to use ID), clear active
+        team.setTokens(team.getTokens() + tokensEarned);
+        List<String> completed = team.getCompletedChallenges();
+        boolean hasId = completed.contains(challenge.getId());
+        boolean hasTitle = completed.contains(challenge.getTitle());
+        if (!hasId) {
+            completed.add(challenge.getId());
+        }
+        // Optionally remove legacy title entry to normalize
+        if (hasTitle) {
+            completed.remove(challenge.getTitle());
+        }
+        team.setActiveChallenge(null);
+
+        gameStore.updateGame(game);
+        // Broadcast to WebSocket
+        webSocketHandler.broadcastToGame(gameId, game);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("tokensEarned", tokensEarned);
+        result.put("newTokenBalance", team.getTokens());
+        result.put("challenge", challenge);
+        result.put("message", String.format("Challenge completed! Earned %d tokens.", tokensEarned));
+        return result;
+    }
+
+    public Map<String, Object> completeChallengeWithCustomTokens(String gameId, String teamId, String challengeTitle, Integer customTokens) {
+        Game game = gameStore.getGame(gameId);
+        if (game == null) {
+            throw new IllegalArgumentException("Game not found");
+        }
+
+        // Validate game is active before allowing challenge completion
+        if (!"active".equals(game.getStatus())) {
+            throw new IllegalStateException("Cannot complete challenges when game is not active");
+        }
+
+        Team team = gameStore.getTeam(gameId, teamId);
+        if (team == null) {
+            throw new IllegalArgumentException("Team not found");
+        }
+
+        // Check if team is a hider (hiders cannot do challenges)
+        if ("hider".equals(team.getRole())) {
+            throw new IllegalStateException("Hiders cannot complete challenges. Only seekers can access challenges.");
+        }
+
+        // Require an active challenge
+        ActiveChallenge active = team.getActiveChallenge();
+        if (active == null || active.getChallenge() == null) {
+            throw new IllegalStateException("No active challenge to complete");
+        }
+        // Optional: ensure the provided title matches the active challenge
+        if (challengeTitle != null && !challengeTitle.equals(active.getChallenge().getTitle())) {
+            throw new IllegalStateException("Provided challenge does not match the active challenge");
+        }
+
+        Challenge challenge = active.getChallenge();
+        
+        // Validate that this is a dynamic challenge (null token_count)
+        if (challenge.getTokenReward() != null) {
+            throw new IllegalStateException("This is not a dynamic challenge. Use the regular completion endpoint.");
+        }
+
+        // Validate custom tokens
+        if (customTokens == null || customTokens < 0) {
+            throw new IllegalArgumentException("Custom tokens must be a non-negative number");
+        }
+
+        Integer tokensEarned = customTokens;
 
         // Update team state: tokens, completed list (normalize to use ID), clear active
         team.setTokens(team.getTokens() + tokensEarned);
