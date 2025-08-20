@@ -19,6 +19,7 @@ type GameSetupScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Ga
 const GameSetupScreen: React.FC = () => {
   const navigation = useNavigation<GameSetupScreenNavigationProp>();
   const [teamNames, setTeamNames] = useState<string[]>(['', '']);
+  const [roundLengthMinutes, setRoundLengthMinutes] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   const addTeam = () => {
@@ -48,9 +49,24 @@ const GameSetupScreen: React.FC = () => {
       return;
     }
 
+    // Validate round length if provided
+    let roundLength: number | undefined;
+    if (roundLengthMinutes.trim()) {
+      const parsedLength = parseInt(roundLengthMinutes, 10);
+      if (isNaN(parsedLength) || parsedLength <= 0) {
+        Alert.alert('Error', 'Round duration must be a positive number');
+        return;
+      }
+      if (parsedLength > 999) {
+        Alert.alert('Error', 'Round duration cannot exceed 999 minutes');
+        return;
+      }
+      roundLength = parsedLength;
+    }
+
     setLoading(true);
     try {
-      const game = await ApiService.createGame(validTeams);
+      const game = await ApiService.createGame(validTeams, roundLength);
       
       // Navigate to game lobby where players can join
       navigation.navigate('GameLobby', { 
@@ -100,6 +116,31 @@ const GameSetupScreen: React.FC = () => {
               </View>
             </View>
           ))}
+        </View>
+
+        <View style={styles.roundLengthContainer}>
+          <Text style={styles.roundLengthLabel}>Round Duration Limit (optional):</Text>
+          <TextInput
+            style={styles.roundLengthInput}
+            value={roundLengthMinutes}
+            onChangeText={(text) => {
+              // Only allow numbers
+              const numericText = text.replace(/[^0-9]/g, '');
+              setRoundLengthMinutes(numericText);
+            }}
+            placeholder="Enter minutes per round (e.g., 30)"
+            keyboardType="numeric"
+            maxLength={3}
+          />
+          <Text style={styles.roundLengthHint}>
+            • Enter maximum duration per round in minutes (numbers only)
+          </Text>
+          <Text style={styles.roundLengthHint}>
+            • Each round will auto-pause when time limit is reached
+          </Text>
+          <Text style={styles.roundLengthHint}>
+            • Leave empty for unlimited round duration
+          </Text>
         </View>
 
         <View style={styles.actions}>
@@ -253,6 +294,33 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 20,
     marginBottom: 5,
+  },
+  roundLengthContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  roundLengthLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#003366',
+    marginBottom: 10,
+  },
+  roundLengthInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    backgroundColor: '#fff',
+    marginBottom: 8,
+  },
+  roundLengthHint: {
+    fontSize: 12,
+    color: '#666',
+    fontStyle: 'italic',
   },
 });
 

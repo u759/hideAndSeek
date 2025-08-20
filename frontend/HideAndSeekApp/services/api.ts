@@ -3,20 +3,26 @@ import { API_BASE_URL } from '../config/api';
 
 class ApiService {
   // Game endpoints
-  async createGame(teamNames: string[]): Promise<Game> {
+  async createGame(teamNames: string[], roundLengthMinutes?: number): Promise<Game> {
     try {
       console.log(`Making request to: ${API_BASE_URL}/game`);
+      const body: any = { teamNames };
+      if (roundLengthMinutes) {
+        body.roundLengthMinutes = roundLengthMinutes;
+      }
+      
       const response = await fetch(`${API_BASE_URL}/game`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ teamNames }),
+        body: JSON.stringify(body),
       });
       
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to create game: ${response.status} - ${errorText}`);
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = errorData?.error || `Failed to create game: ${response.status}`;
+        throw new Error(errorMessage);
       }
       
       return response.json();
@@ -26,20 +32,26 @@ class ApiService {
     }
   }
 
-  async createGameWithRole(teamNames: string[], playerRole: 'seeker' | 'hider'): Promise<Game> {
+  async createGameWithRole(teamNames: string[], playerRole: 'seeker' | 'hider', roundLengthMinutes?: number): Promise<Game> {
     try {
       console.log(`Making request to: ${API_BASE_URL}/game`);
+      const body: any = { teamNames, playerRole };
+      if (roundLengthMinutes) {
+        body.roundLengthMinutes = roundLengthMinutes;
+      }
+      
       const response = await fetch(`${API_BASE_URL}/game`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ teamNames, playerRole }),
+        body: JSON.stringify(body),
       });
       
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to create game: ${response.status} - ${errorText}`);
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = errorData?.error || `Failed to create game: ${response.status}`;
+        throw new Error(errorMessage);
       }
       
       return response.json();
@@ -143,7 +155,23 @@ class ApiService {
     });
     
     if (!response.ok) {
-      throw new Error('Failed to start next round');
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.error || 'Failed to start next round';
+      throw new Error(errorMessage);
+    }
+    
+    return response.json();
+  }
+
+  async restartGame(gameId: string): Promise<Game> {
+    const response = await fetch(`${API_BASE_URL}/game/${gameId}/restart`, {
+      method: 'POST',
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.error || 'Failed to restart game';
+      throw new Error(errorMessage);
     }
     
     return response.json();

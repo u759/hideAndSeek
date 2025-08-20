@@ -24,6 +24,16 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
   const [refreshing, setRefreshing] = React.useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [gameStats, setGameStats] = useState<any>(null);
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  // Update current time every 30 seconds for live remaining time display
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 30000); // Update every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -56,7 +66,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
     }
   }, [game.status, game.id]);
 
-  const handleGameAction = async (action: 'start' | 'pause' | 'resume' | 'end') => {
+  const handleGameAction = async (action: 'start' | 'pause' | 'resume' | 'end' | 'restart') => {
     try {
       if (action === 'start') {
         await ApiService.startGame(game.id);
@@ -84,6 +94,29 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                 } catch (error) {
                   Alert.alert('Error', 'Failed to end game. Please try again.');
                   console.error('Failed to end game:', error);
+                }
+              },
+            },
+          ]
+        );
+        return;
+      } else if (action === 'restart') {
+        Alert.alert(
+          'Restart Game',
+          'This will reset the game with the same teams. All progress will be lost.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Restart',
+              style: 'destructive',
+              onPress: async () => {
+                try {
+                  await ApiService.restartGame(game.id);
+                  Alert.alert('Success', 'Game restarted!');
+                  // No need to call onRefresh - WebSocket will update automatically
+                } catch (error) {
+                  Alert.alert('Error', 'Failed to restart game. Please try again.');
+                  console.error('Failed to restart game:', error);
                 }
               },
             },
@@ -123,9 +156,9 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
     if (game.status === 'ended' && game.endTime) {
       duration = game.endTime - game.startTime;
     } else {
-      duration = Date.now() - game.startTime;
+      duration = currentTime - game.startTime;
       if (game.status === 'paused' && game.pauseTime) {
-        duration -= (Date.now() - game.pauseTime);
+        duration -= (currentTime - game.pauseTime);
       }
     }
 
@@ -141,6 +174,39 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
       return `${hours}h ${minutes % 60}m`;
     }
     return `${minutes}m`;
+  };
+
+  const getRemainingTime = () => {
+    if (!game.roundLengthMinutes || game.status === 'waiting' || game.status === 'ended') {
+      return null;
+    }
+
+    let elapsed;
+    if (game.status === 'paused' && game.pauseTime) {
+      elapsed = game.pauseTime - game.startTime;
+    } else {
+      elapsed = currentTime - game.startTime;
+    }
+
+    // Subtract any paused time
+    if (game.totalPausedDuration) {
+      elapsed -= game.totalPausedDuration;
+    }
+
+    const elapsedMinutes = Math.floor(elapsed / 60000);
+    const remainingMinutes = Math.max(0, game.roundLengthMinutes - elapsedMinutes);
+    
+    if (remainingMinutes === 0) {
+      return 'Time Up!';
+    }
+
+    const hours = Math.floor(remainingMinutes / 60);
+    const mins = remainingMinutes % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${mins}m left`;
+    }
+    return `${mins}m left`;
   };
 
   const seekerTeams = game.teams.filter(t => t.role === 'seeker');
@@ -223,6 +289,25 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                 {game.status === 'waiting' ? '--' : formatTime(game.startTime)}
               </Text>
             </View>
+            {game.roundLengthMinutes && (
+              <View style={styles.statusRow}>
+                <Text style={styles.statusLabel}>Round Duration Limit:</Text>
+                <Text style={styles.statusValue}>
+                  {game.roundLengthMinutes} minutes
+                </Text>
+              </View>
+            )}
+            {game.roundLengthMinutes && getRemainingTime() && (
+              <View style={styles.statusRow}>
+                <Text style={styles.statusLabel}>Round Time Remaining:</Text>
+                <Text style={[
+                  styles.statusValue, 
+                  getRemainingTime() === 'Time Up!' ? { color: '#e74c3c', fontWeight: 'bold' } : {}
+                ]}>
+                  {getRemainingTime()}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -286,15 +371,28 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                     <Text style={styles.controlButtonText}>Setup Next Round</Text>
                   </View>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.controlButton, styles.resumeButton]}
-                  onPress={() => handleGameAction('resume')}
-                >
-                  <View style={styles.controlButtonContent}>
-                    <MaterialIcons name="play-arrow" size={24} color="#fff" style={{ marginRight: 8 }} />
-                    <Text style={styles.controlButtonText}>Resume Game</Text>
+                
+                {/* Show different message and disable resume if paused by time limit */}
+                {game.pausedByTimeLimit ? (
+                  <View style={styles.timeLimitInfo}>
+                    <View style={styles.controlButtonContent}>
+                      <MaterialIcons name="schedule" size={24} color="#f39c12" style={{ marginRight: 8 }} />
+                      <Text style={styles.timeLimitInfoText}>Round time limit reached</Text>
+                    </View>
+                    <Text style={styles.timeLimitHint}>Start a new round to continue</Text>
                   </View>
-                </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={[styles.controlButton, styles.resumeButton]}
+                    onPress={() => handleGameAction('resume')}
+                  >
+                    <View style={styles.controlButtonContent}>
+                      <MaterialIcons name="play-arrow" size={24} color="#fff" style={{ marginRight: 8 }} />
+                      <Text style={styles.controlButtonText}>Resume Game</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+                
                 <TouchableOpacity
                   style={[styles.controlButton, styles.endButton]}
                   onPress={() => handleGameAction('end')}
@@ -308,12 +406,23 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
             )}
             
             {game.status === 'ended' && (
-              <View style={styles.gameEndedInfo}>
-                <View style={styles.controlButtonContent}>
-                  <FontAwesome name="flag" size={24} color="#7f8c8d" style={{ marginRight: 8 }} />
-                  <Text style={styles.gameEndedInfoText}>Game has ended</Text>
+              <>
+                <View style={styles.gameEndedInfo}>
+                  <View style={styles.controlButtonContent}>
+                    <FontAwesome name="flag" size={24} color="#7f8c8d" style={{ marginRight: 8 }} />
+                    <Text style={styles.gameEndedInfoText}>Game has ended</Text>
+                  </View>
                 </View>
-              </View>
+                <TouchableOpacity
+                  style={[styles.controlButton, styles.startButton]}
+                  onPress={() => handleGameAction('restart')}
+                >
+                  <View style={styles.controlButtonContent}>
+                    <MaterialIcons name="replay" size={24} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.controlButtonText}>Restart Game</Text>
+                  </View>
+                </TouchableOpacity>
+              </>
             )}
           </View>
         </View>
@@ -765,6 +874,32 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
     fontWeight: '700',
+  },
+  timeLimitInfo: {
+    backgroundColor: '#fff8e7',
+    borderWidth: 1,
+    borderColor: '#f39c12',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginVertical: 8,
+    alignSelf: 'stretch',
+    width: '100%',
+    minWidth: '100%',
+    // ensure it sits as a full row inside the wrapping controls
+    flexDirection: 'column',
+  },
+  timeLimitInfoText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#d35400',
+  },
+  timeLimitHint: {
+    fontSize: 14,
+    color: '#8e44ad',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: 4,
   },
 });
 

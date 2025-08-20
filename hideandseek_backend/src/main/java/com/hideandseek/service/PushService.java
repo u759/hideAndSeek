@@ -51,6 +51,37 @@ public class PushService {
         return gameStore.getPushTokens(gameId, teamId);
     }
 
+    public void sendGameEventNotification(String gameId, String title, String body) {
+        try {
+            Game game = gameStore.getGame(gameId);
+            if (game == null) {
+                logger.warn("Cannot send notification: game {} not found", gameId);
+                return;
+            }
+
+            // Get all push tokens for all teams in the game
+            Set<String> allTokens = new HashSet<>();
+            for (var team : game.getTeams()) {
+                allTokens.addAll(gameStore.getPushTokens(gameId, team.getId()));
+            }
+
+            if (allTokens.isEmpty()) {
+                logger.info("No push tokens registered for game {}", gameId);
+                return;
+            }
+
+            sendToTokens(allTokens, title, body, null);
+        } catch (Exception e) {
+            logger.error("Failed to send game event notification for game {}: {}", gameId, e.getMessage());
+        }
+    }
+
+    public void sendTeamFoundNotification(String gameId, String foundTeamName) {
+        String title = "Team Found!";
+        String body = foundTeamName + " has been found!";
+        sendGameEventNotification(gameId, title, body);
+    }
+
     // Public helpers for game events
     public void notifyCurseApplied(String gameId, String targetTeamId, String targetTeamName) {
         try {
