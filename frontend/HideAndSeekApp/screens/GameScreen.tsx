@@ -13,7 +13,7 @@ import FindHidersTab from '../components/FindHidersTab';
 import HiderClueListener from '../components/HiderClueListener';
 import SeekerClueListener from '../components/SeekerClueListener';
 import { RootStackParamList, TabParamList, Game, Team } from '../types';
-import ApiService from '../services/api';
+import useGameState from '../hooks/useGameState';
 import useLocationTracker from '../hooks/useLocationTracker';
 import usePushNotifications from '../hooks/usePushNotifications';
 
@@ -149,33 +149,23 @@ const GameScreen: React.FC = () => {
   const route = useRoute<GameScreenRouteProp>();
   const { gameId, teamId } = route.params;
   
-  const [game, setGame] = useState<Game | null>(null);
-  const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Use centralized game state management with WebSocket updates
+  const { game, currentTeam, loading, error, connected, refresh } = useGameState({
+    gameId,
+    teamId,
+    enabled: true,
+  });
 
+  // Show error if WebSocket is disconnected for too long
   useEffect(() => {
-    loadGame();
-    const intervalId = setInterval(loadGame, 5000); // Poll for updates every 5 seconds
-    return () => clearInterval(intervalId);
-  }, [gameId]);
-
-  const loadGame = async () => {
-    try {
-      const gameData = await ApiService.getGame(gameId);
-      setGame(gameData);
-      
-      const team = gameData.teams.find(t => t.id === teamId);
-      setCurrentTeam(team || null);
-    } catch (error) {
-      // Avoid alerting on background poll errors
-      console.error('Failed to load game:', error);
-    } finally {
-      setLoading(false);
+    if (error) {
+      console.error('Game state error:', error);
+      // Don't show alerts for every error, as WebSocket will reconnect automatically
     }
-  };
+  }, [error]);
 
   const refreshGame = () => {
-    loadGame();
+    refresh();
   };
 
   if (loading || !game || !currentTeam) {

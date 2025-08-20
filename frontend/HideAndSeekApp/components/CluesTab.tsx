@@ -160,7 +160,7 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
                   teamName: result.location.teamName,
                 });
                 setMapModalVisible(true);
-                onRefresh();
+                // No need to call onRefresh - parent will get WebSocket update automatically
                 loadClueHistory();
               } else {
                 // Show regular alert for other clue types
@@ -171,7 +171,7 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
                     {
                       text: 'OK',
                       onPress: () => {
-                        onRefresh();
+                        // No need to call onRefresh - parent will get WebSocket update automatically
                         loadClueHistory();
                       }
                     }

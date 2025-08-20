@@ -43,7 +43,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
     },
   });
 
-  // Polling fallback in case WS misses an event or reconnects
+  // Initial check for pending requests on mount
   useEffect(() => {
     let mounted = true;
     const fetchPending = async () => {
@@ -62,14 +62,12 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
         // ignore
       }
     };
-    const id = setInterval(fetchPending, 10000);
-    // also run once soon after mount
+    // Only run once on mount - WebSocket will handle real-time updates
     setTimeout(fetchPending, 1000);
     return () => {
       mounted = false;
-      clearInterval(id);
     };
-  }, [gameId, teamId, visible]);
+  }, [gameId, teamId]);
 
   // Countdown timer
   useEffect(() => {

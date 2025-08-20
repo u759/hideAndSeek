@@ -41,13 +41,13 @@ const LocationTab: React.FC<LocationTabProps> = ({ game, currentTeam, onRefresh 
 
   useEffect(() => {
     requestLocationPermission();
-    // Check GPS service status on mount and every 10s
+    // Check GPS service status on mount and every 30s (less frequent than before)
     const checkGps = async () => {
       const enabled = await Location.hasServicesEnabledAsync();
       setGpsActive(enabled);
     };
     checkGps();
-    const interval = setInterval(checkGps, 5000);
+    const interval = setInterval(checkGps, 30000);
     return () => clearInterval(interval);
   }, []);
 
