@@ -89,7 +89,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
               onPress: async () => {
                 try {
                   await ApiService.endGame(game.id);
-                  Alert.alert('Success', 'Game ended!');
+                  //Alert.alert('Success', 'Game ended!');
                   // No need to call onRefresh - WebSocket will update automatically
                 } catch (error) {
                   Alert.alert('Error', 'Failed to end game. Please try again.');
@@ -112,7 +112,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
               onPress: async () => {
                 try {
                   await ApiService.restartGame(game.id);
-                  Alert.alert('Success', 'Game restarted!');
+                  //Alert.alert('Success', 'Game restarted!');
                   // No need to call onRefresh - WebSocket will update automatically
                 } catch (error) {
                   Alert.alert('Error', 'Failed to restart game. Please try again.');
