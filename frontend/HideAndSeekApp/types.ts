@@ -59,6 +59,8 @@ export interface Game {
   endTime?: number;
   round: number;
   status: 'waiting' | 'active' | 'paused' | 'ended';
+  roundLengthMinutes?: number; // Round length in minutes (null = no time limit)
+  pausedByTimeLimit?: boolean; // True if paused due to round time limit
 }
 
 export interface ClueType {

@@ -14,6 +14,8 @@ public class Game {
     @JsonProperty("round")
     private Integer round;            // Use "round" to match frontend expectation
     private String status;            // String status to match frontend
+    private Integer roundLengthMinutes; // Round length in minutes (null = no time limit)
+    private Boolean pausedByTimeLimit; // True if paused due to round time limit
 
     // Default constructor
     public Game() {}
@@ -28,6 +30,8 @@ public class Game {
         this.totalPausedDuration = 0L;
         this.round = round;
         this.status = status;
+        this.roundLengthMinutes = null;
+        this.pausedByTimeLimit = false;
     }
 
     // Getters and Setters
@@ -101,5 +105,21 @@ public class Game {
 
     public void setEndTime(Long endTime) {
         this.endTime = endTime;
+    }
+
+    public Integer getRoundLengthMinutes() {
+        return roundLengthMinutes;
+    }
+
+    public void setRoundLengthMinutes(Integer roundLengthMinutes) {
+        this.roundLengthMinutes = roundLengthMinutes;
+    }
+
+    public Boolean getPausedByTimeLimit() {
+        return pausedByTimeLimit;
+    }
+
+    public void setPausedByTimeLimit(Boolean pausedByTimeLimit) {
+        this.pausedByTimeLimit = pausedByTimeLimit;
     }
 }
