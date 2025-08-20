@@ -89,24 +89,24 @@ const GameTabs: React.FC<{
               />
             )}
           </Tab.Screen>
-          <Tab.Screen name="Curses">
-            {() => (
-              <CursesTab 
-                game={game} 
-                currentTeam={currentTeam} 
-                onRefresh={onRefresh}
-              />
-            )}
-          </Tab.Screen>
-          <Tab.Screen name="Clues">
-            {() => (
-              <CluesTab 
-                game={game} 
-                currentTeam={currentTeam} 
-                onRefresh={onRefresh}
-              />
-            )}
-          </Tab.Screen>
+            <Tab.Screen name="Clues">
+              {() => (
+                <CluesTab 
+                  game={game} 
+                  currentTeam={currentTeam} 
+                  onRefresh={onRefresh}
+                />
+              )}
+            </Tab.Screen>
+            <Tab.Screen name="Curses">
+              {() => (
+                <CursesTab 
+                  game={game} 
+                  currentTeam={currentTeam} 
+                  onRefresh={onRefresh}
+                />
+              )}
+            </Tab.Screen>
           <Tab.Screen name="FindHiders">
             {() => (
               <FindHidersTab 
