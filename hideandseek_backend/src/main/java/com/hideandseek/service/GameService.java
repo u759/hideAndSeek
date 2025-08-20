@@ -5,6 +5,8 @@ import com.hideandseek.store.GameStore;
 import com.hideandseek.websocket.GameWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,8 @@ import java.util.ArrayList;
 
 @Service
 public class GameService {
+
+    private static final Logger logger = LoggerFactory.getLogger(GameService.class);
 
     @Autowired
     private GameStore gameStore;
@@ -49,14 +53,30 @@ public class GameService {
             throw new IllegalArgumentException("Game not found");
         }
         
-        // Check if round time limit has been exceeded and auto-pause if necessary
-        checkRoundTimeLimit(game);
+    // Check if round time limit has been exceeded and auto-pause if necessary
+    checkRoundTimeLimit(game);
         
         // Clean expired curses whenever a game is fetched
         cleanExpiredCurses(game);
         gameStore.updateGame(game);
         
         return game;
+    }
+
+    // Public enforcement method used by scheduled tasks to proactively evaluate all games
+    public void enforceRoundTimeLimits() {
+        List<Game> games = gameStore.getAllGames();
+        if (games == null || games.isEmpty()) return;
+        for (Game g : games) {
+            try {
+                // Use existing check logic which will only act on active games
+                checkRoundTimeLimit(g);
+                // Persist any changes and broadcast
+                gameStore.updateGame(g);
+            } catch (Exception e) {
+                logger.warn("Failed to enforce round time limit for game {}: {}", g.getId(), e.getMessage());
+            }
+        }
     }
 
     private void checkRoundTimeLimit(Game game) {
