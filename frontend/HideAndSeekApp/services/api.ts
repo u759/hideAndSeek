@@ -563,6 +563,40 @@ class ApiService {
     return response.json();
   }
 
+  async unregisterPushToken(gameId: string, teamId: string, token: string) {
+    const response = await fetch(`${API_BASE_URL}/push/unregister`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId, teamId, token }),
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to unregister push token');
+      } catch (_) {
+        throw new Error('Failed to unregister push token');
+      }
+    }
+    return response.json();
+  }
+
+  async unregisterDeviceFromAllTeams(token: string) {
+    const response = await fetch(`${API_BASE_URL}/push/unregister-device`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    if (!response.ok) {
+      try {
+        const err = await response.json();
+        throw new Error(err?.error || 'Failed to unregister device');
+      } catch (_) {
+        throw new Error('Failed to unregister device');
+      }
+    }
+    return response.json();
+  }
+
   // Test notification function
   async sendTestNotification(gameId: string, teamId: string) {
     const response = await fetch(`${API_BASE_URL}/push/test`, {
