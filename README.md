@@ -133,7 +133,15 @@ npm start
 
 ### Backend
 - Node.js with TypeScript
-- Express.js for REST API
+Admin Panel (built into WAR)
+
+- Set admin password via one of:
+   - Environment variable ADMIN_PASSWORD
+   - .env file in project root containing: ADMIN_PASSWORD=yourSecret
+   - application.properties: admin.password=yourSecret
+
+- Run backend and open /admin (redirects to /admin-login.html). After login, you'll be redirected to /admin-dashboard.html.
+- All admin API endpoints are protected via session; direct API access without login returns 401.
 - WebSocket for real-time updates
 - OpenAI integration for clue generation
 

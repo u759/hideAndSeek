@@ -1,125 +1,46 @@
-# UBCeek Hide and Seek - AI Coding Assistant Instructions
+# UBCeek Hide & Seek — AI Coding Assistant Guide
 
-## Project Architecture
+This repo is a real-time, location-based multiplayer game with a Spring Boot (WAR) backend and an Expo React Native frontend. It ships an in-browser Admin panel inside the same WAR.
 
-This is a **real-time multiplayer location-based game** with React Native frontend and Node.js backend. Teams alternate between "seeker" and "hider" roles, using challenges, tokens, and location clues.
+## Architecture at a glance
+- Backend (Java, Spring Boot) — `hideandseek_backend/`
+	- In-memory game store (no DB). Core types: `com.hideandseek.model.*`; state access via `com.hideandseek.store.GameStore` and `com.hideandseek.service.GameService`.
+	- WebSocket at `/ws` using `GameWebSocketHandler` broadcasting per-game updates; services call `broadcastToGame(gameId, ...)` after mutations.
+	- Admin panel served from WAR: `src/main/resources/webapp/{admin-login,admin-dashboard,admin-game}.html` with REST under `/api/admin/**`.
+	- Session guard for admin: `com.hideandseek.config.AdminSecurityConfig` checks `ADMIN_AUTH` session attr; login via `/api/admin/auth/login` sets session.
+- Frontend (Expo RN, TypeScript) — `frontend/HideAndSeekApp/`
+	- Centralized game state over WebSocket: `hooks/useGameState.ts` (see WEBSOCKET_MIGRATION_SUMMARY.md).
+	- API and WS config in `config/api.ts` (see `API_BASE_URL` and `getWebsocketUrl()`).
 
-### Core Components
-- **Backend** (`backend/src/`): Express API with WebSocket, in-memory game state, OpenAI integration
-- **Frontend** (`frontend/HideAndSeekApp/`): Expo React Native app with role-based tab navigation
-- **Game Data** (`backend/challenges_curses.json`): Challenge cards with token rewards/penalties
+## Critical workflows
+- Backend (local dev on Windows PowerShell)
+	- Run: `cd hideandseek_backend; .\mvnw.cmd spring-boot:run`
+	- Package WAR: `cd hideandseek_backend; .\mvnw.cmd clean package` → `target/hideandseek.war`
+	- Admin UI: open `/admin` → login → dashboard (`/admin-dashboard.html`) and live map (`/admin-game.html?gameId=...`).
+- Frontend (Expo)
+	- `cd frontend/HideAndSeekApp; npm install; npm start`
+	- Ensure `API_BASE_URL` points to your backend; WS URL derives from it.
 
-## Key Architectural Patterns
+## Project-specific conventions
+- No database: game state is ephemeral; server restart clears all games. Always use `GameStore`/`GameService`; do not cache global state elsewhere.
+- Real-time pattern: Any state mutation in services must broadcast via `GameWebSocketHandler.broadcastToGame(gameId, payload)` so RN clients and Admin map update instantly.
+- Roles and flows: Seekers vs Hiders; completing challenges earns tokens; clues reveal hider locations; hiders share GPS periodically.
+- Admin authentication: Password comes from env or `.env` (see `AdminPasswordProvider`) or `application.properties` (`admin.password`). Admin APIs/pages are session-protected by `AdminSecurityConfig`.
 
-### In-Memory State Management
-- **NO DATABASE**: Uses `backend/src/gameStore.ts` for shared state across API routes
-- Game state persists only during server runtime - restart clears all games
-- Always import game operations from `gameStore.ts`, never manipulate `games` array directly
+## Key integration points
+- WebSocket
+	- Server: `src/main/java/com/hideandseek/websocket/GameWebSocketHandler.java` at `/ws`.
+	- Client: RN uses `getWebsocketUrl()`; Admin map uses native `WebSocket` and sends `{ type: "join", gameId }`.
+- REST examples (admin)
+	- `GET /api/admin/stats`, `GET /api/admin/games`, `GET /api/admin/games/{id}`
+	- `DELETE /api/admin/games/{id}`, `DELETE /api/admin/games/cleanup/{ended|all}`
+	- `POST /api/admin/games/{id}/force-end`, `GET /api/admin/games/{id}/live`
+- External services
+	- Geocoding via OpenCage (see `pom.xml`), AI clue generation via Google GenAI (configure API keys in environment or properties).
 
-### Type Synchronization
-- **Shared Types**: `backend/src/types.ts` and `frontend/HideAndSeekApp/types.ts` must stay synchronized
-- Core interfaces: `Game`, `Team`, `Challenge`, `Curse`, `Clue`, `Location`
-- When adding fields, update BOTH type files identically
+## Examples from code
+- WS URL derivation: `frontend/HideAndSeekApp/config/api.ts#getWebsocketUrl()` → resolves ws(s)://…/ws from API base.
+- Admin guard and redirects: `AdminSecurityConfig` returns 401 JSON for `/api/admin/**` when unauthenticated; HTML requests redirect to `/admin-login.html`.
+- Live map source: `admin-game.html` loads `/api/admin/games/{id}/live` for initial snapshot, then listens for `gameUpdate` over `/ws`.
 
-### Real-Time Communication
-- **WebSocket** (`backend/src/websocket.ts`): Broadcasts game state changes to connected clients
-- **Pattern**: API route updates → broadcast via `broadcastToGame()` → frontend receives updates
-- Location updates happen every 30 seconds for hider teams via `useLocationTracker` hook
-
-### Role-Based UI Navigation
-- **Dynamic Tabs** (`frontend/HideAndSeekApp/screens/GameScreen.tsx`): Shows different tabs based on team role
-- Seekers: Overview, Challenges, Clues, Find Hiders
-- Hiders: Overview, Challenges, Location
-- Tab visibility controlled by `currentTeam?.role === 'seeker'` checks
-
-## Critical Development Workflows
-
-### Backend Development
-```bash
-cd backend
-npm run dev  # Starts nodemon with hot reload on :3000
-```
-
-### Frontend Development
-```bash
-cd frontend/HideAndSeekApp
-npm start    # Starts Expo dev server
-npm run web  # Quick testing in browser
-```
-
-### API Testing
-- Use `backend/test-api.sh` for endpoint testing
-- Or PowerShell: `Invoke-RestMethod -Uri "http://localhost:3000/api/game" -Method POST -ContentType "application/json" -Body '{"teamNames":["Team1"]}'`
-
-## Project-Specific Conventions
-
-### Game Flow Implementation
-- **Dynamic Role Switching**: When hiders are found, they become seekers (`/api/game/:gameId/teams/:hiderId/found`)
-- **Token Economy**: Complete challenges → earn tokens → buy clues about hider locations
-- **Veto System**: Refuse challenge → 5-minute penalty → can't draw new cards during penalty
-
-### Location Handling
-- **UBC Campus Specific**: Clue generation uses UBC landmarks (`backend/src/services/clueGenerator.ts`)
-- **Frontend Validation**: Campus boundary checks happen in React Native, backend accepts all coordinates
-- **Automatic Tracking**: Hiders share location every 30s when game is active
-
-### Challenge System
-- **Card Drawing**: Random selection from `challenges_curses.json` weighted by difficulty
-- **Completion Tracking**: `completedChallenges` array prevents re-drawing same card
-- **Active Curses**: Time-based penalties that affect team capabilities
-
-## Integration Points
-
-### OpenAI Integration
-- **Environment**: Requires `OPENAI_API_KEY` in `.env`
-- **Clue Generation**: `/api/clues/purchase` generates location-based hints using OpenAI
-- **Context**: Uses UBC-specific landmarks and current hider locations
-
-### Expo Location Services
-- **Permissions**: Handled in `useLocationTracker` hook with user prompts
-- **Background Tracking**: Continuous GPS for hider teams during active games
-- **Error Handling**: Graceful fallback when location services unavailable
-
-### API Configuration
-- **Base URL**: Set in `frontend/HideAndSeekApp/config/api.ts`
-- **Default**: `http://192.168.1.147:3000` (update for your local network)
-- **CORS**: Backend configured for cross-origin requests
-
-## Common Patterns
-
-### Error Handling
-- Backend: Return proper HTTP status codes with descriptive messages
-- Frontend: Use try/catch blocks with user-friendly Alert dialogs
-- WebSocket: Always wrap message parsing in try/catch
-
-### State Updates
-- Always update game state via `gameStore.ts` methods
-- Broadcast state changes to WebSocket clients after mutations
-- Frontend polls `/api/game/:id` every 5 seconds for state sync
-
-### Component Structure
-- Screens handle navigation and data fetching
-- Components receive data as props, avoid direct API calls
-- Custom hooks (like `useLocationTracker`) manage complex state logic
-
-LLM Prompt — Critical Thinking & Dependency Awareness
-
-Before producing your answer, follow these steps:
-
-Clarify & Restate — Restate the request in your own words to confirm your understanding of the goal, constraints, and implicit expectations.
-
-Map Structure & Dependencies — Identify all distinct components of the text/code/problem and note where dependencies exist. A dependency means that changing one part requires changes in others (variables, function calls, references, logic, tone, or formatting).
-
-Apply the Change Carefully — Make the primary change requested, but do not finalize until you have:
-
-Considered how this change affects dependent parts.
-
-Updated every dependent part for consistency.
-
-Cascade Updates — Adjust related content so terminology, logic, formatting, and context all remain coherent after the change.
-
-Consistency & Integrity Check — Read through the updated output as if from scratch, ensuring there are no contradictions, outdated references, or missing context.
-
-Final Verification — Confirm that the output works as a self-contained whole and that all dependencies are handled.
-
-Treat every change like a ripple in water — follow its effects until everything is aligned.
+Tip for agents: keep models aligned between backend `com.hideandseek.model` and frontend `frontend/HideAndSeekApp/types.ts`; if you add fields, update both and ensure broadcasts include the new data.

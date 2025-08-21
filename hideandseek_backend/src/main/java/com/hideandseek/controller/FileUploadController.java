@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -23,7 +24,26 @@ import java.util.UUID;
 public class FileUploadController {
 
     private static final Logger log = LoggerFactory.getLogger(FileUploadController.class);
-    private static final String UPLOAD_DIR = "uploads/selfies/";
+    // Optional override via configuration; if empty, we resolve a safe default at runtime
+    @Value("${uploads.selfies.dir:}")
+    private String configuredUploadDir;
+
+    private Path resolveUploadDir() {
+        // Prefer explicit configuration
+        if (configuredUploadDir != null && !configuredUploadDir.isBlank()) {
+            return Paths.get(configuredUploadDir).toAbsolutePath().normalize();
+        }
+        // WildFly/JBoss: use server data dir if available
+        String dataDir = System.getProperty("jboss.server.data.dir");
+        Path base;
+        if (dataDir != null && !dataDir.isBlank()) {
+            base = Paths.get(dataDir);
+        } else {
+            // Fallback to process working dir to avoid writing to filesystem root
+            base = Paths.get(System.getProperty("user.dir", "."));
+        }
+        return base.resolve("hideandseek").resolve("uploads").resolve("selfies").toAbsolutePath().normalize();
+    }
 
     @Autowired
     private ClueService clueService;
@@ -45,8 +65,8 @@ public class FileUploadController {
                 return ResponseEntity.badRequest().body(Map.of("error", "File must be an image"));
             }
 
-            // Create upload directory if it doesn't exist
-            Path uploadPath = Paths.get(UPLOAD_DIR);
+            // Resolve a writable upload directory and ensure it exists
+            Path uploadPath = resolveUploadDir();
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
@@ -57,7 +77,7 @@ public class FileUploadController {
                 ? originalFilename.substring(originalFilename.lastIndexOf("."))
                 : ".jpg";
             String filename = UUID.randomUUID().toString() + extension;
-            Path filePath = uploadPath.resolve(filename);
+            Path filePath = uploadPath.resolve(filename).normalize();
 
             // Save file
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
@@ -93,7 +113,9 @@ public class FileUploadController {
     @GetMapping("/files/{filename}")
     public ResponseEntity<?> getFile(@PathVariable String filename) {
         try {
-            Path filePath = Paths.get(UPLOAD_DIR).resolve(filename);
+            // Prevent path traversal by normalizing to a basename
+            String safeName = Paths.get(filename).getFileName().toString();
+            Path filePath = resolveUploadDir().resolve(safeName).normalize();
             if (!Files.exists(filePath)) {
                 return ResponseEntity.notFound().build();
             }

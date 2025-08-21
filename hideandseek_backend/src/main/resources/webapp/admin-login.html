@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Hide&Seek Admin Login</title>
+	<style>
+		/* global reset for this modal */
+		*, *::before, *::after { box-sizing: border-box; }
+
+		body {
+			font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+			background: #0b1220;
+			color: #e6edf3;
+			display: flex;
+			min-height: 100vh;
+			align-items: center;
+			justify-content: center;
+			margin: 0;
+			padding: 24px; /* safe padding for small screens */
+		}
+
+		.card {
+			background: #111a2b;
+			padding: clamp(20px, 4vw, 36px);
+			border-radius: 12px;
+			width: 100%;
+			max-width: 480px; /* allow slightly larger on desktop */
+			box-shadow: 0 10px 30px rgba(0,0,0,.35);
+			display: block;
+		}
+
+		h1 {
+			margin: 0 0 12px;
+			font-size: clamp(18px, 2.2vw, 22px);
+			line-height: 1.1;
+		}
+
+		p { margin-top: 0; opacity: 0.9; font-size: 14px; }
+
+		label { display: block; font-weight: 600; margin: 14px 0 8px; font-size: 13px; }
+
+		input {
+			width: 100%;
+			padding: 12px 14px;
+			font-size: 15px;
+			border-radius: 8px;
+			border: 1px solid #24324a;
+			background: #0e1726;
+			color: #e6edf3;
+			-webkit-font-smoothing: antialiased;
+		}
+
+		input:focus { outline: none; border-color: #5b9cff; box-shadow: 0 0 0 3px rgba(91,156,255,.12); }
+
+		button {
+			margin-top: 16px;
+			width: 100%;
+			padding: 12px 14px;
+			font-size: 15px;
+			border: none;
+			border-radius: 8px;
+			background: #1f6feb;
+			color: white;
+			cursor: pointer;
+			font-weight: 700;
+		}
+
+		button:disabled { opacity: .6; cursor: not-allowed; }
+
+		.error { color: #ff8585; margin-top: 12px; min-height: 20px; font-size: 13px; }
+
+		.muted { font-size: 12px; opacity: .75; text-align: center; margin-top: 12px; }
+
+		@media (max-width: 420px) {
+			.card { padding: 18px; max-width: 100%; }
+			h1 { font-size: 18px; }
+			input, button { font-size: 15px; }
+		}
+	</style>
+	<script>
+		async function onSubmit(event) {
+			event.preventDefault();
+			const btn = document.getElementById('loginBtn');
+			const err = document.getElementById('error');
+			err.textContent = '';
+			btn.disabled = true;
+			try {
+				const res = await fetch('/api/admin/auth/login', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					credentials: 'same-origin',
+					body: JSON.stringify({ password: document.getElementById('password').value })
+				});
+				if (res.ok) {
+					window.location.href = '/admin-dashboard.html';
+				} else {
+					const data = await res.json().catch(() => ({ error: 'Login failed' }));
+					err.textContent = data.error || 'Invalid password';
+				}
+			} catch (e) {
+				err.textContent = 'Network error';
+			} finally {
+				btn.disabled = false;
+			}
+		}
+		async function init() {
+			// If already authed, jump to dashboard
+			try {
+				const res = await fetch('/api/admin/auth/status', { credentials: 'same-origin' });
+				const data = await res.json();
+				if (data.authenticated) window.location.href = '/admin-dashboard.html';
+			} catch {}
+		}
+		window.addEventListener('DOMContentLoaded', init);
+	</script>
+</head>
+<body>
+	<form class="card" onsubmit="onSubmit(event)">
+		<h1>Admin Login</h1>
+		<p>Enter the admin password to access the dashboard.</p>
+		<label for="password">Password</label>
+		<input id="password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+		<button id="loginBtn" type="submit">Sign in</button>
+		<div id="error" class="error"></div>
+		<div class="muted">Configured via ADMIN_PASSWORD env or .env</div>
+	</form>
+</body>
+</html>
