@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Game Live View</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <style>
+    /* Global font reset to avoid Times New Roman fallbacks */
+    html, body, div, span, applet, object, iframe,
+    h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+    a, abbr, acronym, address, big, cite, code,
+    del, dfn, em, img, ins, kbd, q, s, samp,
+    small, strike, strong, sub, sup, tt, var,
+    b, u, i, center,
+    dl, dt, dd, ol, ul, li,
+    fieldset, form, label, legend,
+    table, caption, tbody, tfoot, thead, tr, th, td,
+    article, aside, canvas, details, embed,
+    figure, figcaption, footer, header, hgroup,
+    menu, nav, output, ruby, section, summary,
+    time, mark, audio, video,
+    button, input, select, textarea {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    html, body { height: 100%; margin: 0; }
+    body { display: grid; grid-template-columns: 360px 1fr; }
+    aside { background:#0d1627; color:#e6edf3; padding:16px; overflow:auto; }
+    main { position:relative; }
+    #map { position:absolute; inset:0; }
+    .stat { margin:8px 0; font-size:14px; }
+    .team { padding:8px; border:1px solid #20304b; border-radius:8px; margin:8px 0; }
+    .muted { color:#a9c1e1; opacity:.85; }
+    .toolbar { display:flex; gap:8px; margin-bottom:8px; }
+    button { background:#1f6feb; color:white; border:none; padding:8px 10px; border-radius:8px; cursor:pointer; }
+    button.secondary { background:#2b3d5c; }
+    /* Leaflet popup font style override */
+    .leaflet-popup-content, .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+      font-family: inherit;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+  <script>
+    let map, markers = new Map(), ws, wsPing;
+    const params = new URLSearchParams(window.location.search);
+    const gameId = params.get('gameId');
+    if (!gameId) {
+      alert('Missing gameId');
+    }
+
+    function wsUrl() {
+      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+      return proto + '://' + location.host + '/ws';
+    }
+
+    async function fetchLive() {
+      const res = await fetch('/api/admin/games/' + gameId + '/live', { credentials:'same-origin' });
+      if (!res.ok) throw new Error('Failed to load live data');
+      return res.json();
+    }
+
+    function initMap() {
+      map = L.map('map');
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      map.setView([0,0], 2);
+    }
+
+    function roleColor(role) { return role === 'seeker' ? 'red' : 'blue'; }
+
+    function upsertMarker(team) {
+      if (team.latitude == null || team.longitude == null) return;
+      const key = team.id;
+      const label = `${team.name} (${team.role})`;
+      const marker = markers.get(key);
+      if (marker) {
+        marker.setLatLng([team.latitude, team.longitude]).bindPopup(label);
+      } else {
+        const m = L.circleMarker([team.latitude, team.longitude], { radius: 8, color: roleColor(team.role) })
+          .addTo(map).bindPopup(label);
+        markers.set(key, m);
+      }
+    }
+
+    function fitToMarkers() {
+      const all = Array.from(markers.values());
+      if (all.length === 0) return;
+      const group = L.featureGroup(all);
+      map.fitBounds(group.getBounds().pad(0.2));
+    }
+
+    function renderSidebar(data) {
+      document.getElementById('gameTitle').textContent = `${data.gameCode || data.id}`;
+      document.getElementById('gameStatus').textContent = data.status;
+      document.getElementById('round').textContent = data.round ?? '-';
+      document.getElementById('roundLen').textContent = data.roundLengthMinutes ?? '-';
+      const list = document.getElementById('teams');
+      list.innerHTML = '';
+      (data.teams || []).forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'team';
+        div.innerHTML = `<div><strong>${t.name}</strong> <span class="muted">(${t.role})</span></div>
+          <div class="muted">${t.latitude!=null? t.latitude.toFixed(5):'-'}, ${t.longitude!=null? t.longitude.toFixed(5):'-'}</div>`;
+        list.appendChild(div);
+      });
+    }
+
+    function handleGameUpdate(game) {
+      // Expect same Game shape as broadcast
+      (game.teams||[]).forEach(team => {
+        // team may carry location fields depending on model; map from location if needed
+        if (team.location) {
+          team.latitude = team.location.latitude;
+          team.longitude = team.location.longitude;
+        }
+        upsertMarker(team);
+      });
+      fitToMarkers();
+    }
+
+    function openWs() {
+      ws = new WebSocket(wsUrl());
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ type:'join', gameId }));
+        wsPing = setInterval(() => { try{ ws.send(JSON.stringify({type:'ping'})); } catch(_){} }, 25000);
+      };
+      ws.onmessage = (ev) => {
+        try {
+          const msg = JSON.parse(ev.data);
+          if (msg.type === 'gameUpdate' && msg.game) {
+            handleGameUpdate(msg.game);
+          }
+        } catch {}
+      };
+      ws.onclose = () => { if (wsPing) clearInterval(wsPing); setTimeout(openWs, 3000); };
+      ws.onerror = () => { /* ignore */ };
+    }
+
+    async function init() {
+      initMap();
+      openWs();
+      try {
+        const snapshot = await fetchLive();
+        renderSidebar(snapshot);
+        (snapshot.teams||[]).forEach(upsertMarker);
+        fitToMarkers();
+      } catch (e) {
+        alert('Failed to load game: ' + e.message);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</head>
+<body>
+  <aside>
+    <div class="toolbar">
+      <button class="secondary" onclick="history.back()">Back</button>
+      <button onclick="location.reload()">Refresh</button>
+    </div>
+    <h2 id="gameTitle">Game</h2>
+    <div class="stat">Status: <strong id="gameStatus">-</strong></div>
+    <div class="stat">Round: <strong id="round">-</strong> / <span class="muted" id="roundLen">-</span> min</div>
+    <h3 style="margin-top:12px;">Teams</h3>
+    <div id="teams"></div>
+  </aside>
+  <main>
+    <div id="map"></div>
+  </main>
+</body>
+</html>

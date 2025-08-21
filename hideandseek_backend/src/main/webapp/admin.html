@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hide and Seek Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card.primary .stat-number { color: #667eea; }
+        .stat-card.success .stat-number { color: #28a745; }
+        .stat-card.warning .stat-number { color: #ffc107; }
+        .stat-card.danger .stat-number { color: #dc3545; }
+        .stat-card.info .stat-number { color: #17a2b8; }
+
+        .controls {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .controls h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-danger { background: #dc3545; color: white; }
+
+        .games-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .games-section h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .games-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .game-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .game-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .game-id {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .game-code {
+            background: #f8f9fa;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            margin-left: 0.5rem;
+        }
+
+        .game-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-active { background: #d4edda; color: #155724; }
+        .status-paused { background: #fff3cd; color: #856404; }
+        .status-ended { background: #f8d7da; color: #721c24; }
+        .status-lobby { background: #cce5ff; color: #004085; }
+
+        .game-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .game-detail {
+            text-align: center;
+        }
+
+        .game-detail-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .game-detail-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .game-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .game-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .game-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 Hide and Seek Admin</h1>
+        <p>Game Administration & Monitoring Dashboard</p>
+    </div>
+
+    <div class="container">
+        <!-- Stats Section -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card primary">
+                <div class="stat-number" id="totalGames">-</div>
+                <div class="stat-label">Total Games</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-number" id="activeGames">-</div>
+                <div class="stat-label">Active Games</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-number" id="pausedGames">-</div>
+                <div class="stat-label">Paused Games</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-number" id="endedGames">-</div>
+                <div class="stat-label">Ended Games</div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-number" id="totalPlayers">-</div>
+                <div class="stat-label">Total Players</div>
+            </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls">
+            <h2>🎮 Game Management</h2>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh Data</button>
+                <button class="btn btn-warning" onclick="cleanupEndedGames()">🧹 Clean Ended Games</button>
+                <button class="btn btn-danger" onclick="deleteAllGames()" style="margin-left: auto;">💥 Delete All Games</button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="messages"></div>
+
+        <!-- Games Section -->
+        <div class="games-section">
+            <h2>🎲 Current Games</h2>
+            <div id="gamesContainer">
+                <div class="loading">Loading games...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentGames = [];
+        
+        // Configuration
+        const API_BASE = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '') + '/api';
+        
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshData();
+            // Auto-refresh every 30 seconds
+            setInterval(refreshData, 30000);
+        });
+
+        // Refresh all data
+        async function refreshData() {
+            try {
+                await Promise.all([
+                    loadStats(),
+                    loadGames()
+                ]);
+                showMessage('Data refreshed successfully', 'success');
+            } catch (error) {
+                showMessage('Failed to refresh data: ' + error.message, 'error');
+            }
+        }
+
+        // Load system statistics
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/stats`);
+                if (!response.ok) throw new Error('Failed to load stats');
+                
+                const stats = await response.json();
+                
+                document.getElementById('totalGames').textContent = stats.totalGames || 0;
+                document.getElementById('activeGames').textContent = stats.activeGames || 0;
+                document.getElementById('pausedGames').textContent = stats.pausedGames || 0;
+                document.getElementById('endedGames').textContent = stats.endedGames || 0;
+                document.getElementById('totalPlayers').textContent = stats.totalPlayers || 0;
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                showMessage('Failed to load statistics', 'error');
+            }
+        }
+
+        // Load games list
+        async function loadGames() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/games`);
+                if (!response.ok) throw new Error('Failed to load games');
+                
+                currentGames = await response.json();
+                renderGames();
+                
+            } catch (error) {
+                console.error('Error loading games:', error);
+                document.getElementById('gamesContainer').innerHTML = 
+                    '<div class="error">Failed to load games: ' + error.message + '</div>';
+            }
+        }
+
+        // Render games list
+        function renderGames() {
+            const container = document.getElementById('gamesContainer');
+            
+            if (currentGames.length === 0) {
+                container.innerHTML = '<div class="loading">No games found</div>';
+                return;
+            }
+
+            const gamesHtml = currentGames.map(game => `
+                <div class="game-card">
+                    <div class="game-header">
+                        <div>
+                            <span class="game-id">${game.id}</span>
+                            <span class="game-code">${game.gameCode || 'No Code'}</span>
+                        </div>
+                        <div class="game-status status-${game.status.toLowerCase()}">${game.status}</div>
+                    </div>
+                    
+                    <div class="game-details">
+                        <div class="game-detail">
+                            <div class="game-detail-value">${game.teamCount}</div>
+                            <div class="game-detail-label">Teams</div>
+                        </div>
+                        <div class="game-detail">
+                            <div class="game-detail-value">${game.currentRound || 0}</div>
+                            <div class="game-detail-label">Round</div>
+                        </div>
+                        <div class="game-detail">
+                            <div class="game-detail-value">${game.roundLengthMinutes || '∞'}</div>
+                            <div class="game-detail-label">Minutes</div>
+                        </div>
+                        <div class="game-detail">
+                            <div class="game-detail-value">${game.durationMinutes || game.currentRoundMinutes || 0}</div>
+                            <div class="game-detail-label">${game.status === 'ENDED' ? 'Total Min' : 'Current Min'}</div>
+                        </div>
+                    </div>
+                    
+                    ${game.teamsByRole ? `
+                        <div class="game-details">
+                            <div class="game-detail">
+                                <div class="game-detail-value">${game.teamsByRole.seeker || 0}</div>
+                                <div class="game-detail-label">Seekers</div>
+                            </div>
+                            <div class="game-detail">
+                                <div class="game-detail-value">${game.teamsByRole.hider || 0}</div>
+                                <div class="game-detail-label">Hiders</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="game-actions">
+                        <button class="btn btn-primary btn-small" onclick="viewGameDetails('${game.id}')">👁️ View Details</button>
+                        ${game.status === 'ACTIVE' || game.status === 'PAUSED' ? 
+                            `<button class="btn btn-warning btn-small" onclick="forceEndGame('${game.id}')">⏹️ Force End</button>` : 
+                            ''
+                        }
+                        <button class="btn btn-danger btn-small" onclick="deleteGame('${game.id}')">🗑️ Delete</button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="games-grid">${gamesHtml}</div>`;
+        }
+
+        // Delete a specific game
+        async function deleteGame(gameId) {
+            if (!confirm('Are you sure you want to delete this game? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/games/${gameId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Failed to delete game');
+
+                showMessage('Game deleted successfully', 'success');
+                await refreshData();
+            } catch (error) {
+                showMessage('Failed to delete game: ' + error.message, 'error');
+            }
+        }
+
+        // Force end a game
+        async function forceEndGame(gameId) {
+            if (!confirm('Are you sure you want to force-end this game?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/games/${gameId}/force-end`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) throw new Error('Failed to force-end game');
+
+                showMessage('Game force-ended successfully', 'success');
+                await refreshData();
+            } catch (error) {
+                showMessage('Failed to force-end game: ' + error.message, 'error');
+            }
+        }
+
+        // Clean up ended games
+        async function cleanupEndedGames() {
+            if (!confirm('Are you sure you want to delete all ended games? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/games/cleanup/ended`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Failed to cleanup ended games');
+
+                const result = await response.json();
+                showMessage(`Successfully deleted ${result.deletedCount} ended games`, 'success');
+                await refreshData();
+            } catch (error) {
+                showMessage('Failed to cleanup ended games: ' + error.message, 'error');
+            }
+        }
+
+        // Delete all games (nuclear option)
+        async function deleteAllGames() {
+            if (!confirm('🚨 DANGER: Are you sure you want to delete ALL games? This will remove everything and cannot be undone!')) {
+                return;
+            }
+            
+            if (!confirm('This is your final warning. ALL game data will be permanently lost. Continue?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/games/cleanup/all`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Failed to delete all games');
+
+                const result = await response.json();
+                showMessage(`💥 Nuclear option executed: deleted ${result.deletedCount} games`, 'success');
+                await refreshData();
+            } catch (error) {
+                showMessage('Failed to delete all games: ' + error.message, 'error');
+            }
+        }
+
+        // View detailed game information
+        async function viewGameDetails(gameId) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/games/${gameId}`);
+                if (!response.ok) throw new Error('Failed to load game details');
+                
+                const game = await response.json();
+                
+                // Create a simple modal-like display
+                const details = `
+                    🎲 Game: ${game.id}
+                    📊 Status: ${game.status}
+                    🏷️ Code: ${game.gameCode || 'No Code'}
+                    👥 Teams: ${game.teamCount}
+                    🔄 Round: ${game.currentRound || 0}
+                    
+                    Team Details:
+                    ${game.teamDetails ? game.teamDetails.map(team => 
+                        `• ${team.name} (${team.role}) - ${team.tokens} tokens ${team.hasLocation ? '📍' : '❌'}`
+                    ).join('\n') : 'No team details available'}
+                `;
+                
+                alert(details);
+            } catch (error) {
+                showMessage('Failed to load game details: ' + error.message, 'error');
+            }
+        }
+
+        // Show messages
+        function showMessage(message, type) {
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            
+            messagesContainer.appendChild(messageDiv);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
