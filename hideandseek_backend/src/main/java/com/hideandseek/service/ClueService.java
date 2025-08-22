@@ -764,9 +764,22 @@ public class ClueService {
                     updateOriginalClueForTimeout(clue, expiredRequest);
                     gameStore.updateClueInHistory(game.getId(), clue);
                     
-                    // Broadcast update to all players
+                    // Broadcast timeout clue as a clue response to trigger frontend refresh
+                    Map<String, Object> timeoutResponse = new HashMap<>();
+                    timeoutResponse.put("type", "timeout");
+                    timeoutResponse.put("clueId", timeoutClueId);
+                    timeoutResponse.put("originalClueId", clue.getId());
+                    timeoutResponse.put("hiderTeamId", hiderTeam.getId());
+                    timeoutResponse.put("hiderTeamName", hiderTeam.getName());
+                    timeoutResponse.put("latitude", hiderTeam.getLocation().getLatitude());
+                    timeoutResponse.put("longitude", hiderTeam.getLocation().getLongitude());
+                    timeoutResponse.put("message", "Auto-revealed location due to timeout");
+                    
+                    webSocketHandler.broadcastClueResponse(game.getId(), requestingTeam.getId(), timeoutResponse);
+                    
+                    // Also broadcast general game update to all players
                     webSocketHandler.broadcastToGame(game.getId(), game);
-                    logger.info("Broadcasted game update for new timeout clue");
+                    logger.info("Broadcasted timeout clue response and game update");
                 }
             } else {
                 logger.warn("Could not find hider team or location for expired request: {}", expiredRequest.getId());
