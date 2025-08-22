@@ -3,7 +3,7 @@
 export const API_BASE_URL = (() => {
   if (typeof __DEV__ !== 'undefined' && __DEV__) {
     // Local development: point to local Spring Boot backend (update IP as needed)
-    return 'http://192.168.1.147:3000/api';
+    return 'https://web.ayng.dev/hideandseek/api';
   }
   // Production API base
   return 'https://web.ayng.dev/hideandseek/api';
