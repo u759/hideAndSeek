@@ -32,6 +32,13 @@ const TeamJoinScreen: React.FC = () => {
     enabled: isFocused, // Only connect when screen is focused
   });
 
+  // Force refresh when screen regains focus (not just on WebSocket broadcast)
+  useEffect(() => {
+    if (isFocused) {
+      refresh();
+    }
+  }, [isFocused, refresh]);
+
   // Handle errors (e.g., invalid game code)
   useEffect(() => {
     if (error) {

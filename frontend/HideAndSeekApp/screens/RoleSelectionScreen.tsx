@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,11 @@ import {
   Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import ApiService from '../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RoleSelectionScreenNavigationProp = StackNavigationProp<RootStackParamList, 'RoleSelection'>;
 
@@ -43,6 +45,41 @@ const RoleSelectionScreen: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Refresh game data when the screen gains focus to avoid stale views
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+      (async () => {
+        try {
+          const bgGameId = await AsyncStorage.getItem('bg_gameId');
+          if (bgGameId) {
+            await ApiService.getGame(bgGameId);
+          }
+        } catch (err) {
+          // non-fatal
+        }
+      })();
+
+      return () => { mounted = false; };
+    }, [])
+  );
+
+  // Also subscribe to navigation focus explicitly to handle back-gesture cases reliably
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      try {
+        const bgGameId = await AsyncStorage.getItem('bg_gameId');
+        if (bgGameId) {
+          await ApiService.getGame(bgGameId);
+        }
+      } catch (_) {
+        // ignore
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   return (
     <SafeAreaView style={styles.container}>
