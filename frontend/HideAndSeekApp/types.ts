@@ -68,6 +68,17 @@ export interface ClueType {
   name: string;
   description: string;
   cost: number;
+  range?: number; // Range in meters, null/undefined = unlimited
+}
+
+export interface HiderClueData {
+  teamId: string;
+  teamName: string;
+  latitude?: number;
+  longitude?: number;
+  distance?: number;
+  direction?: string;
+  additionalData?: string; // For selfie URLs, landmark names, etc.
 }
 
 export interface Clue {
@@ -77,7 +88,9 @@ export interface Clue {
   timestamp: number;
   clueTypeId?: string;
   responseType?: string;
-  targetHiderTeamId?: string;
+  targetHiderTeamId?: string; // Deprecated, use targetHiderTeamIds
+  targetHiderTeamIds?: string[]; // Multiple hider teams
+  hiderData?: HiderClueData[]; // Aggregated data for multiple hiders
   location?: {
     latitude: number;
     longitude: number;

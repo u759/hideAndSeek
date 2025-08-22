@@ -5,16 +5,18 @@ public class ClueType {
     private String name;
     private String description;
     private int cost;
+    private Integer range; // Range in meters, null means unlimited range
 
     // Default constructor
     public ClueType() {}
 
     // Constructor with all fields
-    public ClueType(String id, String name, String description, int cost) {
+    public ClueType(String id, String name, String description, int cost, Integer range) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.cost = cost;
+        this.range = range;
     }
 
     // Getters and Setters
@@ -48,5 +50,13 @@ public class ClueType {
 
     public void setCost(int cost) {
         this.cost = cost;
+    }
+
+    public Integer getRange() {
+        return range;
+    }
+
+    public void setRange(Integer range) {
+        this.range = range;
     }
 }
