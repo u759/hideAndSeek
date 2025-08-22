@@ -22,7 +22,7 @@ const TeamJoinScreen: React.FC = () => {
   const navigation = useNavigation<TeamJoinScreenNavigationProp>();
   const route = useRoute<TeamJoinScreenRouteProp>();
   const { gameId, gameCode } = route.params;
-  
+
   const [joining, setJoining] = useState(false);
   const isFocused = useIsFocused();
 
@@ -52,9 +52,9 @@ const TeamJoinScreen: React.FC = () => {
     setJoining(true);
     try {
       // Navigate to the game screen with the selected team
-      navigation.navigate('Game', { 
-        gameId: game!.id, 
-        teamId: team.id 
+      navigation.navigate('Game', {
+        gameId: game!.id,
+        teamId: team.id
       });
     } catch (error) {
       Alert.alert('Error', 'Failed to join team. Please try again.');
@@ -97,7 +97,7 @@ const TeamJoinScreen: React.FC = () => {
 
         <View style={styles.teamsSection}>
           <Text style={styles.sectionTitle}>Available Teams:</Text>
-          
+
           {game.teams.map((team, index) => (
             <TouchableOpacity
               key={team.id}
@@ -114,14 +114,14 @@ const TeamJoinScreen: React.FC = () => {
                   {team.role === 'seeker' ? '🔍 Seeker' : '👤 Hider'}
                 </Text>
               </View>
-              
+
               <Text style={styles.teamDescription}>
-                {team.role === 'seeker' 
+                {team.role === 'seeker'
                   ? 'Draw challenge cards, earn tokens, buy clues to find hiders'
                   : 'Hide around UBC campus, share location automatically'
                 }
               </Text>
-              
+
               <View style={styles.teamStats}>
                 <Text style={styles.teamStat}>Tokens: {team.tokens}</Text>
                 <Text style={styles.teamStat}>
