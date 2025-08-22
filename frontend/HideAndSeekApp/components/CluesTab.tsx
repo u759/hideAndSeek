@@ -50,6 +50,16 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
   useEffect(() => {
     loadClueTypes();
     loadClueHistory();
+    
+    // Set up periodic refresh for clue history as fallback (every 30 seconds)
+    const intervalId = setInterval(() => {
+      if (currentTeam.role === 'seeker') {
+        console.log('Periodic clue history refresh');
+        loadClueHistory();
+      }
+    }, 30000); // 30 seconds
+    
+    return () => clearInterval(intervalId);
   }, [game.id]);
 
   // Seeker-side WebSocket to refresh on clue responses with auto-reconnect + heartbeat
@@ -59,7 +69,16 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
     gameId: currentTeam.role === 'seeker' ? game.id : '',
     onMessage: (msg) => {
       if (currentTeam.role !== 'seeker') return;
+      
+      // Refresh clue history on clue responses directed to this team
       if (msg?.type === 'clueResponse' && msg?.requestingTeamId === currentTeam.id) {
+        console.log('Received clue response, refreshing clue history');
+        loadClueHistory();
+      }
+      
+      // Also refresh on general game updates to catch timeout clues and other scenarios
+      if (msg?.type === 'gameUpdate') {
+        console.log('Received game update, refreshing clue history');
         loadClueHistory();
       }
     },
@@ -200,6 +219,14 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
                   ]
                 );
               }
+              
+              // Immediate refresh after successful purchase + delayed refresh as fallback
+              loadClueHistory();
+              setTimeout(() => {
+                console.log('Delayed clue history refresh after purchase');
+                loadClueHistory();
+              }, 2000); // 2 second delay to allow for server processing
+              
             } catch (error: any) {
               const message = error?.message || 'Failed to purchase clue. Please try again.';
               Alert.alert('Error', message);
