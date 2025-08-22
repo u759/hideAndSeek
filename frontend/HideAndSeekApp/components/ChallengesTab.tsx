@@ -101,7 +101,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
       setDrawnCard(normalized);
       setShowCardModal(true);
       setCustomTokenInput('0'); // Reset custom token input for new cards
-      
+
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to draw card. Please try again.');
       console.error('Failed to draw card:', error);
@@ -110,79 +110,62 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
     }
   };
 
-  const completeChallenge = async () => {
+  const completeChallenge = () => {
     if (!drawnCard || drawnCard.type !== 'challenge') return;
 
-    // Check if this is a dynamic challenge (null token_count)
-    if (drawnCard.card.token_count === null) {
-      const customTokens = parseInt(customTokenInput || '0', 10);
-      if (isNaN(customTokens) || customTokens < 0) {
-        Alert.alert('Error', 'Please enter a valid number of tokens (0 or greater).');
-        return;
-      }
-      
-      try {
-        const result = await ApiService.completeChallengeWithCustomTokens(
-          drawnCard.card.title,
-          currentTeam.id,
-          game.id,
-          customTokens
-        );
-        
-        Alert.alert(
-          'Challenge Completed!',
-          `${result.message} You earned ${result.tokensEarned} tokens.`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
+    // Ask user to confirm before marking challenge complete
+    Alert.alert(
+      'Confirm Completion',
+      'Are you sure you want to mark this challenge as completed? This action will award tokens to your team.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: async () => {
+            // perform the original completion logic after confirmation
+            try {
+              // Dynamic challenge (user decides token count)
+              if (drawnCard.card.token_count === null) {
+                const customTokens = parseInt(customTokenInput || '0', 10);
+                if (isNaN(customTokens) || customTokens < 0) {
+                  Alert.alert('Error', 'Please enter a valid number of tokens (0 or greater).');
+                  return;
+                }
+
+                const result = await ApiService.completeChallengeWithCustomTokens(
+                  drawnCard.card.title,
+                  currentTeam.id,
+                  game.id,
+                  customTokens
+                );
                 setDrawnCard(null);
                 setShowCardModal(false);
                 setCustomTokenInput('0');
-                // No need to call onRefresh - parent will get WebSocket update automatically
-              }
-            }
-          ]
-        );
-      } catch (error: any) {
-        Alert.alert('Error', error.message || 'Failed to complete challenge.');
-        console.error('Failed to complete challenge:', error);
-      }
-      return;
-    }
 
-    // Regular challenge with fixed token_count
-    try {
-      const result = await ApiService.completeChallenge(
-        drawnCard.card.title,
-        currentTeam.id,
-        game.id
-      );
-      
-      Alert.alert(
-        'Challenge Completed!',
-        `${result.message} You earned ${result.tokensEarned} tokens.`,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
+                return;
+              }
+
+              // Regular challenge with fixed token_count
+              const result = await ApiService.completeChallenge(
+                drawnCard.card.title,
+                currentTeam.id,
+                game.id
+              );
               setDrawnCard(null);
               setShowCardModal(false);
-              // No need to call onRefresh - parent will get WebSocket update automatically
+            } catch (error: any) {
+              // If backend indicates this is actually a dynamic challenge, show the modal so user can enter tokens
+              if (error?.message?.toLowerCase()?.includes('dynamic challenge')) {
+                setShowCardModal(true);
+                return;
+              }
+              Alert.alert('Error', error.message || 'Failed to complete challenge.');
+              console.error('Failed to complete challenge:', error);
             }
-          }
-        ]
-      );
-    } catch (error: any) {
-      // Check if this error indicates a dynamic challenge
-      if (error.message?.includes('dynamic challenge')) {
-        // Retry with the custom token flow
-        completeChallenge();
-        return;
-      }
-      Alert.alert('Error', error.message || 'Failed to complete challenge.');
-      console.error('Failed to complete challenge:', error);
-    }
+          },
+        },
+      ]
+    );
   };
 
   const vetoChallenge = async () => {
@@ -203,7 +186,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
                 currentTeam.id,
                 game.id
               );
-              
+
               Alert.alert(
                 'Challenge Vetoed',
                 'You cannot draw another card for 5 minutes.',
@@ -294,7 +277,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
               <Text style={styles.statusMessageText}>{getStatusMessage()}</Text>
             </View>
           )}
-          
+
           {vetoTimeRemaining > 0 ? (
             <View style={styles.vetoWarning}>
               <Text style={styles.vetoText}>
@@ -308,7 +291,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
             <View style={styles.activeCardSection}>
               <Text style={styles.activeCardTitle}>Active Card</Text>
               {renderCard()}
-              
+
               {drawnCard.type === 'challenge' ? (
                 <View style={styles.cardActions}>
                   <TouchableOpacity
@@ -372,12 +355,12 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
           </View>
         </View>
 
-    {currentTeam.completedChallenges.length > 0 && (
+        {currentTeam.completedChallenges.length > 0 && (
           <View style={styles.historySection}>
             <Text style={styles.historyTitle}>Completed Challenges</Text>
-      {currentTeam.completedChallenges.map((entry, index) => (
+            {currentTeam.completedChallenges.map((entry, index) => (
               <View key={index} style={styles.historyItem}>
-        <Text style={styles.historyText}>✅ {challengeTitleById[entry] || entry}</Text>
+                <Text style={styles.historyText}>✅ {challengeTitleById[entry] || entry}</Text>
               </View>
             ))}
           </View>
