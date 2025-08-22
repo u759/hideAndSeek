@@ -10,23 +10,46 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 
+interface MapLocation {
+  latitude: number;
+  longitude: number;
+  teamName?: string;
+}
+
 interface MapModalProps {
   visible: boolean;
   onClose: () => void;
-  latitude: number;
-  longitude: number;
+  locations: MapLocation[]; // Support multiple locations
   title?: string;
-  teamName?: string;
 }
 
 const MapModal: React.FC<MapModalProps> = ({
   visible,
   onClose,
-  latitude,
-  longitude,
+  locations,
   title = 'Exact Location',
-  teamName,
 }) => {
+  // Calculate center point for multiple locations
+  const centerLat = locations.reduce((sum, loc) => sum + loc.latitude, 0) / locations.length;
+  const centerLng = locations.reduce((sum, loc) => sum + loc.longitude, 0) / locations.length;
+  
+  // Calculate appropriate zoom level based on the spread of locations
+  const getZoomLevel = () => {
+    if (locations.length === 1) return 18;
+    
+    const lats = locations.map(l => l.latitude);
+    const lngs = locations.map(l => l.longitude);
+    const latRange = Math.max(...lats) - Math.min(...lats);
+    const lngRange = Math.max(...lngs) - Math.min(...lngs);
+    const maxRange = Math.max(latRange, lngRange);
+    
+    if (maxRange < 0.001) return 17;
+    if (maxRange < 0.005) return 15;
+    if (maxRange < 0.01) return 14;
+    if (maxRange < 0.05) return 12;
+    return 10;
+  };
+
   // Generate HTML content for OpenStreetMap with Leaflet
   const mapHtml = `
     <!DOCTYPE html>
@@ -47,8 +70,8 @@ const MapModal: React.FC<MapModalProps> = ({
     <body>
       <div id="map"></div>
       <script>
-        // Initialize the map centered on the target location
-        var map = L.map('map').setView([${latitude}, ${longitude}], 18);
+        // Initialize the map centered on the calculated center
+        var map = L.map('map').setView([${centerLat}, ${centerLng}], ${getZoomLevel()});
         
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -56,15 +79,25 @@ const MapModal: React.FC<MapModalProps> = ({
           maxZoom: 19,
         }).addTo(map);
         
-        // Add a marker for the exact location
-        var marker = L.marker([${latitude}, ${longitude}]).addTo(map);
+        // Add markers for all locations
+        var markers = [];
+        ${locations.map((loc, index) => `
+        var marker${index} = L.marker([${loc.latitude}, ${loc.longitude}]).addTo(map);
+        marker${index}.bindPopup('${loc.teamName || `Location ${index + 1}`} is here!');
+        markers.push(marker${index});
+        `).join('')}
         
-        // Add popup with team name if provided
-        ${teamName ? `marker.bindPopup('${teamName} is here!').openPopup();` : `marker.bindPopup('Target location').openPopup();`}
+        // If there are multiple markers, fit the map to show all
+        ${locations.length > 1 ? `
+        var group = new L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.1));
+        ` : ''}
         
-        // Add click handler to recenter map on marker
-        marker.on('click', function(e) {
-          map.setView(e.latlng, 18);
+        // Add click handler to markers
+        markers.forEach(function(marker) {
+          marker.on('click', function(e) {
+            map.setView(e.latlng, 18);
+          });
         });
       </script>
     </body>
@@ -77,15 +110,26 @@ const MapModal: React.FC<MapModalProps> = ({
         <View style={styles.card}>
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
-            {teamName && (
-              <Text style={styles.subtitle}>Location of {teamName}</Text>
+            {locations.length === 1 && locations[0].teamName && (
+              <Text style={styles.subtitle}>Location of {locations[0].teamName}</Text>
+            )}
+            {locations.length > 1 && (
+              <Text style={styles.subtitle}>
+                {locations.length} hider locations
+              </Text>
             )}
           </View>
           
           <View style={styles.coordinatesContainer}>
-            <Text style={styles.coordinatesText}>
-              {latitude.toFixed(6)}, {longitude.toFixed(6)}
-            </Text>
+            {locations.length === 1 ? (
+              <Text style={styles.coordinatesText}>
+                {locations[0].latitude.toFixed(6)}, {locations[0].longitude.toFixed(6)}
+              </Text>
+            ) : (
+              <Text style={styles.coordinatesText}>
+                Multiple locations - see map for details
+              </Text>
+            )}
           </View>
           
           <View style={styles.mapContainer}>

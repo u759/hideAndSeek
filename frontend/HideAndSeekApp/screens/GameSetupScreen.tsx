@@ -118,6 +118,24 @@ const GameSetupScreen: React.FC = () => {
           ))}
         </View>
 
+        <View style={styles.actions}>
+          {teamNames.length < 6 && (
+            <TouchableOpacity style={styles.addButton} onPress={addTeam}>
+              <Text style={styles.addButtonText}>+ Add Team</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            style={[styles.createButton, loading && styles.disabledButton]}
+            onPress={createGame}
+            disabled={loading}
+          >
+            <Text style={styles.createButtonText}>
+              {loading ? 'Creating Game...' : 'Create Game'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.roundLengthContainer}>
           <Text style={styles.roundLengthLabel}>Round Duration Limit (optional):</Text>
           <TextInput
@@ -141,24 +159,6 @@ const GameSetupScreen: React.FC = () => {
           <Text style={styles.roundLengthHint}>
             • Leave empty for unlimited round duration
           </Text>
-        </View>
-
-        <View style={styles.actions}>
-          {teamNames.length < 6 && (
-            <TouchableOpacity style={styles.addButton} onPress={addTeam}>
-              <Text style={styles.addButtonText}>+ Add Team</Text>
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity
-            style={[styles.createButton, loading && styles.disabledButton]}
-            onPress={createGame}
-            disabled={loading}
-          >
-            <Text style={styles.createButtonText}>
-              {loading ? 'Creating Game...' : 'Create Game'}
-            </Text>
-          </TouchableOpacity>
         </View>
 
         <View style={styles.instructions}>

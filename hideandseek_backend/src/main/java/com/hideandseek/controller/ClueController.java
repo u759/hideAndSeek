@@ -99,4 +99,15 @@ public class ClueController {
             return ResponseEntity.internalServerError().body(Map.of("error", "Failed to respond to clue request"));
         }
     }
+
+    @GetMapping("/debug/requests/{gameId}")
+    public ResponseEntity<?> getClueRequestsDebug(@PathVariable String gameId) {
+        try {
+            var requests = clueService.getClueRequestsForDebug(gameId);
+            return ResponseEntity.ok(requests);
+        } catch (Exception e) {
+            log.error("Error fetching clue requests debug info", e);
+            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to fetch debug info"));
+        }
+    }
 }

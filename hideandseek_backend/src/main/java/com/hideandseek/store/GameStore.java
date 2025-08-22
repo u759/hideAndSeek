@@ -353,6 +353,15 @@ public class GameStore {
                         clueType.setName((String) clueTypeData.get("name"));
                         clueType.setDescription((String) clueTypeData.get("description"));
                         clueType.setCost((Integer) clueTypeData.get("cost"));
+                        
+                        // Parse range field (can be null for unlimited range)
+                        Object rangeValue = clueTypeData.get("range");
+                        if (rangeValue instanceof Integer) {
+                            clueType.setRange((Integer) rangeValue);
+                        } else {
+                            clueType.setRange(null); // null means unlimited range
+                        }
+                        
                         clueTypes.add(clueType);
                     }
                 }
@@ -388,6 +397,19 @@ public class GameStore {
     public void addClueToHistory(String gameId, PurchasedClue clue) {
         String key = clue.getGameId() + ":" + clue.getTeamId();
         teamClueHistory.computeIfAbsent(key, k -> new ArrayList<>()).add(clue);
+    }
+    
+    public void updateClueInHistory(String gameId, PurchasedClue updatedClue) {
+        String key = gameId + ":" + updatedClue.getTeamId();
+        List<PurchasedClue> clues = teamClueHistory.get(key);
+        if (clues != null) {
+            for (int i = 0; i < clues.size(); i++) {
+                if (clues.get(i).getId().equals(updatedClue.getId())) {
+                    clues.set(i, updatedClue);
+                    break;
+                }
+            }
+        }
     }
 
     // New method: get clue history for a specific team in a game
@@ -561,6 +583,32 @@ public class GameStore {
                     return Double.compare(dist1, dist2);
                 })
                 .orElse(null);
+    }
+    
+    // Find all hider teams within specified range of requesting seeker team
+    public List<Team> getHidersWithinRange(String gameId, String requestingTeamId, Integer rangeMeters) {
+        Game game = getGame(gameId);
+        if (game == null) return new ArrayList<>();
+        
+        Team requestingTeam = getTeam(gameId, requestingTeamId);
+        if (requestingTeam == null || requestingTeam.getLocation() == null) return new ArrayList<>();
+        
+        return game.getTeams().stream()
+                .filter(team -> "hider".equals(team.getRole()) && team.getLocation() != null)
+                .filter(team -> {
+                    if (rangeMeters == null) {
+                        return true; // Unlimited range
+                    }
+                    double distance = calculateDistance(requestingTeam.getLocation(), team.getLocation());
+                    return distance <= rangeMeters;
+                })
+                .sorted((h1, h2) -> {
+                    // Sort by distance (closest first)
+                    double dist1 = calculateDistance(requestingTeam.getLocation(), h1.getLocation());
+                    double dist2 = calculateDistance(requestingTeam.getLocation(), h2.getLocation());
+                    return Double.compare(dist1, dist2);
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
     
     // Utility method to calculate distance between team locations

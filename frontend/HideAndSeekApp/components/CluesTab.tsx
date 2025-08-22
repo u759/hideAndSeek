@@ -9,8 +9,9 @@ import {
   Alert,
   FlatList,
   Image,
+  Dimensions,
 } from 'react-native';
-import { Game, Team, ClueType, Clue } from '../types';
+import { Game, Team, ClueType, Clue, HiderClueData } from '../types';
 import * as ExpoLocation from 'expo-location';
 import ApiService from '../services/api';
 import useLocationTracker from '../hooks/useLocationTracker';
@@ -32,11 +33,11 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
   
   // Map modal state for exact location clues
   const [mapModalVisible, setMapModalVisible] = useState(false);
-  const [mapLocation, setMapLocation] = useState<{
+  const [mapLocations, setMapLocations] = useState<Array<{
     latitude: number;
     longitude: number;
     teamName?: string;
-  } | null>(null);
+  }>>([]);
 
   // Ensure seekers share their location while game is active (required for distance-based clues)
   useLocationTracker({
@@ -152,26 +153,47 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
                 clueType.description
               );
               
-              // Check if this is an exact location clue with coordinate data
-              if (clueType.id === 'exact-location' && result.location) {
-                setMapLocation({
+              // Check if this is an exact location clue with multiple hiders
+              if (clueType.id === 'exact-location' && result.hiderData && result.hiderData.length > 0) {
+                // Collect all locations from hider data
+                const locations = result.hiderData
+                  .filter((hider: any) => hider.latitude && hider.longitude)
+                  .map((hider: any) => ({
+                    latitude: hider.latitude!,
+                    longitude: hider.longitude!,
+                    teamName: hider.teamName,
+                  }));
+                
+                if (locations.length > 0) {
+                  setMapLocations(locations);
+                  setMapModalVisible(true);
+                  loadClueHistory();
+                }
+              } else if (clueType.id === 'exact-location' && result.location) {
+                // Backward compatibility with single location
+                setMapLocations([{
                   latitude: result.location.latitude,
                   longitude: result.location.longitude,
                   teamName: result.location.teamName,
-                });
+                }]);
                 setMapModalVisible(true);
-                // No need to call onRefresh - parent will get WebSocket update automatically
                 loadClueHistory();
               } else {
                 // Show regular alert for other clue types
+                let alertText = result.text;
+                
+                // For multi-hider clues, enhance the alert text
+                if (result.hiderData && result.hiderData.length > 1) {
+                  alertText += `\n\nThis clue covers ${result.hiderData.length} hider teams. Check your clue history for detailed information.`;
+                }
+                
                 Alert.alert(
                   'Clue Purchased!',
-                  `Clue: ${result.text}`,
+                  alertText,
                   [
                     {
                       text: 'OK',
                       onPress: () => {
-                        // No need to call onRefresh - parent will get WebSocket update automatically
                         loadClueHistory();
                       }
                     }
@@ -211,6 +233,16 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
           </View>
         </View>
         <Text style={styles.clueDescription}>{item.description}</Text>
+        {item.range && (
+          <Text style={styles.rangeText}>
+            Range: {item.range}m from your location
+          </Text>
+        )}
+        {!item.range && (
+          <Text style={styles.rangeText}>
+            Range: Unlimited (targets all hiders)
+          </Text>
+        )}
         {!canAfford && gameActive && (
           <Text style={styles.insufficientText}>
             Need {item.cost - currentTeam.tokens} more tokens
@@ -226,61 +258,237 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
   };
 
   const [visibleClueIds, setVisibleClueIds] = useState<Set<string>>(new Set());
+  const [visibleMultiHiderImages, setVisibleMultiHiderImages] = useState<Set<string>>(new Set());
+  const [clueNavigationIndices, setClueNavigationIndices] = useState<Map<string, number>>(new Map());
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: any[] }) => {
     const ids = new Set(viewableItems.map((v) => v.item?.id).filter(Boolean));
     setVisibleClueIds(ids);
+    setVisibleMultiHiderImages(ids); // Also update multi-hider image visibility
   }).current;
+
+  // Component for displaying multi-hider clues with swiping
+  const MultiHiderClueDisplay: React.FC<{ 
+    clue: Clue; 
+    hiderData: HiderClueData[]; 
+    shouldRenderImages: boolean; 
+  }> = ({ clue, hiderData, shouldRenderImages }) => {
+    const screenWidth = Dimensions.get('window').width;
+    
+    // Use persistent navigation state that survives re-renders
+    const rawCurrentIndex = clueNavigationIndices.get(clue.id) || 0;
+    const currentIndex = Math.min(rawCurrentIndex, hiderData.length - 1); // Bounds check
+    const setCurrentIndex = (index: number) => {
+      const boundedIndex = Math.max(0, Math.min(index, hiderData.length - 1));
+      const newMap = new Map(clueNavigationIndices);
+      newMap.set(clue.id, boundedIndex);
+      setClueNavigationIndices(newMap);
+    };
+    
+    const currentHider = hiderData[currentIndex];
+    const isExactLocation = clue.clueTypeId === 'exact-location';
+    const isSelfieClue = clue.clueTypeId === 'selfie';
+
+    const toggleImageVisibility = () => {
+      const newSet = new Set(visibleMultiHiderImages);
+      if (newSet.has(clue.id)) {
+        newSet.delete(clue.id);
+      } else {
+        newSet.add(clue.id);
+      }
+      setVisibleMultiHiderImages(newSet);
+    };
+
+    const shouldShowImage = isSelfieClue && 
+                           currentHider.additionalData && 
+                           currentHider.additionalData.includes('/api/uploads/') &&
+                           visibleMultiHiderImages.has(clue.id);
+    
+    const handlePrevious = () => {
+      const newIndex = currentIndex > 0 ? currentIndex - 1 : hiderData.length - 1;
+      setCurrentIndex(newIndex);
+    };
+    
+    const handleNext = () => {
+      const newIndex = currentIndex < hiderData.length - 1 ? currentIndex + 1 : 0;
+      setCurrentIndex(newIndex);
+    };
+    
+    const handleLocationPress = () => {
+      if (isExactLocation) {
+        // Show all locations on the map, not just the current one
+        const locations = hiderData
+          .filter(hider => hider.latitude && hider.longitude)
+          .map(hider => ({
+            latitude: hider.latitude!,
+            longitude: hider.longitude!,
+            teamName: hider.teamName,
+          }));
+        
+        if (locations.length > 0) {
+          setMapLocations(locations);
+          setMapModalVisible(true);
+        }
+      }
+    };
+    
+    return (
+      <View style={styles.multiHiderContainer}>
+        {/* Navigation Header */}
+        <View style={styles.navigationHeader}>
+          <TouchableOpacity 
+            onPress={handlePrevious} 
+            style={styles.navButton}
+            disabled={hiderData.length <= 1}
+          >
+            <Text style={[styles.navButtonText, hiderData.length <= 1 && styles.disabledNav]}>‹</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.hiderInfo}>
+            <Text style={styles.hiderName}>{currentHider.teamName}</Text>
+            <Text style={styles.hiderCounter}>
+              {currentIndex + 1} of {hiderData.length}
+            </Text>
+          </View>
+          
+          <TouchableOpacity 
+            onPress={handleNext} 
+            style={styles.navButton}
+            disabled={hiderData.length <= 1}
+          >
+            <Text style={[styles.navButtonText, hiderData.length <= 1 && styles.disabledNav]}>›</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {/* Clue Content */}
+        <View style={styles.hiderClueContent}>
+          {isExactLocation && currentHider.latitude && currentHider.longitude ? (
+            <TouchableOpacity onPress={handleLocationPress}>
+              <Text style={styles.coordinatesText}>
+                {currentHider.latitude.toFixed(6)}, {currentHider.longitude.toFixed(6)}
+              </Text>
+              {currentHider.distance && (
+                <Text style={styles.distanceText}>
+                  Distance: {currentHider.distance.toFixed(0)}m away
+                </Text>
+              )}
+              <Text style={styles.mapHint}>📍 Tap to view on map</Text>
+            </TouchableOpacity>
+          ) : isSelfieClue && currentHider.additionalData && currentHider.additionalData.includes('/api/uploads/') ? (
+            // Selfie image
+            shouldShowImage ? (
+              <TouchableOpacity onPress={toggleImageVisibility}>
+                <Image
+                  source={{ uri: currentHider.additionalData }}
+                  style={styles.selfieImage}
+                  resizeMode="cover"
+                />
+                <Text style={styles.tapToHideText}>Tap to hide</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity onPress={toggleImageVisibility} style={styles.imagePlaceholder}>
+                <Text style={styles.placeholderText}>Selfie from {currentHider.teamName}</Text>
+                <Text style={styles.placeholderText}>Tap to view</Text>
+              </TouchableOpacity>
+            )
+          ) : (
+            // Regular text clue data
+            <Text style={styles.hiderClueText}>
+              {currentHider.additionalData || 'No additional information'}
+            </Text>
+          )}
+          
+          {/* Additional info for distance/direction clues */}
+          {currentHider.distance && !isExactLocation && (
+            <Text style={styles.distanceText}>
+              Distance: {currentHider.distance.toFixed(0)}m
+            </Text>
+          )}
+          {currentHider.direction && (
+            <Text style={styles.directionText}>
+              Direction: {currentHider.direction}
+            </Text>
+          )}
+        </View>
+      </View>
+    );
+  };
 
   const renderPurchasedClue = ({ item }: { item: Clue }) => {
     const timeAgo = new Date(item.timestamp).toLocaleTimeString();
     const isImage = typeof item.text === 'string' && /\/api\/uploads\/files\//.test(item.text);
-    // Only render the full image when the item is currently visible to the user
     const shouldRenderImage = isImage && visibleClueIds.has(item.id);
     
-    // Check if this is an exact location clue with location data
-    const isExactLocationClue = item.clueTypeId === 'exact-location' && item.location;
+    // Check for multi-hider clue data
+    const hasMultiHiderData = item.hiderData && item.hiderData.length > 0;
+    const isExactLocationClue = item.clueTypeId === 'exact-location';
+    const isSelfieClue = item.clueTypeId === 'selfie';
     
-    const handleLocationCluePress = () => {
+    // Legacy single location clue support
+    const hasLegacyLocation = item.location && !hasMultiHiderData;
+    
+    const getClueTypeName = () => {
+      if (isExactLocationClue) return 'Exact Location Clue';
+      if (isSelfieClue) return 'Selfie Clue';
+      if (item.clueTypeId === 'closest-landmark') return 'Landmark Clue';
+      if (item.clueTypeId === 'relative-direction') return 'Direction Clue';
+      if (item.clueTypeId === 'distance-from-seekers') return 'Distance Clue';
+      return 'Purchased Clue';
+    };
+    
+    const handleLegacyLocationPress = () => {
       if (item.location) {
-        setMapLocation({
+        setMapLocations([{
           latitude: item.location.latitude,
           longitude: item.location.longitude,
           teamName: item.location.teamName,
-        });
+        }]);
         setMapModalVisible(true);
       }
     };
 
     return (
       <TouchableOpacity
-        style={[styles.purchasedClueCard, isExactLocationClue && styles.locationClueCard]}
-        onPress={isExactLocationClue ? handleLocationCluePress : undefined}
-        disabled={!isExactLocationClue}
+        style={[
+          styles.purchasedClueCard, 
+          isExactLocationClue && styles.locationClueCard,
+          hasMultiHiderData && styles.multiHiderClueCard
+        ]}
+        onPress={hasLegacyLocation ? handleLegacyLocationPress : undefined}
+        disabled={!hasLegacyLocation}
       >
         <View style={styles.purchasedClueHeader}>
           <Text style={styles.purchasedClueName}>
-            {isExactLocationClue ? 'Exact Location Clue' : 'Purchased Clue'}
+            {getClueTypeName()}
           </Text>
           <Text style={styles.purchasedClueTime}>{timeAgo}</Text>
         </View>
         
-        {isExactLocationClue && item.location ? (
+        {/* Main clue text */}
+        <Text style={styles.purchasedClueContent}>{item.text}</Text>
+        
+        {/* Multi-hider data display */}
+        {hasMultiHiderData && (
+          <MultiHiderClueDisplay 
+            clue={item} 
+            hiderData={item.hiderData!} 
+            shouldRenderImages={shouldRenderImage}
+          />
+        )}
+        
+        {/* Legacy single location display */}
+        {hasLegacyLocation && (
           <View>
-            <Text style={styles.purchasedClueContent}>
-              Location of {item.location.teamName}
-            </Text>
             <Text style={styles.coordinatesText}>
-              {item.location.latitude.toFixed(6)}, {item.location.longitude.toFixed(6)}
+              {item.location!.latitude.toFixed(6)}, {item.location!.longitude.toFixed(6)}
             </Text>
             <Text style={styles.mapHint}>📍 Tap to view on map</Text>
           </View>
-        ) : (
-          <Text style={styles.purchasedClueContent}>{item.text}</Text>
         )}
         
-        {isImage && (
+        {/* Legacy single image display */}
+        {isImage && !hasMultiHiderData && (
           shouldRenderImage ? (
             <Image
               source={{ uri: item.text }}
@@ -288,18 +496,18 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
               resizeMode="cover"
             />
           ) : (
-            // lightweight placeholder to indicate an image exists without loading it
             <View style={{ width: '100%', height: 120, borderRadius: 8, marginTop: 8, backgroundColor: '#eee', alignItems: 'center', justifyContent: 'center' }}>
               <Text style={{ color: '#666' }}>Image (tap to view)</Text>
             </View>
           )
         )}
+        
         <Text style={styles.purchasedClueCost}>Cost: {item.cost} tokens</Text>
       </TouchableOpacity>
     );
   };
 
-  const hiderTeams = game.teams.filter(t => t.role === 'hider');
+  const hiderTeams = game.teams.filter((t: Team) => t.role === 'hider');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -373,16 +581,14 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
       </ScrollView>
       
       {/* Map Modal for exact location clues */}
-      {mapLocation && (
+      {mapLocations.length > 0 && (
         <MapModal
           visible={mapModalVisible}
           onClose={() => {
             setMapModalVisible(false);
-            setMapLocation(null);
+            setMapLocations([]);
           }}
-          latitude={mapLocation.latitude}
-          longitude={mapLocation.longitude}
-          teamName={mapLocation.teamName}
+          locations={mapLocations}
         />
       )}
     </SafeAreaView>
@@ -520,6 +726,12 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 20,
   },
+  rangeText: {
+    fontSize: 12,
+    color: '#007acc',
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
   insufficientText: {
     fontSize: 12,
     color: '#e74c3c',
@@ -533,6 +745,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: '#27ae60',
+  },
+  multiHiderClueCard: {
+    backgroundColor: '#f0f8ff',
+    borderLeftColor: '#007acc',
   },
   purchasedClueHeader: {
     flexDirection: 'row',
@@ -602,6 +818,94 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#2196f3',
     fontStyle: 'italic',
+    marginTop: 4,
+  },
+  // Multi-hider clue styles
+  multiHiderContainer: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginTop: 8,
+  },
+  navigationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#e9ecef',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  navButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  navButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#003366',
+  },
+  disabledNav: {
+    color: '#ccc',
+  },
+  hiderInfo: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  hiderCounter: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
+  hiderClueContent: {
+    padding: 16,
+  },
+  hiderClueText: {
+    fontSize: 15,
+    color: '#333',
+    lineHeight: 20,
+  },
+  distanceText: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 4,
+  },
+  directionText: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 2,
+  },
+  selfieImage: {
+    width: '100%',
+    height: 240,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: 120,
+    backgroundColor: '#eee',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  placeholderText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  tapToHideText: {
+    color: '#666',
+    fontSize: 12,
+    textAlign: 'center',
     marginTop: 4,
   },
 });
