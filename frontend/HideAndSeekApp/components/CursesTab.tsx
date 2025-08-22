@@ -145,8 +145,16 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
     );
   }
 
-  // disable if the team doesn't have enough tokens
+  // disable if the team doesn't have enough tokens or game isn't active
   const insufficientTokens = (currentTeam.tokens ?? 0) < 10;
+  const gameActive = game.status === 'active';
+
+  const getStatusMessage = () => {
+    if (game.status === 'waiting') return 'Game has not started yet. Curses are available once the game begins.';
+    if (game.status === 'paused') return 'Game is paused. Curse actions are temporarily disabled.';
+    if (game.status === 'ended') return 'Game has ended. Curses are no longer available.';
+    return null;
+  };
 
   return (
     <View style={styles.container}>
@@ -169,13 +177,14 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
           <TouchableOpacity
             style={[
               styles.applyButton,
-              (availableTargets.length === 0 || loading || insufficientTokens) && styles.disabledButton,
+              (availableTargets.length === 0 || loading || insufficientTokens || !gameActive) && styles.disabledButton,
             ]}
             onPress={() => {
+              if (!gameActive) return;
               fetchAvailableTargets();
               setShowTargetModal(true);
             }}
-            disabled={availableTargets.length === 0 || loading || insufficientTokens}
+            disabled={availableTargets.length === 0 || loading || insufficientTokens || !gameActive}
           >
             <MaterialIcons name="flash-on" size={24} color="white" />
             <Text style={styles.applyButtonText}>
@@ -187,6 +196,11 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
             <Text style={styles.noTargetsText}>
               All hider teams currently have active curses. Wait for them to expire.
             </Text>
+          )}
+          {!gameActive && (
+            <View style={styles.statusContainer}>
+              <Text style={styles.statusText}>{getStatusMessage()}</Text>
+            </View>
           )}
         </View>
 
@@ -482,6 +496,19 @@ const styles = StyleSheet.create({
     color: '#34495e',
     flex: 1,
     lineHeight: 20,
+  },
+  statusContainer: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#fff3cd',
+    borderRadius: 8,
+    marginHorizontal: 16,
+    alignItems: 'center',
+  },
+  statusText: {
+    color: '#856404',
+    fontSize: 14,
+    textAlign: 'center',
   },
   
   // Modal styles
