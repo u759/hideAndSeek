@@ -49,11 +49,18 @@
         "FOREGROUND_SERVICE_LOCATION",
         "WAKE_LOCK",
         "RECEIVE_BOOT_COMPLETED",
-        "SYSTEM_ALERT_WINDOW"
+        "SYSTEM_ALERT_WINDOW",
+        "USE_FULL_SCREEN_INTENT",
+        "VIBRATE",
+        "FLASHLIGHT",
+        "DISABLE_KEYGUARD",
+        "REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
       ],
       "notification": {
         "icon": "./assets/icon.png",
-        "color": "#003366"
+        "color": "#003366",
+        "androidMode": "default",
+        "androidCollapsedTitle": "UBCeek Game Update"
       },
       "package": "com.ayydeen.HideAndSeekApp"
     },
@@ -64,7 +71,9 @@
           "icon": "./assets/icon.png",
           "color": "#003366",
           "mode": "production",
-          "defaultChannel": "default"
+          "defaultChannel": "game-alerts",
+          "sounds": ["./assets/notif.wav"],
+          "enableBackgroundRemoteNotifications": true
         }
       ],
       [

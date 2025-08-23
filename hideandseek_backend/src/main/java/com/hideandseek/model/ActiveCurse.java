@@ -6,6 +6,7 @@ public class ActiveCurse {
     private long endTime;       // Timestamp in milliseconds (for frontend compatibility)
     private boolean completed;  // Whether the hider marked this curse as completed
     private Long completedAt;   // When it was marked completed (ms)
+    private boolean acknowledged; // Whether the hider acknowledged seeing the curse
     
     // Default constructor
     public ActiveCurse() {}
@@ -60,5 +61,13 @@ public class ActiveCurse {
 
     public void setCompletedAt(Long completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public boolean isAcknowledged() {
+        return acknowledged;
+    }
+
+    public void setAcknowledged(boolean acknowledged) {
+        this.acknowledged = acknowledged;
     }
 }

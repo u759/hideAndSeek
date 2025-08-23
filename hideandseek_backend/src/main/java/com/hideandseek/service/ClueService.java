@@ -277,7 +277,7 @@ public class ClueService {
             requestData.put("clueTypeName", clueType.getName());
             requestData.put("requestingTeamName", "Seeker Team");
             requestData.put("responseType", "photo");
-            requestData.put("description", "Take a selfie of your whole team at arm's length, including your surroundings.");
+            requestData.put("description", "Take a selfie of your whole team at arm's length, including your surroundings.\n\n\"Surroundings\" is defined as:\n• The exterior of your nearest building, including its roof,\n• OR the interior of the building you are in,\n• OR if neither are possible, then your photo must capture your general surroundings and can be definitively photo-matched to the IRL spot it was taken at, with no room for doubt.");
             requestData.put("expirationTimestamp", clueRequest.getExpirationTimestamp());
             
             webSocketHandler.broadcastClueRequest(game.getId(), hider.getId(), requestData);

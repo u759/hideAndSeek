@@ -228,6 +228,9 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
                       ⚠️ Penalty: +{appliedCurse.curse.penalty}s hiding time if not completed
                     </Text>
                   )}
+                  {targetTeam?.activeCurses?.some(ac => ac.curse.id === appliedCurse.curse.id && ac.endTime > Date.now() && ac.acknowledged && !ac.completed) && (
+                    <Text style={styles.acknowledgedBadge}>Acknowledged 👁️</Text>
+                  )}
                   {isCompleted && (
                     <Text style={styles.completedBadge}>Completed ✔︎</Text>
                   )}
@@ -277,6 +280,9 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
                     <Text style={styles.penaltyWarning}>
                       ⚠️ Penalty: +{curse.curse.penalty}s hiding time if not completed
                     </Text>
+                  )}
+                  {curse.acknowledged && !curse.completed && (
+                    <Text style={styles.acknowledgedBadge}>Acknowledged 👁️</Text>
                   )}
                   {curse.completed && (
                     <Text style={styles.completedBadge}>Completed ✔︎</Text>
@@ -450,10 +456,20 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   completedBadge: {
-    marginTop: 6,
+    marginTop: 8,
     alignSelf: 'flex-start',
     backgroundColor: '#e8f5e9',
     color: '#2e7d32',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    fontWeight: '700',
+  },
+  acknowledgedBadge: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    backgroundColor: '#e3f2fd',
+    color: '#1565c0',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,

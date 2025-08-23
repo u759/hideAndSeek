@@ -35,7 +35,7 @@ const MapModal: React.FC<MapModalProps> = ({
   
   // Calculate appropriate zoom level based on the spread of locations
   const getZoomLevel = () => {
-    if (locations.length === 1) return 18;
+    if (locations.length === 1) return 15;
     
     const lats = locations.map(l => l.latitude);
     const lngs = locations.map(l => l.longitude);

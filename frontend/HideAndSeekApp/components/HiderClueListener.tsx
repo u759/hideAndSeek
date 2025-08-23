@@ -159,7 +159,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
   const upload = async (uri: string) => {
     if (!request) return;
     try {
-      await ApiService.uploadSelfie(request.id, teamId, uri);
+      await ApiService.uploadSelfie(request.id, teamId, gameId, uri);
       Alert.alert('Selfie sent', 'Your selfie was delivered to the seekers.');
       dismiss();
     } catch (e: any) {
@@ -203,7 +203,13 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
           )}
 
           {isPhoto && (
-            <View style={styles.row}>
+            <View style={{ width: '100%' }}>
+              <Text style={styles.desc}>
+                The Hiders must send the Seekers a team selfie at arm’s length that clearly shows their surroundings. Acceptable surroundings include:{"\n\n"}
+                - The exterior of the nearest building (including roof),{"\n"}
+                - The interior of the building they’re in,{"\n"}
+                - Or, if neither is possible, a photo of the area that can be unmistakably matched to its real location.
+              </Text>
               <Pressable onPress={openCamera} style={[styles.button, styles.primary]}>
                 <Text style={styles.buttonText}>Open Camera</Text>
               </Pressable>

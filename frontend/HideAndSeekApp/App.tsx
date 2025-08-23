@@ -16,6 +16,7 @@ import GameScreen from './screens/GameScreen';
 import { RootStackParamList } from './types';
 // Ensure background tasks are registered on app init
 import './backgroundTasks';
+import { createNotificationChannelsAsync } from './hooks/usePushNotifications';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -24,6 +25,9 @@ export default function App() {
     // Configure background fetch on app startup
     const setupBackgroundFetch = async () => {
       try {
+  // Ensure Android channels exist before any notifications arrive (background/cold)
+  await createNotificationChannelsAsync();
+
         const status = await BackgroundTask.getStatusAsync();
         console.log('Background task status:', status);
         
