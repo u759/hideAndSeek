@@ -52,7 +52,8 @@ public class FileUploadController {
     public ResponseEntity<?> uploadSelfie(
             @RequestParam("file") MultipartFile file,
             @RequestParam("requestId") String requestId,
-            @RequestParam("teamId") String teamId) {
+            @RequestParam("teamId") String teamId,
+            @RequestParam("gameId") String gameId) {
         
         try {
             if (file.isEmpty()) {
@@ -65,8 +66,8 @@ public class FileUploadController {
                 return ResponseEntity.badRequest().body(Map.of("error", "File must be an image"));
             }
 
-            // Resolve a writable upload directory and ensure it exists
-            Path uploadPath = resolveUploadDir();
+            // Create game-specific upload directory
+            Path uploadPath = resolveUploadDir().resolve(gameId);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
@@ -88,7 +89,7 @@ public class FileUploadController {
                 // Best-effort: infer host from X-Forwarded-* headers or request context
                 baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
             } catch (Exception ignored) {}
-            String relativePath = "/api/uploads/files/" + filename;
+            String relativePath = "/api/uploads/files/" + gameId + "/" + filename;
             String fileUrl = (baseUrl != null && !baseUrl.isEmpty()) ? baseUrl + relativePath : relativePath;
 
             // Submit the photo URL as the response to the clue request
@@ -110,8 +111,37 @@ public class FileUploadController {
         }
     }
 
+    @GetMapping("/files/{gameId}/{filename}")
+    public ResponseEntity<?> getFile(@PathVariable String gameId, @PathVariable String filename) {
+        try {
+            // Prevent path traversal by normalizing to a basename
+            String safeGameId = Paths.get(gameId).getFileName().toString();
+            String safeName = Paths.get(filename).getFileName().toString();
+            Path filePath = resolveUploadDir().resolve(safeGameId).resolve(safeName).normalize();
+            if (!Files.exists(filePath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Return the file content
+            byte[] fileContent = Files.readAllBytes(filePath);
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", contentType)
+                    .body(fileContent);
+
+        } catch (IOException e) {
+            log.error("Error retrieving file", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // Legacy endpoint for backward compatibility
     @GetMapping("/files/{filename}")
-    public ResponseEntity<?> getFile(@PathVariable String filename) {
+    public ResponseEntity<?> getFileLegacy(@PathVariable String filename) {
         try {
             // Prevent path traversal by normalizing to a basename
             String safeName = Paths.get(filename).getFileName().toString();

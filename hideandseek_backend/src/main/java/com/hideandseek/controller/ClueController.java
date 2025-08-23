@@ -26,7 +26,7 @@ public class ClueController {
             return ResponseEntity.ok(clueTypes);
         } catch (Exception e) {
             log.error("Error fetching clue types", e);
-            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to fetch clue types"));
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -37,7 +37,7 @@ public class ClueController {
             return ResponseEntity.ok(history);
         } catch (Exception e) {
             log.error("Error fetching clue history", e);
-            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to fetch clue history"));
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -62,7 +62,7 @@ public class ClueController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             log.error("Error purchasing clue", e);
-            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to purchase clue"));
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
     
@@ -73,7 +73,7 @@ public class ClueController {
             return ResponseEntity.ok(requests);
         } catch (Exception e) {
             log.error("Error fetching pending clue requests", e);
-            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to fetch pending clue requests"));
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
     
@@ -96,7 +96,7 @@ public class ClueController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             log.error("Error responding to clue request", e);
-            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to respond to clue request"));
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -107,7 +107,7 @@ public class ClueController {
             return ResponseEntity.ok(requests);
         } catch (Exception e) {
             log.error("Error fetching clue requests debug info", e);
-            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to fetch debug info"));
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
 }

@@ -39,6 +39,7 @@ export interface ActiveCurse {
   endTime: number;
   completed?: boolean;
   completedAt?: number;
+  acknowledged?: boolean;
 }
 
 export interface AppliedCurse {

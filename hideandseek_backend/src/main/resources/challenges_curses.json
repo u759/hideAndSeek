@@ -26,13 +26,13 @@
     },
     {
       "title": "Acting School",
-      "description": "Play 5 successful rounds of Charades. You may skip a word for any reason, however if more than 3 skips are used this challenge is vetoed.\n\nGenerate words using this website, on medium difficulty: [itsgamenight.com/charades-generator/](https://itsgamenight.com/charades-generator/ \"‌\").",
+      "description": "Play 5 successful rounds of Charades. You may skip a word for any reason, however if more than 3 skips are used this challenge is vetoed.\n\nGenerate words using this website, on medium difficulty: [Charades Generator](https://itsgamenight.com/charades-generator/).",
       "token_count": 8,
       "difficulty": "Easy Challenge"
     },
     {
       "title": "Bracket City",
-      "description": "Play The Atlantic Times’s \"Bracket City\" game. You must get a score above 50, otherwise this challenge is automatically vetoed.\n\nYou may not look up answers, and you may not move while attempting this challenge.",
+      "description": "Play The Atlantic Times’s \"Bracket City\" game [here](https://www.theatlantic.com/games/bracket-city/). You must get a score above 50, otherwise this challenge is automatically vetoed.\n\nYou may not look up answers, and you may not move while attempting this challenge.",
       "token_count": 11,
       "difficulty": "Easy Challenge"
     },
@@ -182,7 +182,7 @@
     },
     {
       "title": "Wordle!",
-      "description": "Attempt a game of Wordle. You may not move until you finish.\n\nYou are frozen for 30 seconds, multiplied by the amount of total entries made on the Wordle.\n(i.e. 6 guesses = frozen for 3 mins).",
+      "description": "Attempt a game of Wordle on [this website](https://wordleunlimited.org/). You may not move until you finish.\n\nYou are frozen for 30 seconds, multiplied by the amount of total entries made on the Wordle.\n(i.e. 6 guesses = frozen for 3 mins).",
       "price": 10,
       "time_seconds": 180,
       "penalty": 0,

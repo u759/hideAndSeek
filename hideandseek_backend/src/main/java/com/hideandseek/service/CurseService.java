@@ -159,6 +159,36 @@ public class CurseService {
         );
     }
 
+    public Map<String, Object> acknowledgeCurse(String gameId, String hiderTeamId, String curseId) {
+        Game game = gameStore.getGame(gameId);
+        if (game == null) throw new IllegalArgumentException("Game not found");
+
+        Team team = gameStore.getTeam(gameId, hiderTeamId);
+        if (team == null) throw new IllegalArgumentException("Team not found");
+        if (!"hider".equals(team.getRole())) throw new IllegalStateException("Only hiders can acknowledge curses");
+
+        long now = System.currentTimeMillis();
+        // Clean expired first
+        team.getActiveCurses().removeIf(ac -> ac.getEndTime() <= now);
+        var active = team.getActiveCurses().stream()
+                .filter(ac -> ac.getCurse() != null && ac.getCurse().getId().equals(curseId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Active curse not found or already expired"));
+
+        if (active.isAcknowledged()) {
+            throw new IllegalStateException("Curse already acknowledged");
+        }
+        active.setAcknowledged(true);
+
+        gameStore.updateGame(game);
+        webSocketHandler.broadcastToGame(gameId, game);
+        return Map.of(
+                "team", team,
+                "activeCurse", active,
+                "message", "Curse acknowledged successfully"
+        );
+    }
+
     /**
      * Process expired curses and apply penalties if they weren't completed
      */

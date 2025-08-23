@@ -172,31 +172,47 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
                 clueType.description
               );
               
-              // Check if this is an exact location clue with multiple hiders
-              if (clueType.id === 'exact-location' && result.hiderData && result.hiderData.length > 0) {
-                // Collect all locations from hider data
-                const locations = result.hiderData
-                  .filter((hider: any) => hider.latitude && hider.longitude)
-                  .map((hider: any) => ({
-                    latitude: hider.latitude!,
-                    longitude: hider.longitude!,
-                    teamName: hider.teamName,
+              // Automatically show map for exact location clues
+              if (clueType.id === 'exact-location') {
+                if (result.locations && result.locations.length > 0) {
+                  // Use new locations array format
+                  const locations = result.locations.map((loc: any) => ({
+                    latitude: loc.latitude,
+                    longitude: loc.longitude,
+                    teamName: loc.teamName,
                   }));
-                
-                if (locations.length > 0) {
                   setMapLocations(locations);
                   setMapModalVisible(true);
                   loadClueHistory();
+                } else if (result.hiderData && result.hiderData.length > 0) {
+                  // Backward compatibility with hiderData format
+                  const locations = result.hiderData
+                    .filter((hider: any) => hider.latitude && hider.longitude)
+                    .map((hider: any) => ({
+                      latitude: hider.latitude!,
+                      longitude: hider.longitude!,
+                      teamName: hider.teamName,
+                    }));
+                  
+                  if (locations.length > 0) {
+                    setMapLocations(locations);
+                    setMapModalVisible(true);
+                    loadClueHistory();
+                  }
+                } else if (result.location) {
+                  // Legacy single location format
+                  setMapLocations([{
+                    latitude: result.location.latitude,
+                    longitude: result.location.longitude,
+                    teamName: result.location.teamName,
+                  }]);
+                  setMapModalVisible(true);
+                  loadClueHistory();
+                } else {
+                  // Fallback to alert if no location data found
+                  Alert.alert('Success', result.message || 'Clue purchased successfully!');
+                  loadClueHistory();
                 }
-              } else if (clueType.id === 'exact-location' && result.location) {
-                // Backward compatibility with single location
-                setMapLocations([{
-                  latitude: result.location.latitude,
-                  longitude: result.location.longitude,
-                  teamName: result.location.teamName,
-                }]);
-                setMapModalVisible(true);
-                loadClueHistory();
               } else {
                 // Show regular alert for other clue types
                 let alertText = result.text;

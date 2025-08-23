@@ -9,6 +9,7 @@ import {
   Alert,
   Modal,
   TextInput,
+  Linking,
 } from 'react-native';
 import { Game, Team, DrawnCard, Challenge, Curse } from '../types';
 import ApiService from '../services/api';
@@ -18,6 +19,56 @@ interface ChallengesTabProps {
   currentTeam: Team;
   onRefresh: () => void;
 }
+
+// Helper function to render text with clickable links
+const renderTextWithLinks = (text: string, style: any) => {
+  // Regex to match markdown-style links: [text](url)
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      parts.push(
+        <Text key={`text-${lastIndex}`} style={style}>
+          {text.substring(lastIndex, match.index)}
+        </Text>
+      );
+    }
+
+    // Add the clickable link
+    const linkText = match[1];
+    const linkUrl = match[2];
+    parts.push(
+      <Text
+        key={`link-${match.index}`}
+        style={[style, { color: '#3498db', textDecorationLine: 'underline' }]}
+        onPress={() => {
+          Linking.openURL(linkUrl).catch(() => {
+            Alert.alert('Error', 'Could not open link');
+          });
+        }}
+      >
+        {linkText}
+      </Text>
+    );
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text after the last link
+  if (lastIndex < text.length) {
+    parts.push(
+      <Text key={`text-${lastIndex}`} style={style}>
+        {text.substring(lastIndex)}
+      </Text>
+    );
+  }
+
+  return parts.length > 0 ? <Text>{parts}</Text> : <Text style={style}>{text}</Text>;
+};
 
 const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefresh }) => {
   const [drawnCard, setDrawnCard] = useState<DrawnCard | null>(null);
@@ -229,7 +280,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
           {isChallenge ? '🎯 CHALLENGE' : '⚡ CURSE'}
         </Text>
         <Text style={styles.cardTitle}>{card.title}</Text>
-        <Text style={styles.cardDescription}>{card.description}</Text>
+        {renderTextWithLinks(card.description, styles.cardDescription)}
         {isChallenge && (
           <View style={styles.rewardContainer}>
             <Text style={styles.cardTokens}>

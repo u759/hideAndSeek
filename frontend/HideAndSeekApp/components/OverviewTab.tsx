@@ -243,23 +243,56 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
                     {ac.completed ? (
                       <Text style={styles.completedBadge}>Completed ✔︎</Text>
                     ) : (
-                      <TouchableOpacity
-                        style={[styles.fullWidthButton, styles.startButton, { marginTop: 8, paddingVertical: 14 }]}
-                        onPress={async () => {
-                          try {
-                            await ApiService.markCurseCompleted(game.id, currentTeam.id, ac.curse.id);
-                            Alert.alert('Marked', 'Curse marked as completed.');
-                            onRefresh();
-                          } catch (e) {
-                            Alert.alert('Error', e instanceof Error ? e.message : 'Failed to mark completed');
-                          }
-                        }}
-                      >
-                        <View style={styles.controlButtonContentCentered}>
-                          <Ionicons name="checkmark-circle-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
-                          <Text style={styles.controlButtonText}>Mark Completed</Text>
-                        </View>
-                      </TouchableOpacity>
+                      <View style={styles.hiderCurseActions}>
+                        {!ac.acknowledged && (
+                          <TouchableOpacity
+                            style={[styles.fullWidthButton, styles.acknowledgeButton, { marginBottom: 8 }]}
+                            onPress={async () => {
+                              try {
+                                await ApiService.acknowledgeCurse(game.id, currentTeam.id, ac.curse.id);
+                                Alert.alert('Acknowledged', 'Curse acknowledged. Seekers will be notified.');
+                                onRefresh();
+                              } catch (e) {
+                                Alert.alert('Error', e instanceof Error ? e.message : 'Failed to acknowledge curse');
+                              }
+                            }}
+                          >
+                            <View style={styles.controlButtonContentCentered}>
+                              <Ionicons name="eye-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+                              <Text style={styles.controlButtonText}>Acknowledge</Text>
+                            </View>
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity
+                          style={[styles.fullWidthButton, styles.startButton, { paddingVertical: 14 }]}
+                          onPress={() => {
+                            Alert.alert(
+                              'Confirm Completion',
+                              'Are you sure you want to mark this curse as completed? This action will notify the seekers.',
+                              [
+                                { text: 'Cancel', style: 'cancel' },
+                                {
+                                  text: 'Confirm',
+                                  onPress: async () => {
+                                    try {
+                                      await ApiService.markCurseCompleted(game.id, currentTeam.id, ac.curse.id);
+                                      Alert.alert('Marked', 'Curse marked as completed.');
+                                      onRefresh();
+                                    } catch (e) {
+                                      Alert.alert('Error', e instanceof Error ? e.message : 'Failed to mark completed');
+                                    }
+                                  },
+                                },
+                              ]
+                            );
+                          }}
+                        >
+                          <View style={styles.controlButtonContentCentered}>
+                            <Ionicons name="checkmark-circle-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+                            <Text style={styles.controlButtonText}>Mark Completed</Text>
+                          </View>
+                        </TouchableOpacity>
+                      </View>
                     )}
                   </View>
                 );
@@ -892,6 +925,12 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 4,
+  },
+  hiderCurseActions: {
+    marginTop: 8,
+  },
+  acknowledgeButton: {
+    backgroundColor: '#3498db',
   },
 });
 
