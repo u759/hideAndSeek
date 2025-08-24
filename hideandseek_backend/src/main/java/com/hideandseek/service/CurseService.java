@@ -3,6 +3,7 @@ package com.hideandseek.service;
 import com.hideandseek.model.*;
 import com.hideandseek.store.GameStore;
 import com.hideandseek.websocket.GameWebSocketHandler;
+import com.hideandseek.logging.GameEventLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,9 @@ public class CurseService {
 
     @Autowired
     private PushService pushService;
+
+    @Autowired
+    private GameEventLogger gameEventLogger;
 
     public Map<String, Object> curseTeam(String gameId, String seekerTeamId, String targetTeamId) {
         Game game = gameStore.getGame(gameId);
@@ -94,6 +98,30 @@ public class CurseService {
         // Update game
         gameStore.updateGame(game);
 
+        // Log token deduction and curse.applied (fail-safe)
+        try {
+            Map<String, Object> tokenPayload = new HashMap<>();
+            tokenPayload.put("teamId", seekerTeam.getId());
+            tokenPayload.put("tokens", seekerTeam.getTokens());
+            tokenPayload.put("delta", -curse.getTokenCount());
+            tokenPayload.put("reason", "curse.applied");
+            tokenPayload.put("curseId", curse.getId());
+            tokenPayload.put("targetTeamId", targetTeam.getId());
+            gameEventLogger.appendEvent(gameId, "team.tokens_updated", "team", seekerTeam.getId(), tokenPayload);
+
+            Map<String, Object> appliedPayload = new HashMap<>();
+            appliedPayload.put("curseId", curse.getId());
+            appliedPayload.put("curseTitle", curse.getTitle());
+            appliedPayload.put("seekerTeamId", seekerTeam.getId());
+            appliedPayload.put("targetTeamId", targetTeam.getId());
+            appliedPayload.put("startTime", currentTime);
+            appliedPayload.put("durationMinutes", durationMinutes);
+            appliedPayload.put("timeSeconds", curse.getTimeSeconds());
+            appliedPayload.put("penaltySeconds", curse.getPenalty());
+            appliedPayload.put("costTokens", curse.getTokenCount());
+            gameEventLogger.appendEvent(gameId, "curse.applied", "team", seekerTeam.getId(), appliedPayload);
+        } catch (Exception ignored) {}
+
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
 
@@ -153,6 +181,18 @@ public class CurseService {
 
         gameStore.updateGame(game);
         webSocketHandler.broadcastToGame(gameId, game);
+
+        // Log curse.completed (fail-safe)
+        try {
+            Map<String, Object> completedPayload = new HashMap<>();
+            completedPayload.put("curseId", active.getCurse() != null ? active.getCurse().getId() : curseId);
+            completedPayload.put("teamId", hiderTeamId);
+            completedPayload.put("completedAt", now);
+            completedPayload.put("acknowledged", active.isAcknowledged());
+            completedPayload.put("startTime", active.getStartTime());
+            completedPayload.put("durationMinutes", (int) ((active.getEndTime() - active.getStartTime()) / 60000L));
+            gameEventLogger.appendEvent(gameId, "curse.completed", "team", hiderTeamId, completedPayload);
+        } catch (Exception ignored) {}
         return Map.of(
                 "team", team,
                 "activeCurse", active
@@ -182,6 +222,15 @@ public class CurseService {
 
         gameStore.updateGame(game);
         webSocketHandler.broadcastToGame(gameId, game);
+
+        // Log curse.acknowledged (fail-safe)
+        try {
+            Map<String, Object> ackPayload = new HashMap<>();
+            ackPayload.put("curseId", active.getCurse() != null ? active.getCurse().getId() : curseId);
+            ackPayload.put("teamId", hiderTeamId);
+            ackPayload.put("acknowledgedAt", now);
+            gameEventLogger.appendEvent(gameId, "curse.acknowledged", "team", hiderTeamId, ackPayload);
+        } catch (Exception ignored) {}
         return Map.of(
                 "team", team,
                 "activeCurse", active,
@@ -212,17 +261,43 @@ public class CurseService {
                     iterator.remove(); // Remove expired curse
                     gameUpdated = true;
 
+                    // Log curse.expired (fail-safe)
+                    try {
+                        Map<String, Object> expiredPayload = new HashMap<>();
+                        String expCurseId = activeCurse.getCurse() != null ? activeCurse.getCurse().getId() : null;
+                        String expCurseTitle = activeCurse.getCurse() != null ? activeCurse.getCurse().getTitle() : null;
+                        expiredPayload.put("curseId", expCurseId);
+                        expiredPayload.put("curseTitle", expCurseTitle);
+                        expiredPayload.put("teamId", team.getId());
+                        expiredPayload.put("acknowledged", activeCurse.isAcknowledged());
+                        expiredPayload.put("completed", activeCurse.isCompleted());
+                        expiredPayload.put("startTime", activeCurse.getStartTime());
+                        expiredPayload.put("endTime", activeCurse.getEndTime());
+                        expiredPayload.put("expiredAt", now);
+                        expiredPayload.put("durationMinutes", (int) ((activeCurse.getEndTime() - activeCurse.getStartTime()) / 60000L));
+                        gameEventLogger.appendEvent(gameId, "curse.expired", "system", "system", expiredPayload);
+                    } catch (Exception ignored) {}
+
                     // Apply penalty if curse wasn't completed
                     if (!activeCurse.isCompleted()) {
                         Curse curse = activeCurse.getCurse();
                         if (curse != null && curse.getPenalty() != null && curse.getPenalty() > 0) {
                             // Add penalty seconds to total hider time
                             long penaltyMs = curse.getPenalty() * 1000L;
-                            team.setTotalHiderTime(team.getTotalHiderTime() + penaltyMs);
+                            long prevTotal = team.getTotalHiderTime();
+                            team.setTotalHiderTime(prevTotal + penaltyMs);
                             
-                            // Log the penalty application
-                            System.out.println(String.format("Applied %d second penalty to team %s for uncompleted curse: %s", 
-                                curse.getPenalty(), team.getName(), curse.getTitle()));
+                            // Log the penalty application (fail-safe)
+                            try {
+                                Map<String, Object> penaltyPayload = new HashMap<>();
+                                penaltyPayload.put("curseId", curse.getId());
+                                penaltyPayload.put("teamId", team.getId());
+                                penaltyPayload.put("penaltySeconds", curse.getPenalty());
+                                penaltyPayload.put("penaltyMs", penaltyMs);
+                                penaltyPayload.put("previousTotalHiderTimeMs", prevTotal);
+                                penaltyPayload.put("newTotalHiderTimeMs", team.getTotalHiderTime());
+                                gameEventLogger.appendEvent(gameId, "curse.penalty_applied", "system", "system", penaltyPayload);
+                            } catch (Exception ignored) {}
                         }
                     }
                 }

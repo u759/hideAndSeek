@@ -143,6 +143,75 @@
       ws.onerror = () => { /* ignore */ };
     }
 
+    async function downloadLogs() {
+      if (!gameId) { alert('Missing gameId'); return; }
+      try {
+        const res = await fetch('/api/admin/games/' + gameId + '/logs', { credentials: 'same-origin' });
+        if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(text || 'Failed to download event logs');
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `game-${gameId}-events.ndjson`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('Download failed: ' + e.message);
+      }
+    }
+
+    async function downloadReadableLogs() {
+      if (!gameId) { alert('Missing gameId'); return; }
+      try {
+        const res = await fetch('/api/admin/games/' + gameId + '/logs/readable', { credentials: 'same-origin' });
+        if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(text || 'Failed to download event logs');
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `game-${gameId}-events.readable.ndjson`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('Download failed: ' + e.message);
+      }
+    }
+
+    async function downloadLocationLogs() {
+      if (!gameId) { alert('Missing gameId'); return; }
+      try {
+        const res = await fetch('/api/admin/games/' + gameId + '/locations/readable', { credentials: 'same-origin' });
+        if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(text || 'Failed to download location logs');
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `game-${gameId}-locations.readable.ndjson`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('Download failed: ' + e.message);
+      }
+    }
+
     async function init() {
       initMap();
       openWs();
@@ -163,6 +232,8 @@
     <div class="toolbar">
       <button class="secondary" onclick="history.back()">Back</button>
       <button onclick="location.reload()">Refresh</button>
+      <button class="secondary" onclick="downloadReadableLogs()">Event Logs</button>
+      <button class="secondary" onclick="downloadLocationLogs()">Location Logs</button>
     </div>
     <h2 id="gameTitle">Game</h2>
     <div class="stat">Status: <strong id="gameStatus">-</strong></div>

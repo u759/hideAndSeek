@@ -64,6 +64,8 @@
 					<td class="row-actions">
 						<button class="secondary" onclick="viewGame('${g.id}')">View</button>
 						<button onclick="openLive('${g.id}')">Live</button>
+						<button class="secondary" onclick="downloadReadableLogs('${g.id}')">Event Logs</button>
+						<button class="secondary" onclick="downloadLocationLogs('${g.id}')">Location Logs</button>
 						<button class="danger" onclick="deleteGame('${g.id}')">Delete</button>
 					</td>`;
 				tbody.appendChild(tr);
@@ -73,6 +75,72 @@
 		async function viewGame(id) {
 			const d = await api('/api/admin/games/' + id);
 			alert('Game '+d.gameCode+'\nStatus: '+d.status+'\nTeams: '+d.teamCount);
+		}
+
+		async function downloadLogs(id) {
+			try {
+				const res = await fetch('/api/admin/games/' + id + '/logs', { credentials: 'same-origin' });
+				if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+				if (!res.ok) {
+					const text = await res.text().catch(() => '');
+					throw new Error(text || 'Failed to download logs');
+				}
+				const blob = await res.blob();
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `game-${id}-events.ndjson`;
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				URL.revokeObjectURL(url);
+			} catch (e) {
+				alert('Download failed: ' + e.message);
+			}
+		}
+
+		async function downloadReadableLogs(id) {
+			try {
+				const res = await fetch('/api/admin/games/' + id + '/logs/readable', { credentials: 'same-origin' });
+				if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+				if (!res.ok) {
+					const text = await res.text().catch(() => '');
+					throw new Error(text || 'Failed to download readable logs');
+				}
+				const blob = await res.blob();
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `game-${id}-events.readable.ndjson`;
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				URL.revokeObjectURL(url);
+			} catch (e) {
+				alert('Download failed: ' + e.message);
+			}
+		}
+
+		async function downloadLocationLogs(id) {
+			try {
+				const res = await fetch('/api/admin/games/' + id + '/locations/readable', { credentials: 'same-origin' });
+				if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+				if (!res.ok) {
+					const text = await res.text().catch(() => '');
+					throw new Error(text || 'Failed to download location logs');
+				}
+				const blob = await res.blob();
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `game-${id}-locations.readable.ndjson`;
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				URL.revokeObjectURL(url);
+			} catch (e) {
+				alert('Download failed: ' + e.message);
+			}
 		}
 
 		async function deleteGame(id) {
