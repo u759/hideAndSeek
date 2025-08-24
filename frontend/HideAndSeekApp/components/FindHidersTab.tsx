@@ -55,7 +55,7 @@ const FindHidersTab: React.FC<FindHidersTabProps> = ({ game, currentTeam, onRefr
                   {
                     text: 'OK',
                     onPress: () => {
-                      onRefresh();
+                      // No need to call onRefresh - parent will get WebSocket update automatically
                       loadGameStats();
                     }
                   }
@@ -96,9 +96,9 @@ const FindHidersTab: React.FC<FindHidersTabProps> = ({ game, currentTeam, onRefr
         </Text>
       </View>
       <TouchableOpacity
-        style={[styles.foundButton, loading && styles.disabledButton]}
+        style={[styles.foundButton, (loading || !gameActive) && styles.disabledButton]}
         onPress={() => markHiderFound(hider.id, hider.name)}
-        disabled={loading}
+        disabled={loading || !gameActive}
       >
         <Text style={styles.foundButtonText}>Found!</Text>
       </TouchableOpacity>
@@ -107,6 +107,7 @@ const FindHidersTab: React.FC<FindHidersTabProps> = ({ game, currentTeam, onRefr
 
   const hiders = game.teams.filter(team => team.role === 'hider');
   const seekers = game.teams.filter(team => team.role === 'seeker');
+  const gameActive = game.status === 'active';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -114,7 +115,7 @@ const FindHidersTab: React.FC<FindHidersTabProps> = ({ game, currentTeam, onRefr
         style={styles.content}
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={() => {
-            onRefresh();
+            // No need to call onRefresh - parent will get WebSocket update automatically
             loadGameStats();
           }} />
         }
@@ -153,7 +154,12 @@ const FindHidersTab: React.FC<FindHidersTabProps> = ({ game, currentTeam, onRefr
           <Text style={styles.sectionTitle}>
             Remaining Hiders ({hiders.length})
           </Text>
-          
+          {!gameActive && (
+            <View style={styles.statusContainer}>
+              <Text style={styles.statusText}>{game.status === 'waiting' ? 'Game has not started yet. You can mark hiders once the game begins.' : game.status === 'paused' ? 'Game is paused. Marking hiders is disabled.' : 'Game has ended. Marking hiders is disabled.'}</Text>
+            </View>
+          )
+          }
           {hiders.length === 0 ? (
             <View style={styles.noHidersCard}>
               <Text style={styles.noHidersText}>
@@ -341,6 +347,19 @@ const styles = StyleSheet.create({
   seekerTokens: {
     fontSize: 14,
     color: '#666',
+  },
+  statusContainer: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#fff3cd',
+    borderRadius: 8,
+    marginHorizontal: 16,
+    alignItems: 'center',
+  },
+  statusText: {
+    color: '#856404',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
 

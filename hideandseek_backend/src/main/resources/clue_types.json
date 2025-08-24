@@ -4,31 +4,36 @@
       "id": "exact-location",
       "name": "Exact location",
       "description": "The Hiders' exact location on a map is sent to the Seekers.",
+      "range" : 300,
       "cost": 15
     },
     {
       "id": "selfie",
       "name": "Selfie",
-      "description": "The Hiders must send the Seekers a selfie of their whole team at arm’s length, including their surroundings.",
-      "cost": 10
+      "description": "The Hiders must send the Seekers a selfie of their whole team at arm's length, including their surroundings. “Surroundings” is defined as: \n\n- The exterior of your nearest building, including its roof,\n- OR the interior of the building you are in,\n- OR if neither are possible, then your photo must capture your general surroundings and can be definitively be photo-matched to the IRL spot it was taken at, with no room for doubt.\n\nIf the Hiders don't respond within 1 minute, their exact location will automatically be revealed to the Seekers.",
+      "range": 300,
+      "cost": 8
     },
     {
-      "id": "closest-landmark",
-      "name": "Closest landmark...",
-      "description": "The Seekers will chose one of the following landmarks.\n\n1. named street\n2. library\n3. museum\n4. parking lot\n\nThe Hiders must tell the Seekers the the name of the chosen landmark type.",
+      "id": "closest-building",
+      "name": "Closest building",
+      "description": "The Hiders must tell the Seekers the the name of their closest building.",
+      "range": 350,
       "cost": 8
     },
     {
       "id": "relative-direction",
       "name": "Relative direction",
-      "description": "The Seekers will learn the cardinal directions of any Hider teams within the clue range, relative to the Seeker’s current location.",
-      "cost": 5
+      "description": "The Seekers will learn the cardinal directions of any Hider teams within the clue range, relative to the Seeker's current location.",
+      "range": 400,
+      "cost": 3
     },
     {
       "id": "distance-from-seekers",
       "name": "Distance from Seekers",
       "description": "The Seekers will learn their straight-line distance to any Hider teams within the clue range.",
-      "cost": 5
+      "range": null,
+      "cost": 3
     }
   ]
 }

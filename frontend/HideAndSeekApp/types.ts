@@ -10,6 +10,8 @@ export interface Curse {
   title: string;
   description: string;
   token_count: number | string | null;
+  time_seconds?: number;
+  penalty?: number;
 }
 
 export interface Team {
@@ -37,6 +39,7 @@ export interface ActiveCurse {
   endTime: number;
   completed?: boolean;
   completedAt?: number;
+  acknowledged?: boolean;
 }
 
 export interface AppliedCurse {
@@ -57,6 +60,63 @@ export interface Game {
   endTime?: number;
   round: number;
   status: 'waiting' | 'active' | 'paused' | 'ended';
+  roundLengthMinutes?: number; // Round length in minutes (null = no time limit)
+  pausedByTimeLimit?: boolean; // True if paused due to round time limit
+  // New timing fields
+  gameStartTime?: number; // First time the game became active
+  roundStartTime?: number; // Start time of the current round
+  pausedDurationAtRoundStart?: number; // Snapshot of paused duration at round start
+  // Computed durations (milliseconds), exclude paused time
+  gameDuration?: number;
+  roundDuration?: number;
+}
+
+// Enhanced stats returned from GET /api/game/{gameId}/stats
+export interface GameStatsTeam {
+  id: string;
+  name: string;
+  role: 'seeker' | 'hider';
+  tokens: number;
+  totalHiderTime: number;
+  totalHiderTimeFormatted: string;
+  // Optional to allow backward compatibility if server hasn't populated yet
+  completedChallengesCount?: number;
+  cursesAppliedCount?: number;
+}
+
+export interface GameStatsWinner {
+  id: string;
+  name: string;
+  totalHiderTime: number;
+  totalHiderTimeFormatted: string;
+}
+
+export interface Leaderboard {
+  byHiderTime: Array<{
+    id: string;
+    name: string;
+    totalHiderTime: number;
+    totalHiderTimeFormatted: string;
+  }>;
+  byChallengesCompleted: Array<{
+    id: string;
+    name: string;
+    completedChallengesCount: number;
+  }>;
+  byCursesApplied: Array<{
+    id: string;
+    name: string;
+    cursesAppliedCount: number;
+  }>;
+}
+
+export interface GameStats {
+  gameId: string;
+  round: number;
+  status: Game['status'];
+  teams: GameStatsTeam[];
+  winner?: GameStatsWinner;
+  leaderboard?: Leaderboard;
 }
 
 export interface ClueType {
@@ -64,6 +124,17 @@ export interface ClueType {
   name: string;
   description: string;
   cost: number;
+  range?: number; // Range in meters, null/undefined = unlimited
+}
+
+export interface HiderClueData {
+  teamId: string;
+  teamName: string;
+  latitude?: number;
+  longitude?: number;
+  distance?: number;
+  direction?: string;
+  additionalData?: string; // For selfie URLs, landmark names, etc.
 }
 
 export interface Clue {
@@ -71,6 +142,16 @@ export interface Clue {
   text: string;
   cost: number;
   timestamp: number;
+  clueTypeId?: string;
+  responseType?: string;
+  targetHiderTeamId?: string; // Deprecated, use targetHiderTeamIds
+  targetHiderTeamIds?: string[]; // Multiple hider teams
+  hiderData?: HiderClueData[]; // Aggregated data for multiple hiders
+  location?: {
+    latitude: number;
+    longitude: number;
+    teamName: string;
+  };
 }
 
 export interface DrawnCard {

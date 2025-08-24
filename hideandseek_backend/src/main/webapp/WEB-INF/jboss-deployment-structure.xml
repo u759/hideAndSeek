@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  This descriptor configures classloading for WildFly deployments.
+  With the WildFly profile, we use server-provided logging (SLF4J + JBoss LogManager)
+  instead of bundling Logback in the WAR.
+-->
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+    <deployment>
+        <!-- Use WildFly's built-in logging modules -->
+        <!-- No exclusions needed when using server logging -->
+    </deployment>
+</jboss-deployment-structure>

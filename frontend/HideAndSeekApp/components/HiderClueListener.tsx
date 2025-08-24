@@ -26,6 +26,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
   const [request, setRequest] = useState<ClueRequestPayload | null>(null);
   const [textResponse, setTextResponse] = useState('');
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [lastDismissedTime, setLastDismissedTime] = useState<number>(0);
   // no library browsing; only camera capture
 
   const wsUrl = useMemo(() => getWebsocketUrl(), []);
@@ -43,7 +44,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
     },
   });
 
-  // Polling fallback in case WS misses an event or reconnects
+  // Initial check for pending requests on mount
   useEffect(() => {
     let mounted = true;
     const fetchPending = async () => {
@@ -62,22 +63,49 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
         // ignore
       }
     };
-    const id = setInterval(fetchPending, 10000);
-    // also run once soon after mount
+    // Only run once on mount - WebSocket will handle real-time updates
     setTimeout(fetchPending, 1000);
     return () => {
       mounted = false;
-      clearInterval(id);
     };
-  }, [gameId, teamId, visible]);
+  }, [gameId, teamId]);
+
+  // Periodic check to reopen modal for pending requests (if dismissed)
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      // Only check if modal is not visible and some time has passed since last dismissal
+      if (!visible && Date.now() - lastDismissedTime > 10000) { // 10 second cooldown
+        try {
+          const list: ClueRequestPayload[] = await ApiService.getPendingClueRequests(gameId, teamId);
+          if (list && list.length > 0) {
+            const req = list[0];
+            setRequest(req);
+            setVisible(true);
+            updateTimer(req.expirationTimestamp || null);
+          }
+        } catch (_) {
+          // ignore
+        }
+      }
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [gameId, teamId, visible, lastDismissedTime]);
 
   // Countdown timer
   useEffect(() => {
     if (timeLeft == null) return;
-    if (timeLeft <= 0) return;
+    if (timeLeft <= 0) {
+      // Timer expired - close modal and don't reopen for this request
+      if (visible) {
+        Alert.alert('Time Expired', 'The clue request has expired. Your location may be revealed to seekers.');
+        dismiss();
+      }
+      return;
+    }
     const id = setInterval(() => setTimeLeft((t) => (t == null ? null : Math.max(0, t - 1))), 1000);
     return () => clearInterval(id);
-  }, [timeLeft]);
+  }, [timeLeft, visible]);
 
   const updateTimer = (expiration: number | null) => {
     if (!expiration) {
@@ -93,6 +121,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
     setRequest(null);
     setTextResponse('');
     setTimeLeft(null);
+    setLastDismissedTime(Date.now()); // Record dismissal time
   };
 
   const submitText = async () => {
@@ -130,7 +159,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
   const upload = async (uri: string) => {
     if (!request) return;
     try {
-      await ApiService.uploadSelfie(request.id, teamId, uri);
+      await ApiService.uploadSelfie(request.id, teamId, gameId, uri);
       Alert.alert('Selfie sent', 'Your selfie was delivered to the seekers.');
       dismiss();
     } catch (e: any) {
@@ -174,7 +203,13 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
           )}
 
           {isPhoto && (
-            <View style={styles.row}>
+            <View style={{ width: '100%' }}>
+              <Text style={styles.desc}>
+                The Hiders must send the Seekers a team selfie at arm’s length that clearly shows their surroundings. Acceptable surroundings include:{"\n\n"}
+                - The exterior of the nearest building (including roof),{"\n"}
+                - The interior of the building they’re in,{"\n"}
+                - Or, if neither is possible, a photo of the area that can be unmistakably matched to its real location.
+              </Text>
               <Pressable onPress={openCamera} style={[styles.button, styles.primary]}>
                 <Text style={styles.buttonText}>Open Camera</Text>
               </Pressable>
@@ -182,7 +217,7 @@ const HiderClueListener: React.FC<Props> = ({ gameId, teamId }) => {
           )}
 
           <Pressable onPress={dismiss} style={styles.linkBtn}>
-            <Text style={styles.link}>Later</Text>
+            <Text style={styles.link}>Dismiss (will reopen in 10s)</Text>
           </Pressable>
         </View>
       </SafeAreaView>

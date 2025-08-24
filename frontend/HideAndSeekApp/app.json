@@ -36,7 +36,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-  "googleServicesFile": "./google-services.json",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
@@ -49,11 +49,18 @@
         "FOREGROUND_SERVICE_LOCATION",
         "WAKE_LOCK",
         "RECEIVE_BOOT_COMPLETED",
-        "SYSTEM_ALERT_WINDOW"
+        "SYSTEM_ALERT_WINDOW",
+        "USE_FULL_SCREEN_INTENT",
+        "VIBRATE",
+        "FLASHLIGHT",
+        "DISABLE_KEYGUARD",
+        "REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
       ],
       "notification": {
         "icon": "./assets/icon.png",
-        "color": "#003366"
+        "color": "#003366",
+        "androidMode": "default",
+        "androidCollapsedTitle": "UBCeek Game Update"
       },
       "package": "com.ayydeen.HideAndSeekApp"
     },
@@ -63,10 +70,21 @@
         {
           "icon": "./assets/icon.png",
           "color": "#003366",
-          "mode": "production"
+          "mode": "production",
+          "defaultChannel": "game-alerts",
+          "sounds": ["./assets/notif.wav", "./assets/veto_curse.wav"],
+          "enableBackgroundRemoteNotifications": true
         }
       ],
-      "expo-location",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "We use your location to enable gameplay while hiding and seeking.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
       [
         "expo-image-picker",
         {
@@ -79,9 +97,21 @@
         "expo-task-manager"
       ],
       [
-        "expo-background-fetch",
+        "expo-background-task",
         {
-          "backgroundFetchIntervalMs": 60000
+          "minimumInterval": 15
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#232323",
+          "image": "./assets/splash-icon.png",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#000000"
+          },
+          "imageWidth": 200
         }
       ]
     ],

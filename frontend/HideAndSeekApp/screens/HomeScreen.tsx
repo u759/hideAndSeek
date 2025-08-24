@@ -40,13 +40,6 @@ const HomeScreen: React.FC = () => {
         </View>
 
         <TouchableOpacity 
-          style={styles.startButton}
-          onPress={() => navigation.navigate('RoleSelection')}
-        >
-          <Text style={styles.startButtonText}>Quick Play</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
           style={[styles.startButton, styles.secondaryButton]}
           onPress={() => navigation.navigate('JoinGame')}
         >

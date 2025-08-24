@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Hide&Seek Admin Dashboard</title>
+	<style>
+		:root { --bg:#0b1220; --panel:#111a2b; --muted:#8aa4c2; --accent:#1f6feb; --danger:#d43c3c; }
+		body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:#e6edf3; margin:0; }
+		header { display:flex; align-items:center; justify-content:space-between; padding:16px 22px; background:#0d1627; position:sticky; top:0; }
+		h1 { font-size:20px; margin:0; }
+		.container { padding:20px; max-width:1100px; margin:0 auto; }
+		.grid { display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+		.card { background:var(--panel); border:1px solid #24324a; border-radius:12px; padding:16px; }
+		.kpi { font-size:26px; font-weight:700; }
+		.muted { color:var(--muted); font-size:12px; }
+		table { width:100%; border-collapse: collapse; }
+		th, td { border-bottom:1px solid #1a263d; padding:10px; text-align:left; }
+		th { color:#a9c1e1; font-weight:600; font-size:13px; }
+		.row-actions { display:flex; gap:8px; }
+		button { background:var(--accent); border:none; color:white; padding:8px 10px; border-radius:8px; cursor:pointer; }
+		button.secondary { background:#2b3d5c; }
+		button.danger { background:var(--danger); }
+		.toolbar { display:flex; gap:10px; align-items:center; }
+		.spacer { flex:1; }
+		.pill { display:inline-block; padding:2px 8px; border-radius:99px; font-size:12px; background:#20304b; color:#a9c1e1; }
+	</style>
+	<script>
+		async function api(path, opts={}) {
+			const res = await fetch(path, { credentials: 'same-origin', ...opts });
+			if (!res.ok) {
+				if (res.status === 401) {
+					window.location.href = '/admin-login.html';
+					return Promise.reject('unauthorized');
+				}
+				const err = await res.json().catch(() => ({}));
+				throw new Error(err.error || 'Request failed');
+			}
+			return res.json();
+		}
+
+		async function loadStats() {
+			const s = await api('/api/admin/stats');
+			document.getElementById('totalGames').textContent = s.totalGames ?? 0;
+			document.getElementById('activeGames').textContent = s.activeGames ?? 0;
+			document.getElementById('totalPlayers').textContent = s.totalPlayers ?? 0;
+			document.getElementById('avgDuration').textContent = (s.averageGameDurationMinutes ?? 0) + 'm';
+		}
+
+		function fmtTs(ts){ if(!ts) return '-'; const d=new Date(ts); return d.toLocaleString(); }
+
+		async function loadGames() {
+			const list = await api('/api/admin/games');
+			const tbody = document.getElementById('gamesBody');
+			tbody.innerHTML = '';
+			list.forEach(g => {
+				const tr = document.createElement('tr');
+				tr.innerHTML = `
+					<td><strong>${g.gameCode}</strong><div class="muted">${g.id}</div></td>
+					<td><span class="pill">${g.status}</span></td>
+					<td>${g.teamCount}</td>
+					<td>${fmtTs(g.startTime)}</td>
+					<td>${g.durationMinutes ? g.durationMinutes + 'm' : '-'}</td>
+					<td class="row-actions">
+						<button class="secondary" onclick="viewGame('${g.id}')">View</button>
+						<button onclick="openLive('${g.id}')">Live</button>
+						<button class="secondary" onclick="downloadReadableLogs('${g.id}')">Event Logs</button>
+						<button class="secondary" onclick="downloadLocationLogs('${g.id}')">Location Logs</button>
+						<button class="danger" onclick="deleteGame('${g.id}')">Delete</button>
+					</td>`;
+				tbody.appendChild(tr);
+			});
+		}
+
+		async function viewGame(id) {
+			const d = await api('/api/admin/games/' + id);
+			alert('Game '+d.gameCode+'\nStatus: '+d.status+'\nTeams: '+d.teamCount);
+		}
+
+		async function downloadLogs(id) {
+			try {
+				const res = await fetch('/api/admin/games/' + id + '/logs', { credentials: 'same-origin' });
+				if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+				if (!res.ok) {
+					const text = await res.text().catch(() => '');
+					throw new Error(text || 'Failed to download logs');
+				}
+				const blob = await res.blob();
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `game-${id}-events.ndjson`;
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				URL.revokeObjectURL(url);
+			} catch (e) {
+				alert('Download failed: ' + e.message);
+			}
+		}
+
+		async function downloadReadableLogs(id) {
+			try {
+				const res = await fetch('/api/admin/games/' + id + '/logs/readable', { credentials: 'same-origin' });
+				if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+				if (!res.ok) {
+					const text = await res.text().catch(() => '');
+					throw new Error(text || 'Failed to download readable logs');
+				}
+				const blob = await res.blob();
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `game-${id}-events.readable.ndjson`;
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				URL.revokeObjectURL(url);
+			} catch (e) {
+				alert('Download failed: ' + e.message);
+			}
+		}
+
+		async function downloadLocationLogs(id) {
+			try {
+				const res = await fetch('/api/admin/games/' + id + '/locations/readable', { credentials: 'same-origin' });
+				if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+				if (!res.ok) {
+					const text = await res.text().catch(() => '');
+					throw new Error(text || 'Failed to download location logs');
+				}
+				const blob = await res.blob();
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `game-${id}-locations.readable.ndjson`;
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				URL.revokeObjectURL(url);
+			} catch (e) {
+				alert('Download failed: ' + e.message);
+			}
+		}
+
+		async function deleteGame(id) {
+			if (!confirm('Delete this game?')) return;
+			await api('/api/admin/games/' + id, { method: 'DELETE' });
+			await loadStats();
+			await loadGames();
+		}
+
+		async function cleanupEnded() {
+			if (!confirm('Delete all ENDED games?')) return;
+			await api('/api/admin/games/cleanup/ended', { method: 'DELETE' });
+			await loadStats();
+			await loadGames();
+		}
+
+		async function deleteAllGames() {
+			if (!confirm('Delete ALL games? This cannot be undone.')) return;
+			await api('/api/admin/games/cleanup/all', { method: 'DELETE' });
+			await loadStats();
+			await loadGames();
+		}
+
+		async function logout() {
+			await api('/api/admin/auth/logout', { method: 'POST' });
+			window.location.href = '/admin-login.html';
+		}
+
+		function openLive(id) { window.location.href = '/admin-game.html?gameId=' + encodeURIComponent(id); }
+
+		async function init() {
+			await loadStats();
+			await loadGames();
+			setInterval(() => { loadStats(); loadGames(); }, 5000);
+		}
+		window.addEventListener('DOMContentLoaded', init);
+	</script>
+</head>
+<body>
+	<header>
+		<h1>Hide & Seek — Admin</h1>
+		<div class="toolbar">
+			<button class="secondary" onclick="cleanupEnded()">Delete Ended</button>
+			<button class="danger" onclick="deleteAllGames()">Delete All</button>
+			<div class="spacer"></div>
+			<button class="secondary" onclick="logout()">Logout</button>
+		</div>
+	</header>
+	<div class="container">
+		<div class="grid">
+			<div class="card"><div class="muted">Total Games</div><div id="totalGames" class="kpi">-</div></div>
+			<div class="card"><div class="muted">Active Games</div><div id="activeGames" class="kpi">-</div></div>
+			<div class="card"><div class="muted">Total Players</div><div id="totalPlayers" class="kpi">-</div></div>
+			<div class="card"><div class="muted">Avg Duration</div><div id="avgDuration" class="kpi">-</div></div>
+		</div>
+
+		<div class="card" style="margin-top:16px;">
+			<h3 style="margin:0 0 10px;">Games</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>Game</th>
+						<th>Status</th>
+						<th>Teams</th>
+						<th>Started</th>
+						<th>Duration</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody id="gamesBody"></tbody>
+			</table>
+		</div>
+	</div>
+</body>
+</html>

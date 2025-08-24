@@ -31,9 +31,9 @@ public class ClueRequest {
         this.responseType = responseType;
         this.requestTimestamp = System.currentTimeMillis();
         this.status = "pending";
-        // Set expiration to 5 minutes from now for manual responses
+        // Set expiration to 1 minute from now for manual responses
         if ("text".equals(responseType) || "photo".equals(responseType)) {
-            this.expirationTimestamp = System.currentTimeMillis() + (5 * 60 * 1000);
+            this.expirationTimestamp = System.currentTimeMillis() + (1 * 60 * 1000);
         }
     }
     

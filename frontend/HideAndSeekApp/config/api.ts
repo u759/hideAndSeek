@@ -6,7 +6,7 @@ export const API_BASE_URL = (() => {
     return 'http://192.168.1.147:3000/api';
   }
   // Production API base
-  return 'https://hideandseek.ayng.dev/api';
+  return 'https://web.ayng.dev/hideandseek/api';
 })();
 
 /**
