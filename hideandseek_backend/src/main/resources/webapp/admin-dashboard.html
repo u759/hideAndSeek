@@ -30,7 +30,7 @@
 			const res = await fetch(path, { credentials: 'same-origin', ...opts });
 			if (!res.ok) {
 				if (res.status === 401) {
-					window.location.href = '/admin-login.html';
+					window.location.href = 'admin-login.html';
 					return Promise.reject('unauthorized');
 				}
 				const err = await res.json().catch(() => ({}));
@@ -40,7 +40,7 @@
 		}
 
 		async function loadStats() {
-			const s = await api('/api/admin/stats');
+			const s = await api('api/admin/stats');
 			document.getElementById('totalGames').textContent = s.totalGames ?? 0;
 			document.getElementById('activeGames').textContent = s.activeGames ?? 0;
 			document.getElementById('totalPlayers').textContent = s.totalPlayers ?? 0;
@@ -50,7 +50,7 @@
 		function fmtTs(ts){ if(!ts) return '-'; const d=new Date(ts); return d.toLocaleString(); }
 
 		async function loadGames() {
-			const list = await api('/api/admin/games');
+			const list = await api('api/admin/games');
 			const tbody = document.getElementById('gamesBody');
 			tbody.innerHTML = '';
 			list.forEach(g => {
@@ -73,14 +73,14 @@
 		}
 
 		async function viewGame(id) {
-			const d = await api('/api/admin/games/' + id);
+			const d = await api('api/admin/games/' + id);
 			alert('Game '+d.gameCode+'\nStatus: '+d.status+'\nTeams: '+d.teamCount);
 		}
 
 		async function downloadLogs(id) {
 			try {
-				const res = await fetch('/api/admin/games/' + id + '/logs', { credentials: 'same-origin' });
-				if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+				const res = await fetch('api/admin/games/' + id + '/logs', { credentials: 'same-origin' });
+				if (res.status === 401) { window.location.href = 'admin-login.html'; return; }
 				if (!res.ok) {
 					const text = await res.text().catch(() => '');
 					throw new Error(text || 'Failed to download logs');
@@ -101,8 +101,8 @@
 
 		async function downloadReadableLogs(id) {
 			try {
-				const res = await fetch('/api/admin/games/' + id + '/logs/readable', { credentials: 'same-origin' });
-				if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+				const res = await fetch('api/admin/games/' + id + '/logs/readable', { credentials: 'same-origin' });
+				if (res.status === 401) { window.location.href = 'admin-login.html'; return; }
 				if (!res.ok) {
 					const text = await res.text().catch(() => '');
 					throw new Error(text || 'Failed to download readable logs');
@@ -123,8 +123,8 @@
 
 		async function downloadLocationLogs(id) {
 			try {
-				const res = await fetch('/api/admin/games/' + id + '/locations/readable', { credentials: 'same-origin' });
-				if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+				const res = await fetch('api/admin/games/' + id + '/locations/readable', { credentials: 'same-origin' });
+				if (res.status === 401) { window.location.href = 'admin-login.html'; return; }
 				if (!res.ok) {
 					const text = await res.text().catch(() => '');
 					throw new Error(text || 'Failed to download location logs');
@@ -145,31 +145,31 @@
 
 		async function deleteGame(id) {
 			if (!confirm('Delete this game?')) return;
-			await api('/api/admin/games/' + id, { method: 'DELETE' });
+			await api('api/admin/games/' + id, { method: 'DELETE' });
 			await loadStats();
 			await loadGames();
 		}
 
 		async function cleanupEnded() {
 			if (!confirm('Delete all ENDED games?')) return;
-			await api('/api/admin/games/cleanup/ended', { method: 'DELETE' });
+			await api('api/admin/games/cleanup/ended', { method: 'DELETE' });
 			await loadStats();
 			await loadGames();
 		}
 
 		async function deleteAllGames() {
 			if (!confirm('Delete ALL games? This cannot be undone.')) return;
-			await api('/api/admin/games/cleanup/all', { method: 'DELETE' });
+			await api('api/admin/games/cleanup/all', { method: 'DELETE' });
 			await loadStats();
 			await loadGames();
 		}
 
 		async function logout() {
-			await api('/api/admin/auth/logout', { method: 'POST' });
-			window.location.href = '/admin-login.html';
+			await api('api/admin/auth/logout', { method: 'POST' });
+			window.location.href = 'admin-login.html';
 		}
 
-		function openLive(id) { window.location.href = '/admin-game.html?gameId=' + encodeURIComponent(id); }
+		function openLive(id) { window.location.href = 'admin-game.html?gameId=' + encodeURIComponent(id); }
 
 		async function init() {
 			await loadStats();
