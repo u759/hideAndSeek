@@ -53,13 +53,20 @@
       alert('Missing gameId');
     }
 
+    function appBasePath() {
+      // e.g., for /hideandseek/admin-game.html => returns "/hideandseek/"
+      const p = location.pathname;
+      const i = p.lastIndexOf('/');
+      return p.substring(0, i + 1);
+    }
+
     function wsUrl() {
       const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-      return proto + '://' + location.host + '/ws';
+      return proto + '://' + location.host + appBasePath() + 'ws';
     }
 
     async function fetchLive() {
-      const res = await fetch('/api/admin/games/' + gameId + '/live', { credentials:'same-origin' });
+      const res = await fetch('api/admin/games/' + gameId + '/live', { credentials:'same-origin' });
       if (!res.ok) throw new Error('Failed to load live data');
       return res.json();
     }
@@ -146,8 +153,8 @@
     async function downloadLogs() {
       if (!gameId) { alert('Missing gameId'); return; }
       try {
-        const res = await fetch('/api/admin/games/' + gameId + '/logs', { credentials: 'same-origin' });
-        if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+        const res = await fetch('api/admin/games/' + gameId + '/logs', { credentials: 'same-origin' });
+        if (res.status === 401) { window.location.href = 'admin-login.html'; return; }
         if (!res.ok) {
           const text = await res.text().catch(() => '');
           throw new Error(text || 'Failed to download event logs');
@@ -169,8 +176,8 @@
     async function downloadReadableLogs() {
       if (!gameId) { alert('Missing gameId'); return; }
       try {
-        const res = await fetch('/api/admin/games/' + gameId + '/logs/readable', { credentials: 'same-origin' });
-        if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+        const res = await fetch('api/admin/games/' + gameId + '/logs/readable', { credentials: 'same-origin' });
+        if (res.status === 401) { window.location.href = 'admin-login.html'; return; }
         if (!res.ok) {
           const text = await res.text().catch(() => '');
           throw new Error(text || 'Failed to download event logs');
@@ -192,8 +199,8 @@
     async function downloadLocationLogs() {
       if (!gameId) { alert('Missing gameId'); return; }
       try {
-        const res = await fetch('/api/admin/games/' + gameId + '/locations/readable', { credentials: 'same-origin' });
-        if (res.status === 401) { window.location.href = '/admin-login.html'; return; }
+        const res = await fetch('api/admin/games/' + gameId + '/locations/readable', { credentials: 'same-origin' });
+        if (res.status === 401) { window.location.href = 'admin-login.html'; return; }
         if (!res.ok) {
           const text = await res.text().catch(() => '');
           throw new Error(text || 'Failed to download location logs');
