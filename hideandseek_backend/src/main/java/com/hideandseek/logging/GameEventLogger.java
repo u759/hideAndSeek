@@ -30,8 +30,8 @@ public class GameEventLogger {
     private final Path baseDir;
     private final GameStore gameStore;
 
-    public GameEventLogger(@Value("${events.log.baseDir:logs/events}") String baseDir, GameStore gameStore) {
-        this.baseDir = Paths.get(baseDir);
+    public GameEventLogger(@Value("${events.log.baseDir:}") String baseDir, GameStore gameStore) {
+        this.baseDir = resolveBaseDir(baseDir);
         this.gameStore = gameStore;
         this.mapper = new ObjectMapper();
         this.mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -39,6 +39,25 @@ public class GameEventLogger {
             Files.createDirectories(this.baseDir);
         } catch (IOException e) {
             log.warn("Failed to create base event log directory {}: {}", this.baseDir, e.getMessage());
+        }
+    }
+
+    private Path resolveBaseDir(String configuredBaseDir) {
+        try {
+            if (configuredBaseDir != null && !configuredBaseDir.isBlank()) {
+                return Paths.get(configuredBaseDir).toAbsolutePath().normalize();
+            }
+            String dataDir = System.getProperty("jboss.server.data.dir");
+            Path base;
+            if (dataDir != null && !dataDir.isBlank()) {
+                base = Paths.get(dataDir);
+            } else {
+                base = Paths.get(System.getProperty("user.dir", "."));
+            }
+            return base.resolve("hideandseek").resolve("logs").resolve("events").toAbsolutePath().normalize();
+        } catch (Exception e) {
+            // Last resort: relative path to avoid writing to filesystem root
+            return Paths.get("logs").resolve("events").toAbsolutePath().normalize();
         }
     }
 

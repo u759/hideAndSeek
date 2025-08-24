@@ -31,9 +31,9 @@ public class LocationSnapshotLogger {
     private final Path baseDir;
     private final ObjectMapper mapper;
 
-    public LocationSnapshotLogger(@Value("${events.log.baseDir:logs/events}") String baseDir,
+    public LocationSnapshotLogger(@Value("${events.log.baseDir:}") String baseDir,
                                   GameStore gameStore) {
-        this.baseDir = Paths.get(baseDir);
+        this.baseDir = resolveBaseDir(baseDir);
         this.gameStore = gameStore;
         this.mapper = new ObjectMapper();
         this.mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -41,6 +41,24 @@ public class LocationSnapshotLogger {
             Files.createDirectories(this.baseDir);
         } catch (IOException e) {
             log.warn("Failed to ensure base dir {}: {}", this.baseDir, e.getMessage());
+        }
+    }
+
+    private Path resolveBaseDir(String configuredBaseDir) {
+        try {
+            if (configuredBaseDir != null && !configuredBaseDir.isBlank()) {
+                return Paths.get(configuredBaseDir).toAbsolutePath().normalize();
+            }
+            String dataDir = System.getProperty("jboss.server.data.dir");
+            Path base;
+            if (dataDir != null && !dataDir.isBlank()) {
+                base = Paths.get(dataDir);
+            } else {
+                base = Paths.get(System.getProperty("user.dir", "."));
+            }
+            return base.resolve("hideandseek").resolve("logs").resolve("events").toAbsolutePath().normalize();
+        } catch (Exception e) {
+            return Paths.get("logs").resolve("events").toAbsolutePath().normalize();
         }
     }
 
