@@ -62,6 +62,13 @@ export interface Game {
   status: 'waiting' | 'active' | 'paused' | 'ended';
   roundLengthMinutes?: number; // Round length in minutes (null = no time limit)
   pausedByTimeLimit?: boolean; // True if paused due to round time limit
+  // New timing fields
+  gameStartTime?: number; // First time the game became active
+  roundStartTime?: number; // Start time of the current round
+  pausedDurationAtRoundStart?: number; // Snapshot of paused duration at round start
+  // Computed durations (milliseconds), exclude paused time
+  gameDuration?: number;
+  roundDuration?: number;
 }
 
 export interface ClueType {

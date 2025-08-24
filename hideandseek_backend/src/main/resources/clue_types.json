@@ -15,11 +15,11 @@
       "cost": 8
     },
     {
-      "id": "closest-landmark",
-      "name": "Closest landmark...",
-      "description": "The Seekers will chose one of the following landmarks.\n\n1. named street\n2. library\n3. museum\n4. parking lot\n\nThe Hiders must tell the Seekers the the name of the chosen landmark type. If the Hiders don't respond within 1 minute, their exact location will automatically be revealed to the Seekers.",
+      "id": "closest-building",
+      "name": "Closest building",
+      "description": "The Hiders must tell the Seekers the the name of their closest building.",
       "range": 350,
-      "cost": 6
+      "cost": 8
     },
     {
       "id": "relative-direction",

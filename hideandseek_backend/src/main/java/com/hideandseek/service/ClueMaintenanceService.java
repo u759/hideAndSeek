@@ -58,8 +58,8 @@ public class ClueMaintenanceService {
         request.setStatus("expired");
         gameStore.updateClueRequest(request);
         
-        // For selfie and closest-landmark clues, provide exact location as reward
-        if ("selfie".equals(request.getClueTypeId()) || "closest-landmark".equals(request.getClueTypeId())) {
+        // For selfie and closest-building clues, provide exact location as reward
+        if ("selfie".equals(request.getClueTypeId()) || "closest-building".equals(request.getClueTypeId())) {
             provideExactLocationReward(request);
         }
     }

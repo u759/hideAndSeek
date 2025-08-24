@@ -474,7 +474,7 @@ const CluesTab: React.FC<CluesTabProps> = ({ game, currentTeam, onRefresh }) => 
     const getClueTypeName = () => {
       if (isExactLocationClue) return 'Exact Location Clue';
       if (isSelfieClue) return 'Selfie Clue';
-      if (item.clueTypeId === 'closest-landmark') return 'Landmark Clue';
+      if (item.clueTypeId === 'closest-building') return 'Landmark Clue';
       if (item.clueTypeId === 'relative-direction') return 'Direction Clue';
       if (item.clueTypeId === 'distance-from-seekers') return 'Distance Clue';
       return 'Purchased Clue';
