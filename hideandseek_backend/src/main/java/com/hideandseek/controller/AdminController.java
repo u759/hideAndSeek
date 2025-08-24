@@ -4,8 +4,12 @@ import com.hideandseek.store.GameStore;
 import com.hideandseek.model.Game;
 import com.hideandseek.model.Team;
 import com.hideandseek.service.GameService;
+import com.hideandseek.logging.GameEventLogger;
+import com.hideandseek.logging.LocationSnapshotLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -21,6 +25,12 @@ public class AdminController {
 
     @Autowired
     private GameService gameService;
+
+    @Autowired
+    private GameEventLogger gameEventLogger;
+
+    @Autowired
+    private LocationSnapshotLogger locationSnapshotLogger;
 
     /**
      * Get comprehensive system statistics
@@ -277,6 +287,78 @@ public class AdminController {
             
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Failed to force-end game: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Download game event logs as NDJSON
+     */
+    @GetMapping("/games/{gameId}/logs")
+    public ResponseEntity<?> downloadGameLogs(@PathVariable String gameId) {
+        try {
+            Game game = gameStore.getGame(gameId);
+            if (game == null) {
+                return ResponseEntity.notFound().build();
+            }
+            var file = gameEventLogger.getLogFile(gameId);
+            if (file == null || !file.exists() || file.length() == 0) {
+                return ResponseEntity.status(404).body(Map.of("error", "No logs found for this game"));
+            }
+            String filename = (game.getCode() != null ? game.getCode() : "game") + "-" + gameId + "-events.ndjson";
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                    .contentType(MediaType.parseMediaType("application/x-ndjson"))
+                    .body(new FileSystemResource(file));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to download logs: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Download human-readable game event logs (IDs removed)
+     */
+    @GetMapping("/games/{gameId}/logs/readable")
+    public ResponseEntity<?> downloadReadableGameLogs(@PathVariable String gameId) {
+        try {
+            Game game = gameStore.getGame(gameId);
+            if (game == null) {
+                return ResponseEntity.notFound().build();
+            }
+            var file = gameEventLogger.getReadableLogFile(gameId);
+            if (file == null || !file.exists() || file.length() == 0) {
+                return ResponseEntity.status(404).body(Map.of("error", "No readable logs found for this game"));
+            }
+            String filename = (game.getCode() != null ? game.getCode() : "game") + "-" + gameId + "-events.readable.ndjson";
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                    .contentType(MediaType.parseMediaType("application/x-ndjson"))
+                    .body(new FileSystemResource(file));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to download readable logs: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Download human-readable location snapshots
+     */
+    @GetMapping("/games/{gameId}/locations/readable")
+    public ResponseEntity<?> downloadReadableLocationSnapshots(@PathVariable String gameId) {
+        try {
+            Game game = gameStore.getGame(gameId);
+            if (game == null) {
+                return ResponseEntity.notFound().build();
+            }
+            var file = locationSnapshotLogger.getReadableLocationsFile(gameId);
+            if (file == null || !file.exists() || file.length() == 0) {
+                return ResponseEntity.status(404).body(Map.of("error", "No location snapshots found for this game"));
+            }
+            String filename = (game.getCode() != null ? game.getCode() : "game") + "-" + gameId + "-locations.readable.ndjson";
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                    .contentType(MediaType.parseMediaType("application/x-ndjson"))
+                    .body(new FileSystemResource(file));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to download location snapshots: " + e.getMessage()));
         }
     }
 

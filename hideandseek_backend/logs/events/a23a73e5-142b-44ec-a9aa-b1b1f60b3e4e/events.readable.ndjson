@@ -1,0 +1,8 @@
+{"time":"2025-08-23 22:13:57","type":"game.created","actor":"system","gameCode":"OGBIGG","details":{"teamNames":["F","F"]}}
+{"time":"2025-08-23 22:14:00","type":"game.started","actor":"system","gameCode":"OGBIGG","details":{"round":1,"roundStartTimeFormatted":"2025-08-23 22:14:00"}}
+{"time":"2025-08-23 22:14:15","type":"clue.requested","actor":"F","gameCode":"OGBIGG","details":{"responseType":"photo","expiresAtFormatted":"2025-08-23 22:15:15","clueTypeName":"Selfie"}}
+{"time":"2025-08-23 22:14:15","type":"team.tokens_updated","actor":"F","gameCode":"OGBIGG","details":{"teamName":"F","reason":"clue.purchased","delta":-8,"clueTypeName":"Selfie","tokens":7}}
+{"time":"2025-08-23 22:14:15","type":"clue.purchased","actor":"F","gameCode":"OGBIGG","details":{"responseType":"photo","targetHiderTeamNames":["F"],"cost":8,"targetHiderTeamIds":["96766219-9690-4002-942e-d31d182ad571"],"clueTypeName":"Selfie","requestIds":["183ce081-4d4a-4e70-bb4c-5cc37a0a0465"],"status":"pending"}}
+{"time":"2025-08-23 22:14:23","type":"clue.completed","actor":"F","gameCode":"OGBIGG","details":{"clueTypeName":"Selfie","expiredCount":0,"totalRequests":1,"completedCount":1}}
+{"time":"2025-08-23 22:14:23","type":"clue.response_received","actor":"F","gameCode":"OGBIGG","details":{"responseType":"photo","requestingTeamName":"F","timestampFormatted":"2025-08-23 22:14:23","clueTypeName":"Selfie"}}
+{"time":"2025-08-23 22:14:42","type":"game.ended","actor":"system","gameCode":"OGBIGG","details":{"endTimeFormatted":"2025-08-23 22:14:42"}}

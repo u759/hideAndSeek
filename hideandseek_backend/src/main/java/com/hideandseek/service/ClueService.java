@@ -3,6 +3,7 @@ package com.hideandseek.service;
 import com.hideandseek.model.*;
 import com.hideandseek.store.GameStore;
 import com.hideandseek.websocket.GameWebSocketHandler;
+import com.hideandseek.logging.GameEventLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,13 +20,15 @@ public class ClueService {
     private final GameStore gameStore;
     private final GameWebSocketHandler webSocketHandler;
     private final PushService pushService;
+    private final GameEventLogger gameEventLogger;
 
     // No randomness currently used in this service
 
-    public ClueService(GameStore gameStore, GameWebSocketHandler webSocketHandler, PushService pushService) {
+    public ClueService(GameStore gameStore, GameWebSocketHandler webSocketHandler, PushService pushService, GameEventLogger gameEventLogger) {
         this.gameStore = gameStore;
         this.webSocketHandler = webSocketHandler;
         this.pushService = pushService;
+        this.gameEventLogger = gameEventLogger;
     }
 
     public List<Map<String, Object>> getClueTypes() {
@@ -218,6 +221,33 @@ public class ClueService {
         requestingTeam.setTokens(requestingTeam.getTokens() - clueType.getCost());
         gameStore.updateGame(game);
         gameStore.addClueToHistory(game.getId(), purchasedClue);
+        // Log token deduction and clue purchase/completion
+        try {
+            Map<String, Object> tokenPayload = new HashMap<>();
+            tokenPayload.put("teamId", requestingTeam.getId());
+            tokenPayload.put("tokens", requestingTeam.getTokens());
+            tokenPayload.put("delta", -clueType.getCost());
+            tokenPayload.put("reason", "clue.purchased");
+            tokenPayload.put("clueTypeId", clueType.getId());
+            gameEventLogger.appendEvent(game.getId(), "team.tokens_updated", "team", requestingTeam.getId(), tokenPayload);
+
+            Map<String, Object> purchasedPayload = new HashMap<>();
+            purchasedPayload.put("clueId", clueId);
+            purchasedPayload.put("clueTypeId", clueType.getId());
+            purchasedPayload.put("clueTypeName", clueType.getName());
+            purchasedPayload.put("cost", clueType.getCost());
+            purchasedPayload.put("status", "completed");
+            purchasedPayload.put("responseType", "location");
+            purchasedPayload.put("targetHiderTeamIds", targetTeamIds);
+            gameEventLogger.appendEvent(game.getId(), "clue.purchased", "team", requestingTeam.getId(), purchasedPayload);
+
+            Map<String, Object> completedPayload = new HashMap<>();
+            completedPayload.put("clueId", clueId);
+            completedPayload.put("clueTypeId", clueType.getId());
+            completedPayload.put("completedAt", System.currentTimeMillis());
+            completedPayload.put("mode", "immediate");
+            gameEventLogger.appendEvent(game.getId(), "clue.completed", "team", requestingTeam.getId(), completedPayload);
+        } catch (Exception ignored) {}
         
         // Broadcast update
         webSocketHandler.broadcastToGame(game.getId(), game);
@@ -282,6 +312,16 @@ public class ClueService {
             
             webSocketHandler.broadcastClueRequest(game.getId(), hider.getId(), requestData);
             pushService.notifyClueRequested(game.getId(), hider.getId(), clueType.getId(), clueType.getName());
+            // Log clue.requested per target
+            try {
+                Map<String, Object> reqPayload = new HashMap<>();
+                reqPayload.put("requestId", requestId);
+                reqPayload.put("clueTypeId", clueType.getId());
+                reqPayload.put("responseType", "photo");
+                reqPayload.put("targetHiderTeamId", hider.getId());
+                reqPayload.put("expiresAt", clueRequest.getExpirationTimestamp());
+                gameEventLogger.appendEvent(game.getId(), "clue.requested", "team", requestingTeam.getId(), reqPayload);
+            } catch (Exception ignored) {}
         }
         
         // Create aggregated pending clue
@@ -305,6 +345,27 @@ public class ClueService {
         requestingTeam.setTokens(requestingTeam.getTokens() - clueType.getCost());
         gameStore.updateGame(game);
         gameStore.addClueToHistory(game.getId(), purchasedClue);
+        // Log token deduction and clue purchase
+        try {
+            Map<String, Object> tokenPayload = new HashMap<>();
+            tokenPayload.put("teamId", requestingTeam.getId());
+            tokenPayload.put("tokens", requestingTeam.getTokens());
+            tokenPayload.put("delta", -clueType.getCost());
+            tokenPayload.put("reason", "clue.purchased");
+            tokenPayload.put("clueTypeId", clueType.getId());
+            gameEventLogger.appendEvent(game.getId(), "team.tokens_updated", "team", requestingTeam.getId(), tokenPayload);
+
+            Map<String, Object> purchasedPayload = new HashMap<>();
+            purchasedPayload.put("clueId", clueId);
+            purchasedPayload.put("clueTypeId", clueType.getId());
+            purchasedPayload.put("clueTypeName", clueType.getName());
+            purchasedPayload.put("cost", clueType.getCost());
+            purchasedPayload.put("status", "pending");
+            purchasedPayload.put("responseType", "photo");
+            purchasedPayload.put("requestIds", requestIds);
+            purchasedPayload.put("targetHiderTeamIds", hiderTeams.stream().map(Team::getId).collect(Collectors.toList()));
+            gameEventLogger.appendEvent(game.getId(), "clue.purchased", "team", requestingTeam.getId(), purchasedPayload);
+        } catch (Exception ignored) {}
         
         // Also broadcast general game update
         webSocketHandler.broadcastToGame(game.getId(), game);
@@ -351,6 +412,16 @@ public class ClueService {
             
             webSocketHandler.broadcastClueRequest(game.getId(), hider.getId(), requestData);
             pushService.notifyClueRequested(game.getId(), hider.getId(), clueType.getId(), clueType.getName());
+            // Log clue.requested per target
+            try {
+                Map<String, Object> reqPayload = new HashMap<>();
+                reqPayload.put("requestId", requestId);
+                reqPayload.put("clueTypeId", clueType.getId());
+                reqPayload.put("responseType", "text");
+                reqPayload.put("targetHiderTeamId", hider.getId());
+                reqPayload.put("expiresAt", clueRequest.getExpirationTimestamp());
+                gameEventLogger.appendEvent(game.getId(), "clue.requested", "team", requestingTeam.getId(), reqPayload);
+            } catch (Exception ignored) {}
         }
         
         // Create aggregated pending clue
@@ -374,6 +445,27 @@ public class ClueService {
         requestingTeam.setTokens(requestingTeam.getTokens() - clueType.getCost());
         gameStore.updateGame(game);
         gameStore.addClueToHistory(game.getId(), purchasedClue);
+        // Log token deduction and clue purchase
+        try {
+            Map<String, Object> tokenPayload = new HashMap<>();
+            tokenPayload.put("teamId", requestingTeam.getId());
+            tokenPayload.put("tokens", requestingTeam.getTokens());
+            tokenPayload.put("delta", -clueType.getCost());
+            tokenPayload.put("reason", "clue.purchased");
+            tokenPayload.put("clueTypeId", clueType.getId());
+            gameEventLogger.appendEvent(game.getId(), "team.tokens_updated", "team", requestingTeam.getId(), tokenPayload);
+
+            Map<String, Object> purchasedPayload = new HashMap<>();
+            purchasedPayload.put("clueId", clueId);
+            purchasedPayload.put("clueTypeId", clueType.getId());
+            purchasedPayload.put("clueTypeName", clueType.getName());
+            purchasedPayload.put("cost", clueType.getCost());
+            purchasedPayload.put("status", "pending");
+            purchasedPayload.put("responseType", "text");
+            purchasedPayload.put("requestIds", requestIds);
+            purchasedPayload.put("targetHiderTeamIds", hiderTeams.stream().map(Team::getId).collect(Collectors.toList()));
+            gameEventLogger.appendEvent(game.getId(), "clue.purchased", "team", requestingTeam.getId(), purchasedPayload);
+        } catch (Exception ignored) {}
         
         // Also broadcast general game update
         webSocketHandler.broadcastToGame(game.getId(), game);
@@ -433,6 +525,33 @@ public class ClueService {
         requestingTeam.setTokens(requestingTeam.getTokens() - clueType.getCost());
         gameStore.updateGame(game);
         gameStore.addClueToHistory(game.getId(), purchasedClue);
+        // Log token deduction and clue purchase/completion
+        try {
+            Map<String, Object> tokenPayload = new HashMap<>();
+            tokenPayload.put("teamId", requestingTeam.getId());
+            tokenPayload.put("tokens", requestingTeam.getTokens());
+            tokenPayload.put("delta", -clueType.getCost());
+            tokenPayload.put("reason", "clue.purchased");
+            tokenPayload.put("clueTypeId", clueType.getId());
+            gameEventLogger.appendEvent(game.getId(), "team.tokens_updated", "team", requestingTeam.getId(), tokenPayload);
+
+            Map<String, Object> purchasedPayload = new HashMap<>();
+            purchasedPayload.put("clueId", clueId);
+            purchasedPayload.put("clueTypeId", clueType.getId());
+            purchasedPayload.put("clueTypeName", clueType.getName());
+            purchasedPayload.put("cost", clueType.getCost());
+            purchasedPayload.put("status", "completed");
+            purchasedPayload.put("responseType", "automatic");
+            purchasedPayload.put("targetHiderTeamIds", hiderTeams.stream().map(Team::getId).collect(Collectors.toList()));
+            gameEventLogger.appendEvent(game.getId(), "clue.purchased", "team", requestingTeam.getId(), purchasedPayload);
+
+            Map<String, Object> completedPayload = new HashMap<>();
+            completedPayload.put("clueId", clueId);
+            completedPayload.put("clueTypeId", clueType.getId());
+            completedPayload.put("completedAt", System.currentTimeMillis());
+            completedPayload.put("mode", "immediate");
+            gameEventLogger.appendEvent(game.getId(), "clue.completed", "team", requestingTeam.getId(), completedPayload);
+        } catch (Exception ignored) {}
         
         // Broadcast update
         webSocketHandler.broadcastToGame(game.getId(), game);
@@ -569,6 +688,17 @@ public class ClueService {
         responseInfo.put("timestamp", response.getResponseTimestamp());
         
         webSocketHandler.broadcastClueResponse(request.getGameId(), request.getRequestingTeamId(), responseInfo);
+        // Log clue.response_received
+        try {
+            Map<String, Object> respPayload = new HashMap<>();
+            respPayload.put("requestId", requestId);
+            respPayload.put("requestingTeamId", request.getRequestingTeamId());
+            respPayload.put("targetHiderTeamId", teamId);
+            respPayload.put("clueTypeId", request.getClueTypeId());
+            respPayload.put("responseType", request.getResponseType());
+            respPayload.put("timestamp", response.getResponseTimestamp());
+            gameEventLogger.appendEvent(request.getGameId(), "clue.response_received", "team", teamId, respPayload);
+        } catch (Exception ignored) {}
         
         // Broadcast general update to all players
         Game game = gameStore.getGame(request.getGameId());
@@ -626,6 +756,7 @@ public class ClueService {
         String[] requestIds = clue.getRequestId().split(",");
         int completedCount = 0;
         int expiredCount = 0;
+        int totalRequests = requestIds.length;
         
         // Count completed and expired requests
         for (String reqId : requestIds) {
@@ -645,6 +776,16 @@ public class ClueService {
             
             // Update clue text to show completion/timeout results
             updateClueTextForCompletion(clue, completedCount, expiredCount, requestIds.length);
+            // Log aggregated clue completion
+            try {
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("clueId", clue.getId());
+                payload.put("clueTypeId", clue.getClueTypeId());
+                payload.put("completedCount", completedCount);
+                payload.put("expiredCount", expiredCount);
+                payload.put("totalRequests", totalRequests);
+                gameEventLogger.appendEvent(gameId, "clue.completed", "team", clue.getTeamId(), payload);
+            } catch (Exception ignored) {}
         }
     }
     
@@ -759,6 +900,25 @@ public class ClueService {
                     // Add the new clue to the game
                     gameStore.addClueToHistory(game.getId(), timeoutClue);
                     logger.info("Created separate timeout exact location clue: {}", timeoutClueId);
+                    // Log request expiration and auto reveal
+                    try {
+                        Map<String, Object> expPayload = new HashMap<>();
+                        expPayload.put("requestId", expiredRequest.getId());
+                        expPayload.put("originalClueId", clue.getId());
+                        expPayload.put("clueTypeId", expiredRequest.getClueTypeId());
+                        expPayload.put("targetHiderTeamId", expiredRequest.getTargetHiderTeamId());
+                        expPayload.put("expiredAt", System.currentTimeMillis());
+                        gameEventLogger.appendEvent(game.getId(), "clue.request_expired", "system", "system", expPayload);
+
+                        Map<String, Object> autoPayload = new HashMap<>();
+                        autoPayload.put("timeoutClueId", timeoutClueId);
+                        autoPayload.put("requestId", expiredRequest.getId());
+                        autoPayload.put("requestingTeamId", requestingTeam.getId());
+                        autoPayload.put("hiderTeamId", hiderTeam.getId());
+                        autoPayload.put("latitude", hiderTeam.getLocation().getLatitude());
+                        autoPayload.put("longitude", hiderTeam.getLocation().getLongitude());
+                        gameEventLogger.appendEvent(game.getId(), "clue.auto_revealed", "system", "system", autoPayload);
+                    } catch (Exception ignored) {}
                     
                     // Update the original clue to remove this hider from pending status
                     updateOriginalClueForTimeout(clue, expiredRequest);

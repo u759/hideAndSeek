@@ -3,6 +3,7 @@ package com.hideandseek.service;
 import com.hideandseek.model.*;
 import com.hideandseek.store.GameStore;
 import com.hideandseek.websocket.GameWebSocketHandler;
+import com.hideandseek.logging.GameEventLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -27,13 +28,20 @@ public class GameService {
     @Autowired
     private PushService pushService;
 
+    @Autowired
+    private GameEventLogger gameEventLogger;
+
     public Game createGame(List<String> teamNames) {
         if (teamNames == null || teamNames.isEmpty()) {
             throw new IllegalArgumentException("Team names cannot be empty");
         }
 
         Game game = gameStore.createGame(teamNames);
-
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamNames", teamNames);
+            gameEventLogger.appendEvent(game.getId(), "game.created", "system", null, payload);
+        } catch (Exception ignored) {}
         return game;
     }
 
@@ -43,7 +51,12 @@ public class GameService {
         }
         
         Game game = gameStore.createGameWithRole(teamNames, playerRole);
-
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamNames", teamNames);
+            payload.put("playerRole", playerRole);
+            gameEventLogger.appendEvent(game.getId(), "game.created", "system", null, payload);
+        } catch (Exception ignored) {}
         return game;
     }
 
@@ -182,6 +195,13 @@ public class GameService {
             }
         }
         
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("round", game.getRound());
+            payload.put("roundStartTime", game.getRoundStartTime());
+            gameEventLogger.appendEvent(gameId, "game.started", "system", null, payload);
+        } catch (Exception ignored) {}
+
         updateGameActivity(game);
         
         // Send notification
@@ -215,6 +235,11 @@ public class GameService {
         game.setStatus("ended");
         game.setEndTime(System.currentTimeMillis());
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("endTime", game.getEndTime());
+            gameEventLogger.appendEvent(gameId, "game.ended", "system", null, payload);
+        } catch (Exception ignored) {}
         
         // Send notification
         pushService.sendGameEventNotification(gameId, "Game Ended!", "The hide and seek game has finished!");
@@ -294,6 +319,13 @@ public class GameService {
             }
         }
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("from", previousStatus);
+            payload.put("to", status);
+            payload.put("pausedByTimeLimit", game.getPausedByTimeLimit());
+            gameEventLogger.appendEvent(gameId, "game.status_changed", "system", null, payload);
+        } catch (Exception ignored) {}
         
         // Send notification based on status change
         if ("paused".equals(status) && !"paused".equals(previousStatus)) {
@@ -354,6 +386,12 @@ public class GameService {
         }
         
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("round", game.getRound());
+            payload.put("roundStartTime", game.getRoundStartTime());
+            gameEventLogger.appendEvent(gameId, "game.round_started", "system", null, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -394,6 +432,9 @@ public class GameService {
         }
         
         gameStore.updateGame(game);
+        try {
+            gameEventLogger.appendEvent(gameId, "game.restarted", "system", null, new HashMap<>());
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -411,6 +452,12 @@ public class GameService {
         
         team.setTokens(tokens);
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            payload.put("tokens", tokens);
+            gameEventLogger.appendEvent(gameId, "team.tokens_updated", "team", teamId, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -433,6 +480,13 @@ public class GameService {
         
         team.setRole(role);
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            payload.put("newRole", role);
+            if (foundByTeamId != null) payload.put("foundByTeamId", foundByTeamId);
+            gameEventLogger.appendEvent(gameId, "team.role_switched", "team", teamId, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -449,6 +503,16 @@ public class GameService {
         }
         
         team.setCurrentLocation(location);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            if (location != null) {
+                payload.put("latitude", location.getLatitude());
+                payload.put("longitude", location.getLongitude());
+                payload.put("timestamp", location.getTimestamp());
+            }
+            gameEventLogger.appendEvent(gameId, "team.location_update", "team", teamId, payload);
+        } catch (Exception ignored) {}
         updateGameActivity(game);
         
         return team;
@@ -490,6 +554,13 @@ public class GameService {
         
         team.setActiveChallenge(activeChallenge);
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            payload.put("challengeId", challenge.getId());
+            payload.put("title", challenge.getTitle());
+            gameEventLogger.appendEvent(gameId, "challenge.drawn", "team", teamId, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -522,11 +593,23 @@ public class GameService {
         team.getCompletedChallenges().add(challenge.getId());
         team.setActiveChallenge(null);
         
-        updateGameActivity(game);
+        // Persist and log event
+        gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            payload.put("challengeId", challenge.getId());
+            payload.put("title", challenge.getTitle());
+            payload.put("tokensAwarded", challenge.getTokenReward());
+            gameEventLogger.appendEvent(gameId, "challenge.completed", "team", teamId, payload);
+        } catch (Exception ignored) {}
+        
+        // Broadcast to WebSocket
+        webSocketHandler.broadcastToGame(gameId, game);
         
         return team;
     }
-
+        
     public Team refuseChallenge(String gameId, String teamId) {
         Game game = getGame(gameId);
         validateGameIsActive(game);
@@ -549,6 +632,11 @@ public class GameService {
         team.setActiveChallenge(null);
         
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            gameEventLogger.appendEvent(gameId, "challenge.refused", "team", teamId, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -587,6 +675,12 @@ public class GameService {
         }
         
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("hiderTeamId", hiderId);
+            payload.put("remainingHiders", remainingHiders);
+            gameEventLogger.appendEvent(gameId, "team.found", "system", null, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -642,6 +736,12 @@ public class GameService {
         }
         
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("hiderTeamId", hiderId);
+            payload.put("allHidersFound", allHidersFound);
+            gameEventLogger.appendEvent(gameId, "team.found", "system", null, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -703,6 +803,13 @@ public class GameService {
         }
         
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            payload.put("from", oldRole);
+            payload.put("to", newRole);
+            gameEventLogger.appendEvent(gameId, "team.role_changed", "team", teamId, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
