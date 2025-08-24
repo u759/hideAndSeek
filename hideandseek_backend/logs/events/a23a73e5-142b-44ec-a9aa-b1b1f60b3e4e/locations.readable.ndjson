@@ -1,188 +1,588 @@
-{"time":"2025-08-23 22:14:00","gameCode":"OGBIGG","team":"F","role":"seeker","hasLocation":false}
-{"time":"2025-08-23 22:14:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
-{"time":"2025-08-23 22:14:05","gameCode":"OGBIGG","team":"F","role":"seeker","hasLocation":false}
-{"time":"2025-08-23 22:14:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:14:10","gameCode":"OGBIGG","team":"F","role":"seeker","hasLocation":false}
-{"time":"2025-08-23 22:14:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:14:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728686,"longitude":-122.9417442,"lastUpdate":"2025-08-23 22:14:15"}
-{"time":"2025-08-23 22:14:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:14:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728686,"longitude":-122.9417442,"lastUpdate":"2025-08-23 22:14:15"}
-{"time":"2025-08-23 22:14:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:14:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728686,"longitude":-122.9417442,"lastUpdate":"2025-08-23 22:14:15"}
-{"time":"2025-08-23 22:14:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:14:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728686,"longitude":-122.9417442,"lastUpdate":"2025-08-23 22:14:15"}
-{"time":"2025-08-23 22:14:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:14:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728677,"longitude":-122.9417432,"lastUpdate":"2025-08-23 22:14:30"}
-{"time":"2025-08-23 22:14:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:14:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728666,"longitude":-122.941745,"lastUpdate":"2025-08-23 22:14:38"}
-{"time":"2025-08-23 22:14:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:14:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:14:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:14:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:14:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:14:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:14:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:15:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:15:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:16:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:16:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:17:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:17:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:18:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:18:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:19:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:19:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:20:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:20:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:21:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:21:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:21:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:21:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:21:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:21:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:21:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:21:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:21:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:21:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:21:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:21:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:21:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:21:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:21:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:21:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:21:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:21:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
-{"time":"2025-08-23 22:21:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
-{"time":"2025-08-23 22:21:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:23:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:23:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:23:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:23:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:24:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:24:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:25:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:25:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:26:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:26:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:10","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:15","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:20","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:25","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:30","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:35","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:40","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:45","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:50","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:27:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:27:55","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:28:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:28:00","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:28:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728659,"longitude":-122.941743,"lastUpdate":"2025-08-23 22:14:40"}
+{"time":"2025-08-23 22:28:05","gameCode":"OGBIGG","team":"F","role":"hider","latitude":49.2728642,"longitude":-122.9417673,"lastUpdate":"2025-08-23 22:14:05"}
+{"time":"2025-08-23 22:28:10","gameCode":"OGBIGG","team":"F","role":"seeker","hasLocation":false}
+{"time":"2025-08-23 22:28:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:28:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728472,"longitude":-122.9417565,"lastUpdate":"2025-08-23 22:28:10"}
+{"time":"2025-08-23 22:28:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:28:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728078,"longitude":-122.9418029,"lastUpdate":"2025-08-23 22:28:19"}
+{"time":"2025-08-23 22:28:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:28:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728732,"longitude":-122.9417268,"lastUpdate":"2025-08-23 22:28:22"}
+{"time":"2025-08-23 22:28:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:28:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272903,"longitude":-122.9417195,"lastUpdate":"2025-08-23 22:28:29"}
+{"time":"2025-08-23 22:28:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:28:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728957,"longitude":-122.9417929,"lastUpdate":"2025-08-23 22:28:31"}
+{"time":"2025-08-23 22:28:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:28:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728957,"longitude":-122.9417929,"lastUpdate":"2025-08-23 22:28:31"}
+{"time":"2025-08-23 22:28:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:28:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272927,"longitude":-122.9417786,"lastUpdate":"2025-08-23 22:28:42"}
+{"time":"2025-08-23 22:28:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:28:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2729124,"longitude":-122.9417611,"lastUpdate":"2025-08-23 22:28:49"}
+{"time":"2025-08-23 22:28:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:28:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728989,"longitude":-122.9417218,"lastUpdate":"2025-08-23 22:28:52"}
+{"time":"2025-08-23 22:28:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728989,"longitude":-122.9417218,"lastUpdate":"2025-08-23 22:28:52"}
+{"time":"2025-08-23 22:29:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2729152,"longitude":-122.9417563,"lastUpdate":"2025-08-23 22:29:01"}
+{"time":"2025-08-23 22:29:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728945,"longitude":-122.9417425,"lastUpdate":"2025-08-23 22:29:09"}
+{"time":"2025-08-23 22:29:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728904,"longitude":-122.9417369,"lastUpdate":"2025-08-23 22:29:10"}
+{"time":"2025-08-23 22:29:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728876,"longitude":-122.9417429,"lastUpdate":"2025-08-23 22:29:20"}
+{"time":"2025-08-23 22:29:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728876,"longitude":-122.9417429,"lastUpdate":"2025-08-23 22:29:20"}
+{"time":"2025-08-23 22:29:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728861,"longitude":-122.9417425,"lastUpdate":"2025-08-23 22:29:29"}
+{"time":"2025-08-23 22:29:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728765,"longitude":-122.9417527,"lastUpdate":"2025-08-23 22:29:30"}
+{"time":"2025-08-23 22:29:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728765,"longitude":-122.9417528,"lastUpdate":"2025-08-23 22:29:39"}
+{"time":"2025-08-23 22:29:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728681,"longitude":-122.941752,"lastUpdate":"2025-08-23 22:29:40"}
+{"time":"2025-08-23 22:29:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728681,"longitude":-122.9417521,"lastUpdate":"2025-08-23 22:29:49"}
+{"time":"2025-08-23 22:29:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:29:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728675,"longitude":-122.9417548,"lastUpdate":"2025-08-23 22:29:50"}
+{"time":"2025-08-23 22:29:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728675,"longitude":-122.9417547,"lastUpdate":"2025-08-23 22:29:59"}
+{"time":"2025-08-23 22:30:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728661,"longitude":-122.9417566,"lastUpdate":"2025-08-23 22:30:01"}
+{"time":"2025-08-23 22:30:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728622,"longitude":-122.9417575,"lastUpdate":"2025-08-23 22:30:09"}
+{"time":"2025-08-23 22:30:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728622,"longitude":-122.9417575,"lastUpdate":"2025-08-23 22:30:09"}
+{"time":"2025-08-23 22:30:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728609,"longitude":-122.9417607,"lastUpdate":"2025-08-23 22:30:19"}
+{"time":"2025-08-23 22:30:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728609,"longitude":-122.9417607,"lastUpdate":"2025-08-23 22:30:19"}
+{"time":"2025-08-23 22:30:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728613,"longitude":-122.9417603,"lastUpdate":"2025-08-23 22:30:29"}
+{"time":"2025-08-23 22:30:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728613,"longitude":-122.9417603,"lastUpdate":"2025-08-23 22:30:29"}
+{"time":"2025-08-23 22:30:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728609,"longitude":-122.9417623,"lastUpdate":"2025-08-23 22:30:39"}
+{"time":"2025-08-23 22:30:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728609,"longitude":-122.9417623,"lastUpdate":"2025-08-23 22:30:39"}
+{"time":"2025-08-23 22:30:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.27286,"longitude":-122.9417621,"lastUpdate":"2025-08-23 22:30:49"}
+{"time":"2025-08-23 22:30:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:30:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.27286,"longitude":-122.9417621,"lastUpdate":"2025-08-23 22:30:49"}
+{"time":"2025-08-23 22:30:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728574,"longitude":-122.9417647,"lastUpdate":"2025-08-23 22:30:59"}
+{"time":"2025-08-23 22:31:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728574,"longitude":-122.9417647,"lastUpdate":"2025-08-23 22:30:59"}
+{"time":"2025-08-23 22:31:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728581,"longitude":-122.9417652,"lastUpdate":"2025-08-23 22:31:09"}
+{"time":"2025-08-23 22:31:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728581,"longitude":-122.9417652,"lastUpdate":"2025-08-23 22:31:09"}
+{"time":"2025-08-23 22:31:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728592,"longitude":-122.9417656,"lastUpdate":"2025-08-23 22:31:19"}
+{"time":"2025-08-23 22:31:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728592,"longitude":-122.9417656,"lastUpdate":"2025-08-23 22:31:19"}
+{"time":"2025-08-23 22:31:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728644,"longitude":-122.9417755,"lastUpdate":"2025-08-23 22:31:29"}
+{"time":"2025-08-23 22:31:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728644,"longitude":-122.9417755,"lastUpdate":"2025-08-23 22:31:29"}
+{"time":"2025-08-23 22:31:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728644,"longitude":-122.9417755,"lastUpdate":"2025-08-23 22:31:29"}
+{"time":"2025-08-23 22:31:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728595,"longitude":-122.9417661,"lastUpdate":"2025-08-23 22:31:40"}
+{"time":"2025-08-23 22:31:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728594,"longitude":-122.9417659,"lastUpdate":"2025-08-23 22:31:49"}
+{"time":"2025-08-23 22:31:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:31:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728588,"longitude":-122.9417628,"lastUpdate":"2025-08-23 22:31:51"}
+{"time":"2025-08-23 22:31:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728582,"longitude":-122.9417649,"lastUpdate":"2025-08-23 22:31:59"}
+{"time":"2025-08-23 22:32:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728582,"longitude":-122.9417649,"lastUpdate":"2025-08-23 22:31:59"}
+{"time":"2025-08-23 22:32:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728572,"longitude":-122.9417642,"lastUpdate":"2025-08-23 22:32:09"}
+{"time":"2025-08-23 22:32:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728572,"longitude":-122.9417642,"lastUpdate":"2025-08-23 22:32:09"}
+{"time":"2025-08-23 22:32:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417628,"lastUpdate":"2025-08-23 22:32:19"}
+{"time":"2025-08-23 22:32:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417628,"lastUpdate":"2025-08-23 22:32:19"}
+{"time":"2025-08-23 22:32:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417635,"lastUpdate":"2025-08-23 22:32:29"}
+{"time":"2025-08-23 22:32:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417635,"lastUpdate":"2025-08-23 22:32:29"}
+{"time":"2025-08-23 22:32:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728553,"longitude":-122.9417634,"lastUpdate":"2025-08-23 22:32:39"}
+{"time":"2025-08-23 22:32:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728553,"longitude":-122.9417634,"lastUpdate":"2025-08-23 22:32:39"}
+{"time":"2025-08-23 22:32:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728553,"longitude":-122.9417634,"lastUpdate":"2025-08-23 22:32:49"}
+{"time":"2025-08-23 22:32:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:32:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728556,"longitude":-122.9417629,"lastUpdate":"2025-08-23 22:32:50"}
+{"time":"2025-08-23 22:32:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728556,"longitude":-122.9417629,"lastUpdate":"2025-08-23 22:32:59"}
+{"time":"2025-08-23 22:33:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728559,"longitude":-122.9417638,"lastUpdate":"2025-08-23 22:33:01"}
+{"time":"2025-08-23 22:33:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728559,"longitude":-122.9417637,"lastUpdate":"2025-08-23 22:33:09"}
+{"time":"2025-08-23 22:33:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728558,"longitude":-122.9417642,"lastUpdate":"2025-08-23 22:33:13"}
+{"time":"2025-08-23 22:33:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728623,"longitude":-122.9417426,"lastUpdate":"2025-08-23 22:33:19"}
+{"time":"2025-08-23 22:33:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272856,"longitude":-122.9417634,"lastUpdate":"2025-08-23 22:33:20"}
+{"time":"2025-08-23 22:33:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728561,"longitude":-122.9417627,"lastUpdate":"2025-08-23 22:33:29"}
+{"time":"2025-08-23 22:33:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728561,"longitude":-122.9417627,"lastUpdate":"2025-08-23 22:33:29"}
+{"time":"2025-08-23 22:33:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728561,"longitude":-122.9417627,"lastUpdate":"2025-08-23 22:33:39"}
+{"time":"2025-08-23 22:33:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728568,"longitude":-122.9417632,"lastUpdate":"2025-08-23 22:33:40"}
+{"time":"2025-08-23 22:33:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728568,"longitude":-122.9417632,"lastUpdate":"2025-08-23 22:33:49"}
+{"time":"2025-08-23 22:33:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:33:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728569,"longitude":-122.9417635,"lastUpdate":"2025-08-23 22:33:50"}
+{"time":"2025-08-23 22:33:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728569,"longitude":-122.9417635,"lastUpdate":"2025-08-23 22:33:59"}
+{"time":"2025-08-23 22:34:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272857,"longitude":-122.9417643,"lastUpdate":"2025-08-23 22:34:00"}
+{"time":"2025-08-23 22:34:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728626,"longitude":-122.9417721,"lastUpdate":"2025-08-23 22:34:09"}
+{"time":"2025-08-23 22:34:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728631,"longitude":-122.9417729,"lastUpdate":"2025-08-23 22:34:10"}
+{"time":"2025-08-23 22:34:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728657,"longitude":-122.941765,"lastUpdate":"2025-08-23 22:34:20"}
+{"time":"2025-08-23 22:34:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272866,"longitude":-122.9417648,"lastUpdate":"2025-08-23 22:34:20"}
+{"time":"2025-08-23 22:34:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728574,"longitude":-122.9417639,"lastUpdate":"2025-08-23 22:34:29"}
+{"time":"2025-08-23 22:34:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728574,"longitude":-122.9417639,"lastUpdate":"2025-08-23 22:34:29"}
+{"time":"2025-08-23 22:34:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728566,"longitude":-122.9417639,"lastUpdate":"2025-08-23 22:34:39"}
+{"time":"2025-08-23 22:34:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728566,"longitude":-122.9417639,"lastUpdate":"2025-08-23 22:34:39"}
+{"time":"2025-08-23 22:34:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272857,"longitude":-122.9417635,"lastUpdate":"2025-08-23 22:34:49"}
+{"time":"2025-08-23 22:34:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:34:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272857,"longitude":-122.9417635,"lastUpdate":"2025-08-23 22:34:49"}
+{"time":"2025-08-23 22:34:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272857,"longitude":-122.9417633,"lastUpdate":"2025-08-23 22:34:59"}
+{"time":"2025-08-23 22:35:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272857,"longitude":-122.9417633,"lastUpdate":"2025-08-23 22:34:59"}
+{"time":"2025-08-23 22:35:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728573,"longitude":-122.9417635,"lastUpdate":"2025-08-23 22:35:09"}
+{"time":"2025-08-23 22:35:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728573,"longitude":-122.9417635,"lastUpdate":"2025-08-23 22:35:09"}
+{"time":"2025-08-23 22:35:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728573,"longitude":-122.9417635,"lastUpdate":"2025-08-23 22:35:19"}
+{"time":"2025-08-23 22:35:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728565,"longitude":-122.9417647,"lastUpdate":"2025-08-23 22:35:20"}
+{"time":"2025-08-23 22:35:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417647,"lastUpdate":"2025-08-23 22:35:29"}
+{"time":"2025-08-23 22:35:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417647,"lastUpdate":"2025-08-23 22:35:29"}
+{"time":"2025-08-23 22:35:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728617,"longitude":-122.9417633,"lastUpdate":"2025-08-23 22:35:39"}
+{"time":"2025-08-23 22:35:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728617,"longitude":-122.9417633,"lastUpdate":"2025-08-23 22:35:39"}
+{"time":"2025-08-23 22:35:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728563,"longitude":-122.9417654,"lastUpdate":"2025-08-23 22:35:49"}
+{"time":"2025-08-23 22:35:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:35:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728563,"longitude":-122.9417654,"lastUpdate":"2025-08-23 22:35:49"}
+{"time":"2025-08-23 22:35:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417655,"lastUpdate":"2025-08-23 22:35:59"}
+{"time":"2025-08-23 22:36:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417655,"lastUpdate":"2025-08-23 22:35:59"}
+{"time":"2025-08-23 22:36:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417666,"lastUpdate":"2025-08-23 22:36:09"}
+{"time":"2025-08-23 22:36:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417666,"lastUpdate":"2025-08-23 22:36:09"}
+{"time":"2025-08-23 22:36:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417666,"lastUpdate":"2025-08-23 22:36:19"}
+{"time":"2025-08-23 22:36:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728564,"longitude":-122.9417666,"lastUpdate":"2025-08-23 22:36:19"}
+{"time":"2025-08-23 22:36:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272855,"longitude":-122.9417626,"lastUpdate":"2025-08-23 22:36:30"}
+{"time":"2025-08-23 22:36:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272855,"longitude":-122.9417626,"lastUpdate":"2025-08-23 22:36:30"}
+{"time":"2025-08-23 22:36:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728547,"longitude":-122.9417616,"lastUpdate":"2025-08-23 22:36:39"}
+{"time":"2025-08-23 22:36:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728546,"longitude":-122.941761,"lastUpdate":"2025-08-23 22:36:40"}
+{"time":"2025-08-23 22:36:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728543,"longitude":-122.9417607,"lastUpdate":"2025-08-23 22:36:50"}
+{"time":"2025-08-23 22:36:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:36:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.9417587,"lastUpdate":"2025-08-23 22:36:51"}
+{"time":"2025-08-23 22:36:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417583,"lastUpdate":"2025-08-23 22:37:00"}
+{"time":"2025-08-23 22:37:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728535,"longitude":-122.9417585,"lastUpdate":"2025-08-23 22:37:00"}
+{"time":"2025-08-23 22:37:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728535,"longitude":-122.9417584,"lastUpdate":"2025-08-23 22:37:09"}
+{"time":"2025-08-23 22:37:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417583,"lastUpdate":"2025-08-23 22:37:10"}
+{"time":"2025-08-23 22:37:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728565,"longitude":-122.9417727,"lastUpdate":"2025-08-23 22:37:19"}
+{"time":"2025-08-23 22:37:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.9417586,"lastUpdate":"2025-08-23 22:37:20"}
+{"time":"2025-08-23 22:37:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.9417586,"lastUpdate":"2025-08-23 22:37:30"}
+{"time":"2025-08-23 22:37:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417589,"lastUpdate":"2025-08-23 22:37:30"}
+{"time":"2025-08-23 22:37:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728537,"longitude":-122.941759,"lastUpdate":"2025-08-23 22:37:40"}
+{"time":"2025-08-23 22:37:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728537,"longitude":-122.941759,"lastUpdate":"2025-08-23 22:37:40"}
+{"time":"2025-08-23 22:37:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728537,"longitude":-122.941759,"lastUpdate":"2025-08-23 22:37:49"}
+{"time":"2025-08-23 22:37:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:37:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728535,"longitude":-122.9417596,"lastUpdate":"2025-08-23 22:37:50"}
+{"time":"2025-08-23 22:37:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728535,"longitude":-122.9417596,"lastUpdate":"2025-08-23 22:37:59"}
+{"time":"2025-08-23 22:38:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417592,"lastUpdate":"2025-08-23 22:38:00"}
+{"time":"2025-08-23 22:38:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417592,"lastUpdate":"2025-08-23 22:38:10"}
+{"time":"2025-08-23 22:38:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417595,"lastUpdate":"2025-08-23 22:38:10"}
+{"time":"2025-08-23 22:38:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417595,"lastUpdate":"2025-08-23 22:38:20"}
+{"time":"2025-08-23 22:38:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417599,"lastUpdate":"2025-08-23 22:38:20"}
+{"time":"2025-08-23 22:38:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417599,"lastUpdate":"2025-08-23 22:38:30"}
+{"time":"2025-08-23 22:38:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417594,"lastUpdate":"2025-08-23 22:38:30"}
+{"time":"2025-08-23 22:38:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417594,"lastUpdate":"2025-08-23 22:38:40"}
+{"time":"2025-08-23 22:38:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417592,"lastUpdate":"2025-08-23 22:38:40"}
+{"time":"2025-08-23 22:38:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417592,"lastUpdate":"2025-08-23 22:38:49"}
+{"time":"2025-08-23 22:38:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:38:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417593,"lastUpdate":"2025-08-23 22:38:50"}
+{"time":"2025-08-23 22:38:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417593,"lastUpdate":"2025-08-23 22:39:00"}
+{"time":"2025-08-23 22:39:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417594,"lastUpdate":"2025-08-23 22:39:00"}
+{"time":"2025-08-23 22:39:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417594,"lastUpdate":"2025-08-23 22:39:10"}
+{"time":"2025-08-23 22:39:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728531,"longitude":-122.9417592,"lastUpdate":"2025-08-23 22:39:10"}
+{"time":"2025-08-23 22:39:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728531,"longitude":-122.9417592,"lastUpdate":"2025-08-23 22:39:20"}
+{"time":"2025-08-23 22:39:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728532,"longitude":-122.9417595,"lastUpdate":"2025-08-23 22:39:20"}
+{"time":"2025-08-23 22:39:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728532,"longitude":-122.9417595,"lastUpdate":"2025-08-23 22:39:29"}
+{"time":"2025-08-23 22:39:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728527,"longitude":-122.9417597,"lastUpdate":"2025-08-23 22:39:30"}
+{"time":"2025-08-23 22:39:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728527,"longitude":-122.9417598,"lastUpdate":"2025-08-23 22:39:40"}
+{"time":"2025-08-23 22:39:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728528,"longitude":-122.9417597,"lastUpdate":"2025-08-23 22:39:40"}
+{"time":"2025-08-23 22:39:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728529,"longitude":-122.9417597,"lastUpdate":"2025-08-23 22:39:49"}
+{"time":"2025-08-23 22:39:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:39:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728528,"longitude":-122.9417596,"lastUpdate":"2025-08-23 22:39:50"}
+{"time":"2025-08-23 22:39:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728528,"longitude":-122.9417596,"lastUpdate":"2025-08-23 22:39:59"}
+{"time":"2025-08-23 22:40:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272853,"longitude":-122.9417594,"lastUpdate":"2025-08-23 22:40:03"}
+{"time":"2025-08-23 22:40:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728594,"longitude":-122.9417742,"lastUpdate":"2025-08-23 22:40:10"}
+{"time":"2025-08-23 22:40:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728605,"longitude":-122.941777,"lastUpdate":"2025-08-23 22:40:11"}
+{"time":"2025-08-23 22:40:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728604,"longitude":-122.9417766,"lastUpdate":"2025-08-23 22:40:20"}
+{"time":"2025-08-23 22:40:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728683,"longitude":-122.941776,"lastUpdate":"2025-08-23 22:40:21"}
+{"time":"2025-08-23 22:40:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728677,"longitude":-122.9417754,"lastUpdate":"2025-08-23 22:40:29"}
+{"time":"2025-08-23 22:40:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.94176,"lastUpdate":"2025-08-23 22:40:30"}
+{"time":"2025-08-23 22:40:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417599,"lastUpdate":"2025-08-23 22:40:40"}
+{"time":"2025-08-23 22:40:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728535,"longitude":-122.9417604,"lastUpdate":"2025-08-23 22:40:40"}
+{"time":"2025-08-23 22:40:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728535,"longitude":-122.9417604,"lastUpdate":"2025-08-23 22:40:50"}
+{"time":"2025-08-23 22:40:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:40:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417603,"lastUpdate":"2025-08-23 22:40:51"}
+{"time":"2025-08-23 22:40:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728606,"longitude":-122.9417643,"lastUpdate":"2025-08-23 22:41:00"}
+{"time":"2025-08-23 22:41:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728604,"longitude":-122.9417642,"lastUpdate":"2025-08-23 22:41:01"}
+{"time":"2025-08-23 22:41:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272859,"longitude":-122.9417638,"lastUpdate":"2025-08-23 22:41:10"}
+{"time":"2025-08-23 22:41:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728597,"longitude":-122.9417642,"lastUpdate":"2025-08-23 22:41:10"}
+{"time":"2025-08-23 22:41:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728595,"longitude":-122.9417641,"lastUpdate":"2025-08-23 22:41:20"}
+{"time":"2025-08-23 22:41:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417607,"lastUpdate":"2025-08-23 22:41:20"}
+{"time":"2025-08-23 22:41:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417607,"lastUpdate":"2025-08-23 22:41:30"}
+{"time":"2025-08-23 22:41:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417611,"lastUpdate":"2025-08-23 22:41:30"}
+{"time":"2025-08-23 22:41:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417611,"lastUpdate":"2025-08-23 22:41:40"}
+{"time":"2025-08-23 22:41:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728537,"longitude":-122.9417614,"lastUpdate":"2025-08-23 22:41:40"}
+{"time":"2025-08-23 22:41:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728537,"longitude":-122.9417614,"lastUpdate":"2025-08-23 22:41:50"}
+{"time":"2025-08-23 22:41:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:41:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417616,"lastUpdate":"2025-08-23 22:41:50"}
+{"time":"2025-08-23 22:41:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.9417616,"lastUpdate":"2025-08-23 22:42:00"}
+{"time":"2025-08-23 22:42:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.9417617,"lastUpdate":"2025-08-23 22:42:00"}
+{"time":"2025-08-23 22:42:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417618,"lastUpdate":"2025-08-23 22:42:10"}
+{"time":"2025-08-23 22:42:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417618,"lastUpdate":"2025-08-23 22:42:10"}
+{"time":"2025-08-23 22:42:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417618,"lastUpdate":"2025-08-23 22:42:20"}
+{"time":"2025-08-23 22:42:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.941762,"lastUpdate":"2025-08-23 22:42:20"}
+{"time":"2025-08-23 22:42:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.941762,"lastUpdate":"2025-08-23 22:42:30"}
+{"time":"2025-08-23 22:42:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417622,"lastUpdate":"2025-08-23 22:42:30"}
+{"time":"2025-08-23 22:42:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417622,"lastUpdate":"2025-08-23 22:42:40"}
+{"time":"2025-08-23 22:42:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417623,"lastUpdate":"2025-08-23 22:42:40"}
+{"time":"2025-08-23 22:42:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728455,"longitude":-122.9417241,"lastUpdate":"2025-08-23 22:42:50"}
+{"time":"2025-08-23 22:42:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:42:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.9417619,"lastUpdate":"2025-08-23 22:42:50"}
+{"time":"2025-08-23 22:42:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417619,"lastUpdate":"2025-08-23 22:43:00"}
+{"time":"2025-08-23 22:43:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417617,"lastUpdate":"2025-08-23 22:43:00"}
+{"time":"2025-08-23 22:43:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.9417616,"lastUpdate":"2025-08-23 22:43:10"}
+{"time":"2025-08-23 22:43:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.9417616,"lastUpdate":"2025-08-23 22:43:10"}
+{"time":"2025-08-23 22:43:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.9417616,"lastUpdate":"2025-08-23 22:43:20"}
+{"time":"2025-08-23 22:43:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728531,"longitude":-122.9417614,"lastUpdate":"2025-08-23 22:43:20"}
+{"time":"2025-08-23 22:43:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728531,"longitude":-122.9417614,"lastUpdate":"2025-08-23 22:43:30"}
+{"time":"2025-08-23 22:43:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728532,"longitude":-122.941761,"lastUpdate":"2025-08-23 22:43:30"}
+{"time":"2025-08-23 22:43:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728559,"longitude":-122.9417681,"lastUpdate":"2025-08-23 22:43:40"}
+{"time":"2025-08-23 22:43:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.9417614,"lastUpdate":"2025-08-23 22:43:41"}
+{"time":"2025-08-23 22:43:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.9417615,"lastUpdate":"2025-08-23 22:43:50"}
+{"time":"2025-08-23 22:43:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:43:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.9417615,"lastUpdate":"2025-08-23 22:43:51"}
+{"time":"2025-08-23 22:43:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728535,"longitude":-122.9417615,"lastUpdate":"2025-08-23 22:44:00"}
+{"time":"2025-08-23 22:44:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417615,"lastUpdate":"2025-08-23 22:44:00"}
+{"time":"2025-08-23 22:44:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417615,"lastUpdate":"2025-08-23 22:44:10"}
+{"time":"2025-08-23 22:44:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417615,"lastUpdate":"2025-08-23 22:44:10"}
+{"time":"2025-08-23 22:44:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417615,"lastUpdate":"2025-08-23 22:44:20"}
+{"time":"2025-08-23 22:44:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417617,"lastUpdate":"2025-08-23 22:44:20"}
+{"time":"2025-08-23 22:44:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417617,"lastUpdate":"2025-08-23 22:44:30"}
+{"time":"2025-08-23 22:44:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417618,"lastUpdate":"2025-08-23 22:44:31"}
+{"time":"2025-08-23 22:44:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.9417619,"lastUpdate":"2025-08-23 22:44:40"}
+{"time":"2025-08-23 22:44:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.9417619,"lastUpdate":"2025-08-23 22:44:41"}
+{"time":"2025-08-23 22:44:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417619,"lastUpdate":"2025-08-23 22:44:50"}
+{"time":"2025-08-23 22:44:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:44:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417619,"lastUpdate":"2025-08-23 22:44:50"}
+{"time":"2025-08-23 22:44:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417619,"lastUpdate":"2025-08-23 22:45:00"}
+{"time":"2025-08-23 22:45:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.941762,"lastUpdate":"2025-08-23 22:45:00"}
+{"time":"2025-08-23 22:45:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.941762,"lastUpdate":"2025-08-23 22:45:10"}
+{"time":"2025-08-23 22:45:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417619,"lastUpdate":"2025-08-23 22:45:10"}
+{"time":"2025-08-23 22:45:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417619,"lastUpdate":"2025-08-23 22:45:20"}
+{"time":"2025-08-23 22:45:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.9417618,"lastUpdate":"2025-08-23 22:45:20"}
+{"time":"2025-08-23 22:45:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.9417618,"lastUpdate":"2025-08-23 22:45:30"}
+{"time":"2025-08-23 22:45:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417618,"lastUpdate":"2025-08-23 22:45:30"}
+{"time":"2025-08-23 22:45:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417618,"lastUpdate":"2025-08-23 22:45:40"}
+{"time":"2025-08-23 22:45:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728541,"longitude":-122.9417619,"lastUpdate":"2025-08-23 22:45:40"}
+{"time":"2025-08-23 22:45:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728541,"longitude":-122.9417618,"lastUpdate":"2025-08-23 22:45:50"}
+{"time":"2025-08-23 22:45:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:45:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.9417616,"lastUpdate":"2025-08-23 22:45:51"}
+{"time":"2025-08-23 22:45:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417616,"lastUpdate":"2025-08-23 22:46:00"}
+{"time":"2025-08-23 22:46:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.9417614,"lastUpdate":"2025-08-23 22:46:00"}
+{"time":"2025-08-23 22:46:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728539,"longitude":-122.9417614,"lastUpdate":"2025-08-23 22:46:10"}
+{"time":"2025-08-23 22:46:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417615,"lastUpdate":"2025-08-23 22:46:10"}
+{"time":"2025-08-23 22:46:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.272854,"longitude":-122.9417615,"lastUpdate":"2025-08-23 22:46:20"}
+{"time":"2025-08-23 22:46:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728541,"longitude":-122.9417616,"lastUpdate":"2025-08-23 22:46:20"}
+{"time":"2025-08-23 22:46:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728541,"longitude":-122.9417616,"lastUpdate":"2025-08-23 22:46:30"}
+{"time":"2025-08-23 22:46:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728538,"longitude":-122.9417614,"lastUpdate":"2025-08-23 22:46:30"}
+{"time":"2025-08-23 22:46:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728537,"longitude":-122.9417614,"lastUpdate":"2025-08-23 22:46:40"}
+{"time":"2025-08-23 22:46:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417612,"lastUpdate":"2025-08-23 22:46:40"}
+{"time":"2025-08-23 22:46:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.9417612,"lastUpdate":"2025-08-23 22:46:50"}
+{"time":"2025-08-23 22:46:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:46:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728535,"longitude":-122.941761,"lastUpdate":"2025-08-23 22:46:50"}
+{"time":"2025-08-23 22:46:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728536,"longitude":-122.941761,"lastUpdate":"2025-08-23 22:47:00"}
+{"time":"2025-08-23 22:47:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728535,"longitude":-122.9417609,"lastUpdate":"2025-08-23 22:47:00"}
+{"time":"2025-08-23 22:47:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728535,"longitude":-122.9417609,"lastUpdate":"2025-08-23 22:47:10"}
+{"time":"2025-08-23 22:47:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.9417607,"lastUpdate":"2025-08-23 22:47:10"}
+{"time":"2025-08-23 22:47:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:20","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.9417607,"lastUpdate":"2025-08-23 22:47:20"}
+{"time":"2025-08-23 22:47:20","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:25","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417605,"lastUpdate":"2025-08-23 22:47:20"}
+{"time":"2025-08-23 22:47:25","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:30","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417605,"lastUpdate":"2025-08-23 22:47:30"}
+{"time":"2025-08-23 22:47:30","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:35","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417608,"lastUpdate":"2025-08-23 22:47:30"}
+{"time":"2025-08-23 22:47:35","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:40","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417608,"lastUpdate":"2025-08-23 22:47:40"}
+{"time":"2025-08-23 22:47:40","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:45","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417606,"lastUpdate":"2025-08-23 22:47:40"}
+{"time":"2025-08-23 22:47:45","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:50","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417606,"lastUpdate":"2025-08-23 22:47:50"}
+{"time":"2025-08-23 22:47:50","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:47:55","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728532,"longitude":-122.9417606,"lastUpdate":"2025-08-23 22:47:50"}
+{"time":"2025-08-23 22:47:55","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:48:00","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417607,"lastUpdate":"2025-08-23 22:48:00"}
+{"time":"2025-08-23 22:48:00","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:48:05","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417607,"lastUpdate":"2025-08-23 22:48:00"}
+{"time":"2025-08-23 22:48:05","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:48:10","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728533,"longitude":-122.9417607,"lastUpdate":"2025-08-23 22:48:10"}
+{"time":"2025-08-23 22:48:10","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}
+{"time":"2025-08-23 22:48:15","gameCode":"OGBIGG","team":"F","role":"seeker","latitude":49.2728534,"longitude":-122.9417609,"lastUpdate":"2025-08-23 22:48:10"}
+{"time":"2025-08-23 22:48:15","gameCode":"OGBIGG","team":"F","role":"hider","hasLocation":false}

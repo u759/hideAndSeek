@@ -1,3 +1,0 @@
-{"version":"1.0","eventId":"20250823212904937-a86a0264254b","gameId":"fd6d7433-160c-4c79-9791-90e3656b2f77","sequence":1,"timestamp":1756009744937,"type":"game.created","actorType":"system","actorId":null,"payload":{"teamNames":["F","Ddx"]}}
-{"version":"1.0","eventId":"20250823212918051-e85d54431012","gameId":"fd6d7433-160c-4c79-9791-90e3656b2f77","sequence":2,"timestamp":1756009758051,"type":"game.started","actorType":"system","actorId":null,"payload":{"roundStartTime":1756009758051,"round":1}}
-{"version":"1.0","eventId":"20250823212957994-fa7c0167441c","gameId":"fd6d7433-160c-4c79-9791-90e3656b2f77","sequence":3,"timestamp":1756009797994,"type":"game.ended","actorType":"system","actorId":null,"payload":{"endTime":1756009797994}}
