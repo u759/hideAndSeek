@@ -8,9 +8,12 @@ import {
   SafeAreaView,
   Alert,
   Modal,
+  TextInput,
+  Linking,
 } from 'react-native';
 import { Game, Team, DrawnCard, Challenge, Curse } from '../types';
 import ApiService from '../services/api';
+import { useAudioPlayer, setAudioModeAsync } from 'expo-audio';
 
 interface ChallengesTabProps {
   game: Game;
@@ -18,11 +21,81 @@ interface ChallengesTabProps {
   onRefresh: () => void;
 }
 
+// Helper function to render text with clickable links
+const renderTextWithLinks = (text: string, style: any) => {
+  // Regex to match markdown-style links: [text](url)
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      parts.push(
+        <Text key={`text-${lastIndex}`} style={style}>
+          {text.substring(lastIndex, match.index)}
+        </Text>
+      );
+    }
+
+    // Add the clickable link
+    const linkText = match[1];
+    const linkUrl = match[2];
+    parts.push(
+      <Text
+        key={`link-${match.index}`}
+        style={[style, { color: '#3498db', textDecorationLine: 'underline' }]}
+        onPress={() => {
+          Linking.openURL(linkUrl).catch(() => {
+            Alert.alert('Error', 'Could not open link');
+          });
+        }}
+      >
+        {linkText}
+      </Text>
+    );
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text after the last link
+  if (lastIndex < text.length) {
+    parts.push(
+      <Text key={`text-${lastIndex}`} style={style}>
+        {text.substring(lastIndex)}
+      </Text>
+    );
+  }
+
+  return parts.length > 0 ? <Text>{parts}</Text> : <Text style={style}>{text}</Text>;
+};
+
 const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefresh }) => {
   const [drawnCard, setDrawnCard] = useState<DrawnCard | null>(null);
   const [loading, setLoading] = useState(false);
   const [showCardModal, setShowCardModal] = useState(false);
   const [challengeTitleById, setChallengeTitleById] = useState<Record<string, string>>({});
+  const [customTokenInput, setCustomTokenInput] = useState<string>('0');
+  const [showVariableRewardInput, setShowVariableRewardInput] = useState(false);
+
+  // Players for snappy UX (expo-audio)
+  const drawPlayer = useAudioPlayer(require('../assets/draw.wav'));
+  const completePlayer = useAudioPlayer(require('../assets/complete.wav'));
+  const vetoPlayer = useAudioPlayer(require('../assets/veto_curse.wav'));
+
+  useEffect(() => {
+    // Allow playback in silent mode
+    setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+  }, []);
+
+  const playSound = (player?: any) => {
+    if (!player) return;
+    try {
+      player.seekTo(0);
+      player.play();
+    } catch {}
+  };
 
   // If the server reports an active challenge, reflect it as drawnCard
   const serverActiveChallenge = currentTeam.activeChallenge;
@@ -97,6 +170,10 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
 
       setDrawnCard(normalized);
       setShowCardModal(true);
+      setCustomTokenInput('0'); // Reset custom token input for new cards
+      // Play draw sound
+      playSound(drawPlayer);
+
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to draw card. Please try again.');
       console.error('Failed to draw card:', error);
@@ -105,34 +182,66 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
     }
   };
 
-  const completeChallenge = async () => {
+  const completeChallenge = () => {
     if (!drawnCard || drawnCard.type !== 'challenge') return;
 
-    try {
-      const result = await ApiService.completeChallenge(
-        drawnCard.card.title,
-        currentTeam.id,
-        game.id
-      );
-      
-      Alert.alert(
-        'Challenge Completed!',
-        `${result.message} You earned ${result.tokensEarned} tokens.`,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
+    // Ask user to confirm before marking challenge complete
+    Alert.alert(
+      'Confirm Completion',
+      'Are you sure you want to mark this challenge as completed? This action will award tokens to your team.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: async () => {
+            // perform the original completion logic after confirmation
+            try {
+              // Dynamic challenge (user decides token count)
+              if (drawnCard.card.token_count === null) {
+                const customTokens = parseInt(customTokenInput || '0', 10);
+                if (isNaN(customTokens) || customTokens < 0) {
+                  Alert.alert('Error', 'Please enter a valid number of tokens (0 or greater).');
+                  return;
+                }
+
+                const result = await ApiService.completeChallengeWithCustomTokens(
+                  drawnCard.card.title,
+                  currentTeam.id,
+                  game.id,
+                  customTokens
+                );
+                setDrawnCard(null);
+                setShowCardModal(false);
+                setCustomTokenInput('0');
+                // Play completion sound
+                playSound(completePlayer);
+
+                return;
+              }
+
+              // Regular challenge with fixed token_count
+              const result = await ApiService.completeChallenge(
+                drawnCard.card.title,
+                currentTeam.id,
+                game.id
+              );
               setDrawnCard(null);
               setShowCardModal(false);
-              onRefresh();
+              // Play completion sound
+              playSound(completePlayer);
+            } catch (error: any) {
+              // If backend indicates this is actually a dynamic challenge, show the modal so user can enter tokens
+              if (error?.message?.toLowerCase()?.includes('dynamic challenge')) {
+                setShowCardModal(true);
+                return;
+              }
+              Alert.alert('Error', error.message || 'Failed to complete challenge.');
+              console.error('Failed to complete challenge:', error);
             }
-          }
-        ]
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to complete challenge.');
-      console.error('Failed to complete challenge:', error);
-    }
+          },
+        },
+      ]
+    );
   };
 
   const vetoChallenge = async () => {
@@ -153,7 +262,9 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
                 currentTeam.id,
                 game.id
               );
-              
+              // Play veto/cursed sound
+              playSound(vetoPlayer);
+
               Alert.alert(
                 'Challenge Vetoed',
                 'You cannot draw another card for 5 minutes.',
@@ -163,7 +274,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
                     onPress: () => {
                       setDrawnCard(null);
                       setShowCardModal(false);
-                      onRefresh();
+                      // No need to call onRefresh - parent will get WebSocket update automatically
                     }
                   }
                 ]
@@ -196,12 +307,25 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
           {isChallenge ? '🎯 CHALLENGE' : '⚡ CURSE'}
         </Text>
         <Text style={styles.cardTitle}>{card.title}</Text>
-        <Text style={styles.cardDescription}>{card.description}</Text>
-        {isChallenge && card.token_count != null && (
+        {renderTextWithLinks(card.description, styles.cardDescription)}
+        {isChallenge && (
           <View style={styles.rewardContainer}>
             <Text style={styles.cardTokens}>
-              🪙 Reward: {card.token_count} tokens
+              🪙 Reward: {card.token_count === null ? 'Variable (you decide)' : `${card.token_count} tokens`}
             </Text>
+            {card.token_count === null && (
+              <View style={styles.variableRewardInput}>
+                <Text style={styles.inputLabel}>Enter tokens earned:</Text>
+                <TextInput
+                  style={styles.tokenInput}
+                  value={customTokenInput}
+                  onChangeText={setCustomTokenInput}
+                  placeholder="0"
+                  keyboardType="numeric"
+                  maxLength={3}
+                />
+              </View>
+            )}
           </View>
         )}
       </View>
@@ -231,7 +355,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
               <Text style={styles.statusMessageText}>{getStatusMessage()}</Text>
             </View>
           )}
-          
+
           {vetoTimeRemaining > 0 ? (
             <View style={styles.vetoWarning}>
               <Text style={styles.vetoText}>
@@ -245,7 +369,7 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
             <View style={styles.activeCardSection}>
               <Text style={styles.activeCardTitle}>Active Card</Text>
               {renderCard()}
-              
+
               {drawnCard.type === 'challenge' ? (
                 <View style={styles.cardActions}>
                   <TouchableOpacity
@@ -309,12 +433,12 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
           </View>
         </View>
 
-    {currentTeam.completedChallenges.length > 0 && (
+        {currentTeam.completedChallenges.length > 0 && (
           <View style={styles.historySection}>
             <Text style={styles.historyTitle}>Completed Challenges</Text>
-      {currentTeam.completedChallenges.map((entry, index) => (
+            {currentTeam.completedChallenges.map((entry, index) => (
               <View key={index} style={styles.historyItem}>
-        <Text style={styles.historyText}>✅ {challengeTitleById[entry] || entry}</Text>
+                <Text style={styles.historyText}>✅ {challengeTitleById[entry] || entry}</Text>
               </View>
             ))}
           </View>
@@ -461,7 +585,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e8f5e8',
     padding: 8,
     borderRadius: 6,
-    marginTop: 8,
+    marginTop: 0,
     alignItems: 'center',
   },
   cardActions: {
@@ -585,6 +709,26 @@ const styles = StyleSheet.create({
     color: '#856404',
     textAlign: 'center',
     fontWeight: '600',
+  },
+  variableRewardInput: {
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+  },
+  tokenInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 16,
+    textAlign: 'center',
+    backgroundColor: '#fff',
+    minWidth: 80,
   },
 });
 

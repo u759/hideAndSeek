@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,10 +9,11 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useIsFocused } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList, Game, Team } from '../types';
 import ApiService from '../services/api';
+import useGameState from '../hooks/useGameState';
 
 type TeamJoinScreenRouteProp = RouteProp<RootStackParamList, 'TeamJoin'>;
 type TeamJoinScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TeamJoin'>;
@@ -21,35 +22,39 @@ const TeamJoinScreen: React.FC = () => {
   const navigation = useNavigation<TeamJoinScreenNavigationProp>();
   const route = useRoute<TeamJoinScreenRouteProp>();
   const { gameId, gameCode } = route.params;
-  
-  const [game, setGame] = useState<Game | null>(null);
-  const [loading, setLoading] = useState(true);
+
   const [joining, setJoining] = useState(false);
+  const isFocused = useIsFocused();
 
+  // Use centralized game state management with WebSocket updates
+  const { game, loading, error, connected, refresh } = useGameState({
+    gameId,
+    enabled: isFocused, // Only connect when screen is focused
+  });
+
+  // Force refresh when screen regains focus (not just on WebSocket broadcast)
   useEffect(() => {
-    loadGame();
-  }, [gameId]);
+    if (isFocused) {
+      refresh();
+    }
+  }, [isFocused, refresh]);
 
-  const loadGame = async () => {
-    try {
-      const gameData = await ApiService.getGame(gameId);
-      setGame(gameData);
-    } catch (error) {
+  // Handle errors (e.g., invalid game code)
+  useEffect(() => {
+    if (error) {
       Alert.alert('Error', 'Failed to load game. Please check the game code.');
       console.error('Failed to load game:', error);
       navigation.goBack();
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error, navigation]);
 
   const joinTeam = async (team: Team) => {
     setJoining(true);
     try {
       // Navigate to the game screen with the selected team
-      navigation.navigate('Game', { 
-        gameId: game!.id, 
-        teamId: team.id 
+      navigation.navigate('Game', {
+        gameId: game!.id,
+        teamId: team.id
       });
     } catch (error) {
       Alert.alert('Error', 'Failed to join team. Please try again.');
@@ -92,7 +97,7 @@ const TeamJoinScreen: React.FC = () => {
 
         <View style={styles.teamsSection}>
           <Text style={styles.sectionTitle}>Available Teams:</Text>
-          
+
           {game.teams.map((team, index) => (
             <TouchableOpacity
               key={team.id}
@@ -109,14 +114,14 @@ const TeamJoinScreen: React.FC = () => {
                   {team.role === 'seeker' ? '🔍 Seeker' : '👤 Hider'}
                 </Text>
               </View>
-              
+
               <Text style={styles.teamDescription}>
-                {team.role === 'seeker' 
+                {team.role === 'seeker'
                   ? 'Draw challenge cards, earn tokens, buy clues to find hiders'
                   : 'Hide around UBC campus, share location automatically'
                 }
               </Text>
-              
+
               <View style={styles.teamStats}>
                 <Text style={styles.teamStat}>Tokens: {team.tokens}</Text>
                 <Text style={styles.teamStat}>

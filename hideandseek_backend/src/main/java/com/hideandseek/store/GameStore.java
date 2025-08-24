@@ -32,6 +32,8 @@ public class GameStore {
     private final Map<String, List<ClueResponse>> clueResponses = new ConcurrentHashMap<>();
     // Store Expo push tokens per game/team (key: gameId:teamId)
     private final Map<String, Set<String>> teamPushTokens = new ConcurrentHashMap<>();
+    // Track which team each device token is currently active with (key: token -> gameId:teamId)
+    private final Map<String, String> deviceToActiveTeam = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();
 
@@ -70,6 +72,8 @@ public class GameStore {
                                     challenge.setTokenReward(1); // Default value
                                 }
                             }
+                        } else if (tokenValue == null) {
+                            challenge.setTokenReward(null); // Allow null for dynamic challenges
                         } else {
                             challenge.setTokenReward(1); // Default value
                         }
@@ -134,6 +138,19 @@ public class GameStore {
                             }
                         } else {
                             curse.setTimeSeconds(null);
+                        }
+                        // Parse penalty field for time penalties
+                        Object penaltyValue = curseData.get("penalty");
+                        if (penaltyValue instanceof Integer) {
+                            curse.setPenalty((Integer) penaltyValue);
+                        } else if (penaltyValue instanceof String) {
+                            try {
+                                curse.setPenalty(Integer.parseInt((String) penaltyValue));
+                            } catch (NumberFormatException e) {
+                                curse.setPenalty(null);
+                            }
+                        } else {
+                            curse.setPenalty(null);
                         }
                         curses.add(curse);
                     }
@@ -243,11 +260,26 @@ public class GameStore {
     }
 
     public void updateGame(Game game) {
-        games.put(game.getId(), game);
+        if (game != null) {
+            game.updateActivity(); // Update last activity timestamp
+            games.put(game.getId(), game);
+        }
     }
 
     public void deleteGame(String gameId) {
+        // Remove the game itself
         games.remove(gameId);
+        
+        // Clean up all associated data to prevent memory leaks
+        teamClueHistory.entrySet().removeIf(entry -> entry.getKey().startsWith(gameId + ":"));
+        clueRequests.entrySet().removeIf(entry -> entry.getKey().startsWith(gameId + ":"));
+        clueResponses.entrySet().removeIf(entry -> entry.getKey().startsWith(gameId + ":"));
+        teamPushTokens.entrySet().removeIf(entry -> entry.getKey().startsWith(gameId + ":"));
+        
+        // Clean up device-to-team mappings for this game
+        deviceToActiveTeam.entrySet().removeIf(entry -> entry.getValue().startsWith(gameId + ":"));
+        
+        logger.info("Cleaned up all data for game {}", gameId);
     }
 
     public Team getTeam(String gameId, String teamId) {
@@ -321,6 +353,15 @@ public class GameStore {
                         clueType.setName((String) clueTypeData.get("name"));
                         clueType.setDescription((String) clueTypeData.get("description"));
                         clueType.setCost((Integer) clueTypeData.get("cost"));
+                        
+                        // Parse range field (can be null for unlimited range)
+                        Object rangeValue = clueTypeData.get("range");
+                        if (rangeValue instanceof Integer) {
+                            clueType.setRange((Integer) rangeValue);
+                        } else {
+                            clueType.setRange(null); // null means unlimited range
+                        }
+                        
                         clueTypes.add(clueType);
                     }
                 }
@@ -356,6 +397,19 @@ public class GameStore {
     public void addClueToHistory(String gameId, PurchasedClue clue) {
         String key = clue.getGameId() + ":" + clue.getTeamId();
         teamClueHistory.computeIfAbsent(key, k -> new ArrayList<>()).add(clue);
+    }
+    
+    public void updateClueInHistory(String gameId, PurchasedClue updatedClue) {
+        String key = gameId + ":" + updatedClue.getTeamId();
+        List<PurchasedClue> clues = teamClueHistory.get(key);
+        if (clues != null) {
+            for (int i = 0; i < clues.size(); i++) {
+                if (clues.get(i).getId().equals(updatedClue.getId())) {
+                    clues.set(i, updatedClue);
+                    break;
+                }
+            }
+        }
     }
 
     // New method: get clue history for a specific team in a game
@@ -421,9 +475,77 @@ public class GameStore {
             return;
         }
         
-        String key = gameId + ":" + teamId;
-        teamPushTokens.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(token);
-        logger.info("Registered push token for game {} team {}: {}", gameId, teamId, token);
+        // Clean up previous registration for this device token
+        String previousTeamKey = deviceToActiveTeam.get(token);
+        if (previousTeamKey != null) {
+            Set<String> previousTokens = teamPushTokens.get(previousTeamKey);
+            if (previousTokens != null) {
+                previousTokens.remove(token);
+                logger.info("Removed token {} from previous team {}", token, previousTeamKey);
+                // Clean up empty token sets
+                if (previousTokens.isEmpty()) {
+                    teamPushTokens.remove(previousTeamKey);
+                }
+            }
+        }
+        
+        // Register token with new team
+        String newTeamKey = gameId + ":" + teamId;
+        teamPushTokens.computeIfAbsent(newTeamKey, k -> ConcurrentHashMap.newKeySet()).add(token);
+        deviceToActiveTeam.put(token, newTeamKey);
+        
+        logger.info("Registered push token for game {} team {}: {} (cleaned up previous: {})", 
+                gameId, teamId, token, previousTeamKey != null ? previousTeamKey : "none");
+    }
+    
+    public void unregisterPushToken(String gameId, String teamId, String token) {
+        if (gameId == null || teamId == null || token == null || token.isBlank()) {
+            logger.warn("Invalid push token unregistration: gameId={}, teamId={}, token={}", gameId, teamId, token);
+            return;
+        }
+        
+        String teamKey = gameId + ":" + teamId;
+        Set<String> tokens = teamPushTokens.get(teamKey);
+        if (tokens != null) {
+            tokens.remove(token);
+            logger.info("Unregistered push token from game {} team {}: {}", gameId, teamId, token);
+            // Clean up empty token sets
+            if (tokens.isEmpty()) {
+                teamPushTokens.remove(teamKey);
+            }
+        }
+        
+        // Remove from active device tracking if this was the active team
+        String activeTeamKey = deviceToActiveTeam.get(token);
+        if (teamKey.equals(activeTeamKey)) {
+            deviceToActiveTeam.remove(token);
+            logger.info("Removed token {} from active device tracking", token);
+        }
+    }
+    
+    public void unregisterAllTokensForDevice(String token) {
+        if (token == null || token.isBlank()) {
+            logger.warn("Invalid token for device cleanup: {}", token);
+            return;
+        }
+        
+        // Remove from active tracking
+        String activeTeamKey = deviceToActiveTeam.remove(token);
+        
+        // Remove from all teams in all games
+        int removedCount = 0;
+        for (Map.Entry<String, Set<String>> entry : teamPushTokens.entrySet()) {
+            if (entry.getValue().remove(token)) {
+                removedCount++;
+                // Clean up empty token sets
+                if (entry.getValue().isEmpty()) {
+                    teamPushTokens.remove(entry.getKey());
+                }
+            }
+        }
+        
+        logger.info("Removed token {} from {} teams (was active in: {})", 
+                token, removedCount, activeTeamKey != null ? activeTeamKey : "none");
     }
 
     public Set<String> getPushTokens(String gameId, String teamId) {
@@ -461,6 +583,32 @@ public class GameStore {
                     return Double.compare(dist1, dist2);
                 })
                 .orElse(null);
+    }
+    
+    // Find all hider teams within specified range of requesting seeker team
+    public List<Team> getHidersWithinRange(String gameId, String requestingTeamId, Integer rangeMeters) {
+        Game game = getGame(gameId);
+        if (game == null) return new ArrayList<>();
+        
+        Team requestingTeam = getTeam(gameId, requestingTeamId);
+        if (requestingTeam == null || requestingTeam.getLocation() == null) return new ArrayList<>();
+        
+        return game.getTeams().stream()
+                .filter(team -> "hider".equals(team.getRole()) && team.getLocation() != null)
+                .filter(team -> {
+                    if (rangeMeters == null) {
+                        return true; // Unlimited range
+                    }
+                    double distance = calculateDistance(requestingTeam.getLocation(), team.getLocation());
+                    return distance <= rangeMeters;
+                })
+                .sorted((h1, h2) -> {
+                    // Sort by distance (closest first)
+                    double dist1 = calculateDistance(requestingTeam.getLocation(), h1.getLocation());
+                    double dist2 = calculateDistance(requestingTeam.getLocation(), h2.getLocation());
+                    return Double.compare(dist1, dist2);
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
     
     // Utility method to calculate distance between team locations

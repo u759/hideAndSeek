@@ -30,16 +30,13 @@ const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
 
   const updateRole = async (newRole: 'seeker' | 'hider') => {
     if (newRole === currentTeam.role) {
-      Alert.alert('Info', `You are already a ${newRole}`);
-      return;
+      return; // Already in this role, no need to do anything
     }
 
     setLoading(true);
     try {
       await ApiService.updateTeamRole(game.id, currentTeam.id, newRole);
-      Alert.alert('Success', `You are now a ${newRole}!`);
-      onRefresh();
-      onClose();
+      // No need to call onRefresh - parent will get WebSocket update automatically
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to update role');
     } finally {
@@ -52,8 +49,8 @@ const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
     try {
       await ApiService.startNextRound(game.id);
       Alert.alert('Success', 'Next round started!');
-      onRefresh();
       onClose();
+      // No need to call onRefresh - parent will get WebSocket update automatically
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to start next round');
     } finally {
@@ -103,19 +100,39 @@ const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={[styles.roleButton, styles.seekerButton, loading && styles.disabledButton]}
+              style={[
+                styles.roleButton, 
+                styles.seekerButton, 
+                currentTeam.role === 'seeker' && styles.activeRoleButton,
+                loading && styles.disabledButton
+              ]}
               onPress={() => updateRole('seeker')}
               disabled={loading}
             >
-              <Text style={styles.buttonText}>Be a Seeker</Text>
+              <Text style={[
+                styles.buttonText,
+                currentTeam.role === 'seeker' && styles.activeButtonText
+              ]}>
+                Be a Seeker {currentTeam.role === 'seeker' && '✓'}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.roleButton, styles.hiderButton, loading && styles.disabledButton]}
+              style={[
+                styles.roleButton, 
+                styles.hiderButton, 
+                currentTeam.role === 'hider' && styles.activeRoleButton,
+                loading && styles.disabledButton
+              ]}
               onPress={() => updateRole('hider')}
               disabled={loading}
             >
-              <Text style={styles.buttonText}>Be a Hider</Text>
+              <Text style={[
+                styles.buttonText,
+                currentTeam.role === 'hider' && styles.activeButtonText
+              ]}>
+                Be a Hider {currentTeam.role === 'hider' && '✓'}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -278,6 +295,24 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.5,
+  },
+  activeRoleButton: {
+    borderWidth: 3,
+    borderColor: '#003366',
+    shadowColor: '#003366',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  activeButtonText: {
+    fontWeight: '800',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
 });
 

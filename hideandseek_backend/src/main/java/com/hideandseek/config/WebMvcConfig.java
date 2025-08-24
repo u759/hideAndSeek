@@ -9,8 +9,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve uploaded files
-        registry.addResourceHandler("/api/uploads/files/**")
-                .addResourceLocations("file:uploads/selfies/");
+        // Intentionally left blank: uploads are served by FileUploadController
+        // which resolves directories dynamically (WildFly data dir aware).
     }
 }

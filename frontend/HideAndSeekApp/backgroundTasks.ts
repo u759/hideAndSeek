@@ -1,7 +1,7 @@
 import * as TaskManager from 'expo-task-manager';
 import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
-import * as BackgroundFetch from 'expo-background-fetch';
+import * as BackgroundTask from 'expo-background-task';
 import ApiService from './services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -94,9 +94,9 @@ TaskManager.defineTask(BACKGROUND_SYNC_TASK, async () => {
       }
     }
     
-    return BackgroundFetch.BackgroundFetchResult.NewData;
+  return BackgroundTask.BackgroundTaskResult.Success;
   } catch (e) {
     console.log('Background sync error:', e);
-    return BackgroundFetch.BackgroundFetchResult.Failed;
+  return BackgroundTask.BackgroundTaskResult.Failed;
   }
 });

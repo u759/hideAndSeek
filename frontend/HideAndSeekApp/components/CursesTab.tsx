@@ -80,16 +80,9 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
   const [availableTargets, setAvailableTargets] = useState<Team[]>([]);
   const [showTargetModal, setShowTargetModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  // Periodically refresh game data too so UI reflects expired curses
-  useEffect(() => {
-    const id = setInterval(() => onRefresh(), 15000);
-    return () => clearInterval(id);
-  }, [onRefresh]);
 
   useEffect(() => {
     fetchAvailableTargets();
-    const id = setInterval(fetchAvailableTargets, 15000); // refresh targets every 15s
-    return () => clearInterval(id);
   }, []);
 
   // Listen for websocket game updates and refresh available targets when relevant
@@ -100,9 +93,9 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
     gameId: game.id,
     onMessage: (data: any) => {
       // refresh targets when game state or curses change
-      if (data?.type === 'game_update' || data?.type === 'curse_update' || data?.type === 'clue_response') {
+      if (data?.type === 'gameUpdate' || data?.type === 'curse_update' || data?.type === 'clue_response') {
         fetchAvailableTargets();
-        onRefresh();
+        // No need to call onRefresh - parent will get WebSocket update automatically
       }
     },
   });
@@ -128,7 +121,7 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
       
       setShowTargetModal(false);
       await fetchAvailableTargets(); // Refresh available targets
-      await onRefresh(); // Refresh game data
+      // No need to call onRefresh - parent will get WebSocket update automatically
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to apply curse');
     } finally {
@@ -152,6 +145,17 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
     );
   }
 
+  // disable if the team doesn't have enough tokens or game isn't active
+  const insufficientTokens = (currentTeam.tokens ?? 0) < 10;
+  const gameActive = game.status === 'active';
+
+  const getStatusMessage = () => {
+    if (game.status === 'waiting') return 'Game has not started yet. Curses are available once the game begins.';
+    if (game.status === 'paused') return 'Game is paused. Curse actions are temporarily disabled.';
+    if (game.status === 'ended') return 'Game has ended. Curses are no longer available.';
+    return null;
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
@@ -171,16 +175,20 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
           </View>
           
           <TouchableOpacity
-            style={[styles.applyButton, (availableTargets.length === 0 || loading) && styles.disabledButton]}
+            style={[
+              styles.applyButton,
+              (availableTargets.length === 0 || loading || insufficientTokens || !gameActive) && styles.disabledButton,
+            ]}
             onPress={() => {
+              if (!gameActive) return;
               fetchAvailableTargets();
               setShowTargetModal(true);
             }}
-            disabled={availableTargets.length === 0 || loading}
+            disabled={availableTargets.length === 0 || loading || insufficientTokens || !gameActive}
           >
             <MaterialIcons name="flash-on" size={24} color="white" />
             <Text style={styles.applyButtonText}>
-              {loading ? 'Applying...' : 'Apply Curse (10 tokens)'}
+              {loading ? 'Applying...' : insufficientTokens ? 'Need 10 tokens' : 'Apply Curse (10 tokens)'}
             </Text>
           </TouchableOpacity>
           
@@ -188,6 +196,11 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
             <Text style={styles.noTargetsText}>
               All hider teams currently have active curses. Wait for them to expire.
             </Text>
+          )}
+          {!gameActive && (
+            <View style={styles.statusContainer}>
+              <Text style={styles.statusText}>{getStatusMessage()}</Text>
+            </View>
           )}
         </View>
 
@@ -210,6 +223,14 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
                   </View>
                   <Text style={styles.curseTarget}>Target: {appliedCurse.targetTeamName}</Text>
                   <Text style={styles.curseCardDescription}>{appliedCurse.curse.description}</Text>
+                  {appliedCurse.curse.penalty && appliedCurse.curse.penalty > 0 && !isCompleted && (
+                    <Text style={styles.penaltyWarning}>
+                      ⚠️ Penalty: +{appliedCurse.curse.penalty}s hiding time if not completed
+                    </Text>
+                  )}
+                  {targetTeam?.activeCurses?.some(ac => ac.curse.id === appliedCurse.curse.id && ac.endTime > Date.now() && ac.acknowledged && !ac.completed) && (
+                    <Text style={styles.acknowledgedBadge}>Acknowledged 👁️</Text>
+                  )}
                   {isCompleted && (
                     <Text style={styles.completedBadge}>Completed ✔︎</Text>
                   )}
@@ -255,6 +276,14 @@ const CursesTab: React.FC<CursesTabProps> = ({ game, currentTeam, onRefresh }) =
                   </View>
                   <Text style={styles.curseTarget}>Cursed Team: {curse.teamName}</Text>
                   <Text style={styles.curseCardDescription}>{curse.curse.description}</Text>
+                  {curse.curse.penalty && curse.curse.penalty > 0 && !curse.completed && (
+                    <Text style={styles.penaltyWarning}>
+                      ⚠️ Penalty: +{curse.curse.penalty}s hiding time if not completed
+                    </Text>
+                  )}
+                  {curse.acknowledged && !curse.completed && (
+                    <Text style={styles.acknowledgedBadge}>Acknowledged 👁️</Text>
+                  )}
                   {curse.completed && (
                     <Text style={styles.completedBadge}>Completed ✔︎</Text>
                   )}
@@ -427,7 +456,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   completedBadge: {
-    marginTop: 6,
+    marginTop: 8,
     alignSelf: 'flex-start',
     backgroundColor: '#e8f5e9',
     color: '#2e7d32',
@@ -435,6 +464,27 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
     fontWeight: '700',
+  },
+  acknowledgedBadge: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    backgroundColor: '#e3f2fd',
+    color: '#1565c0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    fontWeight: '700',
+  },
+  penaltyWarning: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: '#fff3e0',
+    color: '#f57c00',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    fontWeight: '600',
+    fontSize: 12,
   },
   errorContainer: {
     flex: 1,
@@ -462,6 +512,19 @@ const styles = StyleSheet.create({
     color: '#34495e',
     flex: 1,
     lineHeight: 20,
+  },
+  statusContainer: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#fff3cd',
+    borderRadius: 8,
+    marginHorizontal: 16,
+    alignItems: 'center',
+  },
+  statusText: {
+    color: '#856404',
+    fontSize: 14,
+    textAlign: 'center',
   },
   
   // Modal styles

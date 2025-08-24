@@ -29,11 +29,22 @@ public class GameController {
     private GameService gameService;
 
     @PostMapping("/game")
-    public ResponseEntity<Game> createGame(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<?> createGame(@RequestBody Map<String, Object> request) {
         try {
             @SuppressWarnings("unchecked")
             List<String> teamNames = (List<String>) request.get("teamNames");
             String playerRole = (String) request.get("playerRole");
+            Integer roundLengthMinutes = (Integer) request.get("roundLengthMinutes");
+            
+            // Validate round length if provided
+            if (roundLengthMinutes != null) {
+                if (roundLengthMinutes <= 0) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Round duration must be a positive number"));
+                }
+                if (roundLengthMinutes > 999) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Round duration cannot exceed 999 minutes"));
+                }
+            }
             
             Game game;
             if (playerRole != null && teamNames != null && teamNames.size() == 1) {
@@ -43,12 +54,17 @@ public class GameController {
                 // Multi-team game
                 game = gameService.createGame(teamNames);
             } else {
-                return ResponseEntity.badRequest().build();
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid team configuration"));
+            }
+            
+            // Set round length if provided
+            if (roundLengthMinutes != null && roundLengthMinutes > 0) {
+                game.setRoundLengthMinutes(roundLengthMinutes);
             }
             
             return ResponseEntity.ok(game);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to create game: " + e.getMessage()));
         }
     }
 
@@ -72,19 +88,15 @@ public class GameController {
         }
     }
 
-    @GetMapping("/games")
-    public ResponseEntity<List<Game>> getAllGames() {
-        List<Game> games = gameService.getAllGames();
-        return ResponseEntity.ok(games);
-    }
-
     @PostMapping("/game/{gameId}/start")
-    public ResponseEntity<Game> startGame(@PathVariable String gameId) {
+    public ResponseEntity<?> startGame(@PathVariable String gameId) {
         try {
             Game game = gameService.startGame(gameId);
             return ResponseEntity.ok(game);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to start game"));
         }
     }
 
@@ -109,25 +121,29 @@ public class GameController {
     }
 
     @PostMapping("/game/{gameId}/resume")
-    public ResponseEntity<Game> resumeGame(@PathVariable String gameId) {
+    public ResponseEntity<?> resumeGame(@PathVariable String gameId) {
         try {
             Game game = gameService.updateGameStatus(gameId, "active");
             return ResponseEntity.ok(game);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to resume game"));
         }
     }
 
     @PatchMapping("/game/{gameId}/status")
-    public ResponseEntity<Game> updateGameStatus(
+    public ResponseEntity<?> updateGameStatus(
             @PathVariable String gameId,
             @RequestBody Map<String, String> request) {
         try {
             String status = request.get("status");
             Game game = gameService.updateGameStatus(gameId, status);
             return ResponseEntity.ok(game);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to update game status"));
         }
     }
 
@@ -140,6 +156,18 @@ public class GameController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Failed to start next round"));
+        }
+    }
+
+    @PostMapping("/game/{gameId}/restart")
+    public ResponseEntity<?> restartGame(@PathVariable String gameId) {
+        try {
+            Game game = gameService.restartGame(gameId);
+            return ResponseEntity.ok(game);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to restart game"));
         }
     }
 

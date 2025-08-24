@@ -3,8 +3,11 @@ package com.hideandseek.service;
 import com.hideandseek.model.*;
 import com.hideandseek.store.GameStore;
 import com.hideandseek.websocket.GameWebSocketHandler;
+import com.hideandseek.logging.GameEventLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -14,11 +17,19 @@ import java.util.ArrayList;
 @Service
 public class GameService {
 
+    private static final Logger logger = LoggerFactory.getLogger(GameService.class);
+
     @Autowired
     private GameStore gameStore;
 
     @Autowired
     private GameWebSocketHandler webSocketHandler;
+
+    @Autowired
+    private PushService pushService;
+
+    @Autowired
+    private GameEventLogger gameEventLogger;
 
     public Game createGame(List<String> teamNames) {
         if (teamNames == null || teamNames.isEmpty()) {
@@ -26,7 +37,11 @@ public class GameService {
         }
 
         Game game = gameStore.createGame(teamNames);
-
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamNames", teamNames);
+            gameEventLogger.appendEvent(game.getId(), "game.created", "system", null, payload);
+        } catch (Exception ignored) {}
         return game;
     }
 
@@ -36,7 +51,12 @@ public class GameService {
         }
         
         Game game = gameStore.createGameWithRole(teamNames, playerRole);
-
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamNames", teamNames);
+            payload.put("playerRole", playerRole);
+            gameEventLogger.appendEvent(game.getId(), "game.created", "system", null, payload);
+        } catch (Exception ignored) {}
         return game;
     }
 
@@ -46,6 +66,9 @@ public class GameService {
             throw new IllegalArgumentException("Game not found");
         }
         
+    // Check if round time limit has been exceeded and auto-pause if necessary
+    checkRoundTimeLimit(game);
+        
         // Clean expired curses whenever a game is fetched
         cleanExpiredCurses(game);
         gameStore.updateGame(game);
@@ -53,14 +76,64 @@ public class GameService {
         return game;
     }
 
-    private void validateGameIsActive(Game game) {
-        if (!"active".equals(game.getStatus())) {
-            throw new IllegalStateException("Game operation not allowed. Game status: " + game.getStatus());
+    // Public enforcement method used by scheduled tasks to proactively evaluate all games
+    public void enforceRoundTimeLimits() {
+        List<Game> games = gameStore.getAllGames();
+        if (games == null || games.isEmpty()) return;
+        for (Game g : games) {
+            try {
+                // Use existing check logic which will only act on active games
+                checkRoundTimeLimit(g);
+                // Persist any changes and broadcast
+                gameStore.updateGame(g);
+                // Proactively broadcast active games so clients receive fresh timing fields
+                if ("active".equals(g.getStatus())) {
+                    webSocketHandler.broadcastToGame(g.getId(), g);
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to enforce round time limit for game {}: {}", g.getId(), e.getMessage());
+            }
         }
     }
 
-    private void validateGameIsActiveOrWaiting(Game game) {
-        if (!"active".equals(game.getStatus()) && !"waiting".equals(game.getStatus())) {
+    private void checkRoundTimeLimit(Game game) {
+        if ("active".equals(game.getStatus()) && 
+            game.getRoundLengthMinutes() != null && 
+            game.getRoundStartTime() != null) {
+            long currentTime = System.currentTimeMillis();
+            long roundDurationMs = game.getRoundLengthMinutes() * 60 * 1000L;
+            // Compute elapsed for current round excluding paused time since the round started
+            long totalPaused = game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L;
+            long pausedBaseline = game.getPausedDurationAtRoundStart() != null ? game.getPausedDurationAtRoundStart() : 0L;
+            long pausedSinceRoundStart = Math.max(0L, totalPaused - pausedBaseline);
+            long elapsedTime = currentTime - game.getRoundStartTime() - pausedSinceRoundStart;
+            if (elapsedTime >= roundDurationMs) {
+                // Auto-pause the game when time limit is reached
+                game.setStatus("paused");
+                game.setPauseTime(currentTime);
+                game.setPausedByTimeLimit(true);
+                
+                // Accumulate hiding time for all active hiders
+                for (Team team : game.getTeams()) {
+                    if ("hider".equals(team.getRole()) && team.getHiderStartTime() != null) {
+                        long sessionTime = currentTime - team.getHiderStartTime();
+                        team.addHiderTime(sessionTime);
+                        team.setHiderStartTime(null);
+                    }
+                }
+                
+                // Send notification about round time limit reached
+                pushService.sendGameEventNotification(game.getId(), "Round Time Up!", 
+                    "The round time limit has been reached. Game paused.");
+                
+                // Broadcast the auto-pause
+                webSocketHandler.broadcastToGame(game.getId(), game);
+            }
+        }
+    }
+
+    private void validateGameIsActive(Game game) {
+        if (!"active".equals(game.getStatus())) {
             throw new IllegalStateException("Game operation not allowed. Game status: " + game.getStatus());
         }
     }
@@ -93,9 +166,25 @@ public class GameService {
 
     public Game startGame(String gameId) {
         Game game = getGame(gameId);
+        // Validate that there's at least 1 seeker and 1 hider before starting
+        long seekers = game.getTeams().stream().filter(t -> "seeker".equals(t.getRole())).count();
+        long hiders = game.getTeams().stream().filter(t -> "hider".equals(t.getRole())).count();
+        if (seekers < 1) {
+            throw new IllegalStateException("Need at least 1 seeker to start the game");
+        }
+        if (hiders < 1) {
+            throw new IllegalStateException("Need at least 1 hider to start the game");
+        }
+
         game.setStatus("active");
         long currentTime = System.currentTimeMillis();
-        game.setStartTime(currentTime);
+        game.setStartTime(currentTime); // keep legacy field in sync
+        // initialize new timing fields
+        if (game.getGameStartTime() == null) {
+            game.setGameStartTime(currentTime);
+        }
+        game.setRoundStartTime(currentTime);
+        game.setPausedDurationAtRoundStart(game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L);
         
         // Start tracking time for all hiders and ensure seekers have no start time
         for (Team team : game.getTeams()) {
@@ -106,10 +195,17 @@ public class GameService {
             }
         }
         
-        gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("round", game.getRound());
+            payload.put("roundStartTime", game.getRoundStartTime());
+            gameEventLogger.appendEvent(gameId, "game.started", "system", null, payload);
+        } catch (Exception ignored) {}
+
+        updateGameActivity(game);
         
-        // Broadcast to WebSocket
-        webSocketHandler.broadcastToGame(gameId, game);
+        // Send notification
+        pushService.sendGameEventNotification(gameId, "Game Started!", "The hide and seek game has begun!");
         
         return game;
     }
@@ -117,6 +213,15 @@ public class GameService {
     public Game endGame(String gameId) {
         Game game = getGame(gameId);
         
+        // If ending while paused, accumulate the last paused segment into totalPausedDuration
+        if ("paused".equals(game.getStatus()) && game.getPauseTime() != null) {
+            long now = System.currentTimeMillis();
+            long pausedDuration = now - game.getPauseTime();
+            long totalPaused = game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L;
+            game.setTotalPausedDuration(totalPaused + pausedDuration);
+            game.setPauseTime(null);
+        }
+
         // Accumulate hiding time for all teams that are still hiding
         long currentTime = System.currentTimeMillis();
         for (Team team : game.getTeams()) {
@@ -130,6 +235,14 @@ public class GameService {
         game.setStatus("ended");
         game.setEndTime(System.currentTimeMillis());
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("endTime", game.getEndTime());
+            gameEventLogger.appendEvent(gameId, "game.ended", "system", null, payload);
+        } catch (Exception ignored) {}
+        
+        // Send notification
+        pushService.sendGameEventNotification(gameId, "Game Ended!", "The hide and seek game has finished!");
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -142,11 +255,23 @@ public class GameService {
         
         String previousStatus = game.getStatus();
         long currentTime = System.currentTimeMillis();
-
+        // If we're transitioning to active from any non-active state (start/resume),
+        // ensure there is at least one seeker and one hider configured.
+        if ("active".equals(status) && !"active".equals(previousStatus)) {
+            long seekers = game.getTeams().stream().filter(t -> "seeker".equals(t.getRole())).count();
+            long hiders = game.getTeams().stream().filter(t -> "hider".equals(t.getRole())).count();
+            if (seekers < 1) {
+                throw new IllegalStateException("You need at least one seeker team to start/resume the game");
+            }
+            if (hiders < 1) {
+                throw new IllegalStateException("You need at least one hider team to start/resume the game");
+            }
+        }
         // Handle pause time tracking
         if ("paused".equals(status) && "active".equals(previousStatus)) {
             // Game is being paused - accumulate hiding time for all active hiders
             game.setPauseTime(currentTime);
+            game.setPausedByTimeLimit(false); // Reset flag for manual pause
             for (Team team : game.getTeams()) {
                 if ("hider".equals(team.getRole()) && team.getHiderStartTime() != null) {
                     long sessionTime = currentTime - team.getHiderStartTime();
@@ -155,6 +280,11 @@ public class GameService {
                 }
             }
         } else if ("active".equals(status) && "paused".equals(previousStatus)) {
+            // Check if game was paused due to round time limit
+            if (Boolean.TRUE.equals(game.getPausedByTimeLimit())) {
+                throw new IllegalStateException("Cannot resume game. Round time limit was reached. Please start a new round instead.");
+            }
+            
             // Game is being resumed - restart hiding time tracking for all hiders
             if (game.getPauseTime() != null) {
                 long pausedDuration = currentTime - game.getPauseTime();
@@ -175,13 +305,36 @@ public class GameService {
         game.setStatus(status);
         if ("active".equals(status)) {
             if (game.getStartTime() == null) {
+                // First activation for this game
                 game.setStartTime(currentTime);
+                if (game.getGameStartTime() == null) {
+                    game.setGameStartTime(currentTime);
+                }
+                if (game.getRoundStartTime() == null) {
+                    game.setRoundStartTime(currentTime);
+                }
+                if (game.getPausedDurationAtRoundStart() == null) {
+                    game.setPausedDurationAtRoundStart(game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L);
+                }
             }
         }
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("from", previousStatus);
+            payload.put("to", status);
+            payload.put("pausedByTimeLimit", game.getPausedByTimeLimit());
+            gameEventLogger.appendEvent(gameId, "game.status_changed", "system", null, payload);
+        } catch (Exception ignored) {}
         
-        // Broadcast to WebSocket
-        webSocketHandler.broadcastToGame(gameId, game);
+        // Send notification based on status change
+        if ("paused".equals(status) && !"paused".equals(previousStatus)) {
+            pushService.sendGameEventNotification(gameId, "Game Paused", "The game has been paused.");
+        } else if ("active".equals(status) && "paused".equals(previousStatus)) {
+            pushService.sendGameEventNotification(gameId, "Game Resumed", "The game has been resumed!");
+        }
+        
+        updateGameActivity(game);
         
         return game;
     }
@@ -207,8 +360,21 @@ public class GameService {
         // Increment round and activate game
         game.setRound(game.getRound() + 1);
         game.setStatus("active");
+        game.setPausedByTimeLimit(false); // Reset the time limit flag for new round
         long currentTime = System.currentTimeMillis();
-        game.setStartTime(currentTime);
+        // Add the paused segment that just ended to totalPausedDuration
+        if (game.getPauseTime() != null) {
+            long pausedDuration = currentTime - game.getPauseTime();
+            long totalPaused = game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L;
+            game.setTotalPausedDuration(totalPaused + pausedDuration);
+            game.setPauseTime(null);
+        }
+        game.setStartTime(currentTime); // keep legacy field in sync
+        game.setRoundStartTime(currentTime);
+        game.setPausedDurationAtRoundStart(game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L);
+        if (game.getGameStartTime() == null) {
+            game.setGameStartTime(currentTime);
+        }
         
         // Start tracking time for all hiders and ensure seekers have no start time
         for (Team team : game.getTeams()) {
@@ -220,6 +386,55 @@ public class GameService {
         }
         
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("round", game.getRound());
+            payload.put("roundStartTime", game.getRoundStartTime());
+            gameEventLogger.appendEvent(gameId, "game.round_started", "system", null, payload);
+        } catch (Exception ignored) {}
+        
+        // Broadcast to WebSocket
+        webSocketHandler.broadcastToGame(gameId, game);
+        
+        return game;
+    }
+
+    public Game restartGame(String gameId) {
+        Game game = getGame(gameId);
+        
+        if (!"ended".equals(game.getStatus())) {
+            throw new IllegalStateException("Can only restart games that have ended");
+        }
+        
+        // Reset game state but keep teams and their names
+        game.setStatus("waiting");
+        game.setRound(1);
+        game.setStartTime(null);
+        game.setPauseTime(null);
+        game.setTotalPausedDuration(0L);
+        game.setEndTime(null);
+        game.setGameStartTime(null);
+        game.setRoundStartTime(null);
+        game.setPausedDurationAtRoundStart(0L);
+        
+        // Reset all teams
+        for (Team team : game.getTeams()) {
+            team.setTokens(10);
+            team.setLocation(null);
+            team.getCompletedChallenges().clear();
+            team.getActiveCurses().clear();
+            team.getAppliedCurses().clear();
+            team.setVetoEndTime(null);
+            team.setTotalHiderTime(0L);
+            team.setHiderStartTime(null);
+            team.setActiveChallenge(null);
+            // Keep team names and roles as they were
+        }
+        
+        gameStore.updateGame(game);
+        try {
+            gameEventLogger.appendEvent(gameId, "game.restarted", "system", null, new HashMap<>());
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -237,6 +452,12 @@ public class GameService {
         
         team.setTokens(tokens);
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            payload.put("tokens", tokens);
+            gameEventLogger.appendEvent(gameId, "team.tokens_updated", "team", teamId, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -251,9 +472,21 @@ public class GameService {
         if (team == null) {
             throw new IllegalArgumentException("Team not found");
         }
+
+        // If switching from hider to seeker (team was found), send notification
+        if ("hider".equals(team.getRole()) && "seeker".equals(role)) {
+            pushService.sendTeamFoundNotification(gameId, team.getName());
+        }
         
         team.setRole(role);
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            payload.put("newRole", role);
+            if (foundByTeamId != null) payload.put("foundByTeamId", foundByTeamId);
+            gameEventLogger.appendEvent(gameId, "team.role_switched", "team", teamId, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -270,10 +503,17 @@ public class GameService {
         }
         
         team.setCurrentLocation(location);
-        gameStore.updateGame(game);
-        
-        // Broadcast to WebSocket
-        webSocketHandler.broadcastToGame(gameId, game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            if (location != null) {
+                payload.put("latitude", location.getLatitude());
+                payload.put("longitude", location.getLongitude());
+                payload.put("timestamp", location.getTimestamp());
+            }
+            gameEventLogger.appendEvent(gameId, "team.location_update", "team", teamId, payload);
+        } catch (Exception ignored) {}
+        updateGameActivity(game);
         
         return team;
     }
@@ -314,6 +554,13 @@ public class GameService {
         
         team.setActiveChallenge(activeChallenge);
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            payload.put("challengeId", challenge.getId());
+            payload.put("title", challenge.getTitle());
+            gameEventLogger.appendEvent(gameId, "challenge.drawn", "team", teamId, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -346,14 +593,23 @@ public class GameService {
         team.getCompletedChallenges().add(challenge.getId());
         team.setActiveChallenge(null);
         
+        // Persist and log event
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            payload.put("challengeId", challenge.getId());
+            payload.put("title", challenge.getTitle());
+            payload.put("tokensAwarded", challenge.getTokenReward());
+            gameEventLogger.appendEvent(gameId, "challenge.completed", "team", teamId, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
         
         return team;
     }
-
+        
     public Team refuseChallenge(String gameId, String teamId) {
         Game game = getGame(gameId);
         validateGameIsActive(game);
@@ -376,6 +632,11 @@ public class GameService {
         team.setActiveChallenge(null);
         
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            gameEventLogger.appendEvent(gameId, "challenge.refused", "team", teamId, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -400,6 +661,9 @@ public class GameService {
         // Change hider to seeker
         hiderTeam.setRole("seeker");
         
+        // Send notification that this hider team was found
+        pushService.sendTeamFoundNotification(gameId, hiderTeam.getName());
+        
         // Check if all hiders have been found
         long remainingHiders = game.getTeams().stream()
                 .filter(team -> "hider".equals(team.getRole()))
@@ -411,6 +675,12 @@ public class GameService {
         }
         
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("hiderTeamId", hiderId);
+            payload.put("remainingHiders", remainingHiders);
+            gameEventLogger.appendEvent(gameId, "team.found", "system", null, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -443,6 +713,9 @@ public class GameService {
         // Change hider to seeker
         hiderTeam.setRole("seeker");
         
+        // Send notification that this hider team was found
+        pushService.sendTeamFoundNotification(gameId, hiderTeam.getName());
+        
         // Check if all hiders have been found
         long remainingHiders = game.getTeams().stream()
                 .filter(team -> "hider".equals(team.getRole()))
@@ -463,6 +736,12 @@ public class GameService {
         }
         
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("hiderTeamId", hiderId);
+            payload.put("allHidersFound", allHidersFound);
+            gameEventLogger.appendEvent(gameId, "team.found", "system", null, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -524,6 +803,13 @@ public class GameService {
         }
         
         gameStore.updateGame(game);
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("teamId", teamId);
+            payload.put("from", oldRole);
+            payload.put("to", newRole);
+            gameEventLogger.appendEvent(gameId, "team.role_changed", "team", teamId, payload);
+        } catch (Exception ignored) {}
         
         // Broadcast to WebSocket
         webSocketHandler.broadcastToGame(gameId, game);
@@ -533,13 +819,13 @@ public class GameService {
 
     public Map<String, Object> getGameStats(String gameId) {
         Game game = getGame(gameId);
-        
+
         Map<String, Object> stats = new HashMap<>();
         stats.put("gameId", gameId);
         stats.put("round", game.getRound());
         stats.put("status", game.getStatus());
-        
-        // Calculate team statistics
+
+        // Per-team stats
         List<Map<String, Object>> teamStats = new ArrayList<>();
         for (Team team : game.getTeams()) {
             Map<String, Object> teamStat = new HashMap<>();
@@ -547,17 +833,21 @@ public class GameService {
             teamStat.put("name", team.getName());
             teamStat.put("role", team.getRole());
             teamStat.put("tokens", team.getTokens());
-            teamStat.put("totalHiderTime", team.getTotalHiderTime());
-            teamStat.put("totalHiderTimeFormatted", formatTime(team.getTotalHiderTime()));
+            long totalHiderTime = team.getTotalHiderTime();
+            teamStat.put("totalHiderTime", totalHiderTime);
+            teamStat.put("totalHiderTimeFormatted", formatTime(totalHiderTime));
+            int completedChallengesCount = team.getCompletedChallenges() != null ? team.getCompletedChallenges().size() : 0;
+            int cursesAppliedCount = team.getAppliedCurses() != null ? team.getAppliedCurses().size() : 0;
+            teamStat.put("completedChallengesCount", completedChallengesCount);
+            teamStat.put("cursesAppliedCount", cursesAppliedCount);
             teamStats.add(teamStat);
         }
         stats.put("teams", teamStats);
-        
-        // Determine winner (team with longest total hider time)
+
+        // Winner by total hider time
         Team winner = game.getTeams().stream()
                 .max((t1, t2) -> Long.compare(t1.getTotalHiderTime(), t2.getTotalHiderTime()))
                 .orElse(null);
-        
         if (winner != null) {
             Map<String, Object> winnerInfo = new HashMap<>();
             winnerInfo.put("id", winner.getId());
@@ -566,20 +856,56 @@ public class GameService {
             winnerInfo.put("totalHiderTimeFormatted", formatTime(winner.getTotalHiderTime()));
             stats.put("winner", winnerInfo);
         }
-        
+
+        // Leaderboards
+        List<Map<String, Object>> byHiderTime = new ArrayList<>();
+        List<Map<String, Object>> byChallengesCompleted = new ArrayList<>();
+        List<Map<String, Object>> byCursesApplied = new ArrayList<>();
+        for (Team team : game.getTeams()) {
+            // Hider time
+            Map<String, Object> t1 = new HashMap<>();
+            t1.put("id", team.getId());
+            t1.put("name", team.getName());
+            t1.put("totalHiderTime", team.getTotalHiderTime());
+            t1.put("totalHiderTimeFormatted", formatTime(team.getTotalHiderTime()));
+            byHiderTime.add(t1);
+
+            // Challenges completed
+            Map<String, Object> t2 = new HashMap<>();
+            t2.put("id", team.getId());
+            t2.put("name", team.getName());
+            t2.put("completedChallengesCount", team.getCompletedChallenges() != null ? team.getCompletedChallenges().size() : 0);
+            byChallengesCompleted.add(t2);
+
+            // Curses applied
+            Map<String, Object> t3 = new HashMap<>();
+            t3.put("id", team.getId());
+            t3.put("name", team.getName());
+            t3.put("cursesAppliedCount", team.getAppliedCurses() != null ? team.getAppliedCurses().size() : 0);
+            byCursesApplied.add(t3);
+        }
+
+        byHiderTime.sort((a, b) -> Long.compare((Long) b.get("totalHiderTime"), (Long) a.get("totalHiderTime")));
+        byChallengesCompleted.sort((a, b) -> Integer.compare((Integer) b.get("completedChallengesCount"), (Integer) a.get("completedChallengesCount")));
+        byCursesApplied.sort((a, b) -> Integer.compare((Integer) b.get("cursesAppliedCount"), (Integer) a.get("cursesAppliedCount")));
+
+        Map<String, Object> leaderboard = new HashMap<>();
+        leaderboard.put("byHiderTime", byHiderTime);
+        leaderboard.put("byChallengesCompleted", byChallengesCompleted);
+        leaderboard.put("byCursesApplied", byCursesApplied);
+        stats.put("leaderboard", leaderboard);
+
         return stats;
     }
-    
-    private String formatTime(long milliseconds) {
-        if (milliseconds <= 0) return "0s";
-        
-        long seconds = milliseconds / 1000;
+
+    private String formatTime(long millis) {
+        long seconds = millis / 1000;
         long minutes = seconds / 60;
         long hours = minutes / 60;
-        
+
         seconds = seconds % 60;
         minutes = minutes % 60;
-        
+
         if (hours > 0) {
             return String.format("%dh %dm %ds", hours, minutes, seconds);
         } else if (minutes > 0) {
@@ -591,5 +917,17 @@ public class GameService {
 
     public void deleteGame(String gameId) {
         gameStore.deleteGame(gameId);
+    }
+    
+    /**
+     * Helper method to update game activity and persist changes
+     */
+    private void updateGameActivity(Game game) {
+        if (game != null) {
+            game.updateActivity();
+            gameStore.updateGame(game);
+            // Broadcast updated game state
+            webSocketHandler.broadcastToGame(game.getId(), game);
+        }
     }
 }
