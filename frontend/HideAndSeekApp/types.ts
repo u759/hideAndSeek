@@ -71,6 +71,54 @@ export interface Game {
   roundDuration?: number;
 }
 
+// Enhanced stats returned from GET /api/game/{gameId}/stats
+export interface GameStatsTeam {
+  id: string;
+  name: string;
+  role: 'seeker' | 'hider';
+  tokens: number;
+  totalHiderTime: number;
+  totalHiderTimeFormatted: string;
+  // Optional to allow backward compatibility if server hasn't populated yet
+  completedChallengesCount?: number;
+  cursesAppliedCount?: number;
+}
+
+export interface GameStatsWinner {
+  id: string;
+  name: string;
+  totalHiderTime: number;
+  totalHiderTimeFormatted: string;
+}
+
+export interface Leaderboard {
+  byHiderTime: Array<{
+    id: string;
+    name: string;
+    totalHiderTime: number;
+    totalHiderTimeFormatted: string;
+  }>;
+  byChallengesCompleted: Array<{
+    id: string;
+    name: string;
+    completedChallengesCount: number;
+  }>;
+  byCursesApplied: Array<{
+    id: string;
+    name: string;
+    cursesAppliedCount: number;
+  }>;
+}
+
+export interface GameStats {
+  gameId: string;
+  round: number;
+  status: Game['status'];
+  teams: GameStatsTeam[];
+  winner?: GameStatsWinner;
+  leaderboard?: Leaderboard;
+}
+
 export interface ClueType {
   id: string;
   name: string;

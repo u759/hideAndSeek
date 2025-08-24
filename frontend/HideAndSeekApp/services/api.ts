@@ -1,4 +1,4 @@
-import { Game, Team, DrawnCard, ClueType, Clue, Location, Curse } from '../types';
+import { Game, Team, DrawnCard, ClueType, Clue, Location, Curse, GameStats } from '../types';
 import { API_BASE_URL } from '../config/api';
 
 class ApiService {
@@ -225,14 +225,14 @@ class ApiService {
     return response.json();
   }
 
-  async getGameStats(gameId: string) {
+  async getGameStats(gameId: string): Promise<GameStats> {
     const response = await fetch(`${API_BASE_URL}/game/${gameId}/stats`);
 
     if (!response.ok) {
       throw new Error('Failed to get game stats');
     }
 
-    return response.json();
+    return response.json() as Promise<GameStats>;
   }
 
   // Challenge endpoints

@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Game, Team, DrawnCard, Challenge, Curse } from '../types';
 import ApiService from '../services/api';
+import { useAudioPlayer, setAudioModeAsync } from 'expo-audio';
 
 interface ChallengesTabProps {
   game: Game;
@@ -77,6 +78,24 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
   const [challengeTitleById, setChallengeTitleById] = useState<Record<string, string>>({});
   const [customTokenInput, setCustomTokenInput] = useState<string>('0');
   const [showVariableRewardInput, setShowVariableRewardInput] = useState(false);
+
+  // Players for snappy UX (expo-audio)
+  const drawPlayer = useAudioPlayer(require('../assets/draw.wav'));
+  const completePlayer = useAudioPlayer(require('../assets/complete.wav'));
+  const vetoPlayer = useAudioPlayer(require('../assets/veto_curse.wav'));
+
+  useEffect(() => {
+    // Allow playback in silent mode
+    setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+  }, []);
+
+  const playSound = (player?: any) => {
+    if (!player) return;
+    try {
+      player.seekTo(0);
+      player.play();
+    } catch {}
+  };
 
   // If the server reports an active challenge, reflect it as drawnCard
   const serverActiveChallenge = currentTeam.activeChallenge;
@@ -152,6 +171,8 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
       setDrawnCard(normalized);
       setShowCardModal(true);
       setCustomTokenInput('0'); // Reset custom token input for new cards
+      // Play draw sound
+      playSound(drawPlayer);
 
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to draw card. Please try again.');
@@ -192,6 +213,8 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
                 setDrawnCard(null);
                 setShowCardModal(false);
                 setCustomTokenInput('0');
+                // Play completion sound
+                playSound(completePlayer);
 
                 return;
               }
@@ -204,6 +227,8 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
               );
               setDrawnCard(null);
               setShowCardModal(false);
+              // Play completion sound
+              playSound(completePlayer);
             } catch (error: any) {
               // If backend indicates this is actually a dynamic challenge, show the modal so user can enter tokens
               if (error?.message?.toLowerCase()?.includes('dynamic challenge')) {
@@ -237,6 +262,8 @@ const ChallengesTab: React.FC<ChallengesTabProps> = ({ game, currentTeam, onRefr
                 currentTeam.id,
                 game.id
               );
+              // Play veto/cursed sound
+              playSound(vetoPlayer);
 
               Alert.alert(
                 'Challenge Vetoed',
