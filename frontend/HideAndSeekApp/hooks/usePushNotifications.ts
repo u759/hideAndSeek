@@ -4,6 +4,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import ApiService from '../services/api';
 import { Platform } from 'react-native';
+import { useAudioPlayer, setAudioModeAsync } from 'expo-audio';
 
 // Configure foreground behavior for MAXIMUM priority with all alerts enabled
 Notifications.setNotificationHandler({
@@ -15,7 +16,6 @@ Notifications.setNotificationHandler({
       shouldSetBadge: true,
       shouldShowBanner: true,
       shouldShowList: true,
-      shouldShowAlert: true,
       // ⚡ MAXIMUM priority for ALL notifications to guarantee user attention
       priority: Notifications.AndroidNotificationPriority.MAX,
     };
@@ -31,7 +31,7 @@ export async function createNotificationChannelsAsync() {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'Game Updates',
       importance: Notifications.AndroidImportance.MAX,
-      sound: 'default',
+      sound: 'notif.wav',
       vibrationPattern: [250, 250, 250],
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
       enableLights: true,
@@ -46,7 +46,7 @@ export async function createNotificationChannelsAsync() {
     await Notifications.setNotificationChannelAsync('urgent', {
       name: 'Urgent Notifications',
       importance: Notifications.AndroidImportance.MAX,
-      sound: 'default',
+      sound: 'notif.wav',
       vibrationPattern: [0, 250, 250, 250],
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
       enableLights: true,
@@ -61,7 +61,7 @@ export async function createNotificationChannelsAsync() {
     await Notifications.setNotificationChannelAsync('game-alerts', {
       name: 'Game Alerts',
       importance: Notifications.AndroidImportance.MAX,
-      sound: 'default',
+      sound: 'notif.wav',
       vibrationPattern: [500, 500, 500],
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
       enableLights: true,
@@ -76,7 +76,7 @@ export async function createNotificationChannelsAsync() {
     await Notifications.setNotificationChannelAsync('emergency', {
       name: 'Emergency Alerts',
       importance: Notifications.AndroidImportance.MAX,
-      sound: 'default',
+      sound: 'notif.wav',
       vibrationPattern: [1000, 1000, 1000],
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
       enableLights: true,
@@ -91,7 +91,7 @@ export async function createNotificationChannelsAsync() {
     await Notifications.setNotificationChannelAsync('heads-up', {
       name: 'Heads-Up Alerts',
       importance: Notifications.AndroidImportance.MAX,
-      sound: 'default',
+      sound: 'notif.wav',
       vibrationPattern: [0, 500, 100, 500, 100, 500],
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
       enableLights: true,
@@ -101,6 +101,22 @@ export async function createNotificationChannelsAsync() {
       description: 'Maximum attention notifications that appear as heads-up display',
       groupId: 'ubceek_headsup',
       lightColor: '#FF6600',
+    });
+
+    // Dedicated channel for curse events with a distinct sound
+    await Notifications.setNotificationChannelAsync('curse', {
+      name: 'Curse Alerts',
+      importance: Notifications.AndroidImportance.MAX,
+      sound: 'veto_curse.wav',
+      vibrationPattern: [0, 400, 200, 400, 200, 400],
+      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+      enableLights: true,
+      enableVibrate: true,
+      bypassDnd: true,
+      showBadge: true,
+      description: 'Alerts when a hider is cursed',
+      groupId: 'ubceek_game',
+      lightColor: '#AA0000',
     });
   } catch (e) {
     console.log('Failed to create notification channels', e);
@@ -118,15 +134,33 @@ export default function usePushNotifications(
     onRespond?: (response: Notifications.NotificationResponse) => void;
   }
 ) {
+  // Prepare curse sound player (expo-audio)
+  const cursePlayer = useAudioPlayer(require('../assets/veto_curse.wav'));
+  const playCurseSound = () => {
+    try {
+      cursePlayer.seekTo(0);
+      cursePlayer.play();
+    } catch {}
+  };
+
   useEffect(() => {
     let mounted = true;
     let currentToken: string | null = null;
     let previousTeamId: string | null = null;
+    // Ensure playback allowed in silent mode
+    setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
     
     // Add notification listeners
     const notificationListener = Notifications.addNotificationReceivedListener(notification => {
       // Foreground receipt only (when app visible). Background receipts are auto-displayed by OS.
       console.log('Notification received (foreground):', notification?.request?.content?.data || notification);
+      try {
+        const data: any = notification?.request?.content?.data || {};
+        // If this is a curse event, play the distinct local sound immediately
+        if (data?.type === 'hider_cursed' || data?.event === 'hider_cursed') {
+          playCurseSound();
+        }
+      } catch {}
       opts?.onReceiveForeground?.(notification);
     });
 

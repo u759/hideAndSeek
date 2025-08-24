@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { MaterialIcons, FontAwesome, Entypo, Ionicons } from '@expo/vector-icons';
-import { Game, Team } from '../types';
+import { Game, Team, GameStats } from '../types';
 import ApiService from '../services/api';
 import RoleSelectionModal from './RoleSelectionModal';
 
@@ -23,7 +23,7 @@ interface OverviewTabProps {
 const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh }) => {
   const [refreshing, setRefreshing] = React.useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
-  const [gameStats, setGameStats] = useState<any>(null);
+  const [gameStats, setGameStats] = useState<GameStats | null>(null);
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -528,6 +528,42 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
           )}
         </View>
 
+        {game.status === 'ended' && gameStats?.leaderboard && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Leaderboard</Text>
+            <View style={styles.leaderboardCard}>
+              <Text style={styles.leaderboardTitle}>Top Hider Time</Text>
+              {gameStats.leaderboard.byHiderTime.slice(0, 3).map((t, idx) => (
+                <View key={`ht-${t.id}`} style={styles.leaderboardItem}>
+                  <Text style={styles.leaderboardRank}>{idx + 1}</Text>
+                  <Text style={styles.leaderboardName}>{t.name}</Text>
+                  <Text style={styles.leaderboardMetric}>{t.totalHiderTimeFormatted}</Text>
+                </View>
+              ))}
+            </View>
+            <View style={styles.leaderboardCard}>
+              <Text style={styles.leaderboardTitle}>Most Challenges</Text>
+              {gameStats.leaderboard.byChallengesCompleted.slice(0, 3).map((t, idx) => (
+                <View key={`ch-${t.id}`} style={styles.leaderboardItem}>
+                  <Text style={styles.leaderboardRank}>{idx + 1}</Text>
+                  <Text style={styles.leaderboardName}>{t.name}</Text>
+                  <Text style={styles.leaderboardMetric}>{t.completedChallengesCount}</Text>
+                </View>
+              ))}
+            </View>
+            <View style={styles.leaderboardCard}>
+              <Text style={styles.leaderboardTitle}>Most Curses Applied</Text>
+              {gameStats.leaderboard.byCursesApplied.slice(0, 3).map((t, idx) => (
+                <View key={`cu-${t.id}`} style={styles.leaderboardItem}>
+                  <Text style={styles.leaderboardRank}>{idx + 1}</Text>
+                  <Text style={styles.leaderboardName}>{t.name}</Text>
+                  <Text style={styles.leaderboardMetric}>{t.cursesAppliedCount}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>All Teams</Text>
           {seekerTeams.map((team) => (
@@ -978,6 +1014,49 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 4,
+  },
+  leaderboardCard: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#eee',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+    marginBottom: 12,
+  },
+  leaderboardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#003366',
+    marginBottom: 8,
+  },
+  leaderboardItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  leaderboardRank: {
+    width: 22,
+    textAlign: 'center',
+    fontWeight: '700',
+    color: '#003366',
+  },
+  leaderboardName: {
+    flex: 1,
+    marginLeft: 8,
+    fontWeight: '600',
+    color: '#333',
+  },
+  leaderboardMetric: {
+    fontWeight: '700',
+    color: '#003366',
   },
   hiderCurseActions: {
     marginTop: 8,

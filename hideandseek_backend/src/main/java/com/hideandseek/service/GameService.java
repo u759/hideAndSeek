@@ -712,13 +712,13 @@ public class GameService {
 
     public Map<String, Object> getGameStats(String gameId) {
         Game game = getGame(gameId);
-        
+
         Map<String, Object> stats = new HashMap<>();
         stats.put("gameId", gameId);
         stats.put("round", game.getRound());
         stats.put("status", game.getStatus());
-        
-        // Calculate team statistics
+
+        // Per-team stats
         List<Map<String, Object>> teamStats = new ArrayList<>();
         for (Team team : game.getTeams()) {
             Map<String, Object> teamStat = new HashMap<>();
@@ -726,17 +726,21 @@ public class GameService {
             teamStat.put("name", team.getName());
             teamStat.put("role", team.getRole());
             teamStat.put("tokens", team.getTokens());
-            teamStat.put("totalHiderTime", team.getTotalHiderTime());
-            teamStat.put("totalHiderTimeFormatted", formatTime(team.getTotalHiderTime()));
+            long totalHiderTime = team.getTotalHiderTime();
+            teamStat.put("totalHiderTime", totalHiderTime);
+            teamStat.put("totalHiderTimeFormatted", formatTime(totalHiderTime));
+            int completedChallengesCount = team.getCompletedChallenges() != null ? team.getCompletedChallenges().size() : 0;
+            int cursesAppliedCount = team.getAppliedCurses() != null ? team.getAppliedCurses().size() : 0;
+            teamStat.put("completedChallengesCount", completedChallengesCount);
+            teamStat.put("cursesAppliedCount", cursesAppliedCount);
             teamStats.add(teamStat);
         }
         stats.put("teams", teamStats);
-        
-        // Determine winner (team with longest total hider time)
+
+        // Winner by total hider time
         Team winner = game.getTeams().stream()
                 .max((t1, t2) -> Long.compare(t1.getTotalHiderTime(), t2.getTotalHiderTime()))
                 .orElse(null);
-        
         if (winner != null) {
             Map<String, Object> winnerInfo = new HashMap<>();
             winnerInfo.put("id", winner.getId());
@@ -745,20 +749,56 @@ public class GameService {
             winnerInfo.put("totalHiderTimeFormatted", formatTime(winner.getTotalHiderTime()));
             stats.put("winner", winnerInfo);
         }
-        
+
+        // Leaderboards
+        List<Map<String, Object>> byHiderTime = new ArrayList<>();
+        List<Map<String, Object>> byChallengesCompleted = new ArrayList<>();
+        List<Map<String, Object>> byCursesApplied = new ArrayList<>();
+        for (Team team : game.getTeams()) {
+            // Hider time
+            Map<String, Object> t1 = new HashMap<>();
+            t1.put("id", team.getId());
+            t1.put("name", team.getName());
+            t1.put("totalHiderTime", team.getTotalHiderTime());
+            t1.put("totalHiderTimeFormatted", formatTime(team.getTotalHiderTime()));
+            byHiderTime.add(t1);
+
+            // Challenges completed
+            Map<String, Object> t2 = new HashMap<>();
+            t2.put("id", team.getId());
+            t2.put("name", team.getName());
+            t2.put("completedChallengesCount", team.getCompletedChallenges() != null ? team.getCompletedChallenges().size() : 0);
+            byChallengesCompleted.add(t2);
+
+            // Curses applied
+            Map<String, Object> t3 = new HashMap<>();
+            t3.put("id", team.getId());
+            t3.put("name", team.getName());
+            t3.put("cursesAppliedCount", team.getAppliedCurses() != null ? team.getAppliedCurses().size() : 0);
+            byCursesApplied.add(t3);
+        }
+
+        byHiderTime.sort((a, b) -> Long.compare((Long) b.get("totalHiderTime"), (Long) a.get("totalHiderTime")));
+        byChallengesCompleted.sort((a, b) -> Integer.compare((Integer) b.get("completedChallengesCount"), (Integer) a.get("completedChallengesCount")));
+        byCursesApplied.sort((a, b) -> Integer.compare((Integer) b.get("cursesAppliedCount"), (Integer) a.get("cursesAppliedCount")));
+
+        Map<String, Object> leaderboard = new HashMap<>();
+        leaderboard.put("byHiderTime", byHiderTime);
+        leaderboard.put("byChallengesCompleted", byChallengesCompleted);
+        leaderboard.put("byCursesApplied", byCursesApplied);
+        stats.put("leaderboard", leaderboard);
+
         return stats;
     }
-    
-    private String formatTime(long milliseconds) {
-        if (milliseconds <= 0) return "0s";
-        
-        long seconds = milliseconds / 1000;
+
+    private String formatTime(long millis) {
+        long seconds = millis / 1000;
         long minutes = seconds / 60;
         long hours = minutes / 60;
-        
+
         seconds = seconds % 60;
         minutes = minutes % 60;
-        
+
         if (hours > 0) {
             return String.format("%dh %dm %ds", hours, minutes, seconds);
         } else if (minutes > 0) {

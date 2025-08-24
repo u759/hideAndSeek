@@ -72,7 +72,7 @@
           "color": "#003366",
           "mode": "production",
           "defaultChannel": "game-alerts",
-          "sounds": ["./assets/notif.wav"],
+          "sounds": ["./assets/notif.wav", "./assets/veto_curse.wav"],
           "enableBackgroundRemoteNotifications": true
         }
       ],
@@ -100,6 +100,18 @@
         "expo-background-task",
         {
           "minimumInterval": 15
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#232323",
+          "image": "./assets/splash-icon.png",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#000000"
+          },
+          "imageWidth": 200
         }
       ]
     ],
