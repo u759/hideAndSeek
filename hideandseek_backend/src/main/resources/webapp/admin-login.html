@@ -86,14 +86,14 @@
 			err.textContent = '';
 			btn.disabled = true;
 			try {
-				const res = await fetch('/api/admin/auth/login', {
+				const res = await fetch('api/admin/auth/login', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					credentials: 'same-origin',
 					body: JSON.stringify({ password: document.getElementById('password').value })
 				});
 				if (res.ok) {
-					window.location.href = '/admin-dashboard.html';
+					window.location.href = 'admin-dashboard.html';
 				} else {
 					const data = await res.json().catch(() => ({ error: 'Login failed' }));
 					err.textContent = data.error || 'Invalid password';
@@ -107,9 +107,9 @@
 		async function init() {
 			// If already authed, jump to dashboard
 			try {
-				const res = await fetch('/api/admin/auth/status', { credentials: 'same-origin' });
+				const res = await fetch('api/admin/auth/status', { credentials: 'same-origin' });
 				const data = await res.json();
-				if (data.authenticated) window.location.href = '/admin-dashboard.html';
+				if (data.authenticated) window.location.href = 'admin-dashboard.html';
 			} catch {}
 		}
 		window.addEventListener('DOMContentLoaded', init);
