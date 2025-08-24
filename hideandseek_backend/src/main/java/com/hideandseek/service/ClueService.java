@@ -154,7 +154,7 @@ public class ClueService {
             case "selfie":
                 return handleSelfieClue(game, requestingTeam, targetHiderTeams, clueType, clueId);
                 
-            case "closest-landmark":
+            case "closest-building":
                 return handleClosestLandmarkClue(game, requestingTeam, targetHiderTeams, clueType, clueId);
                 
             case "relative-direction":
@@ -607,7 +607,7 @@ public class ClueService {
                 // Update the hider's data with the response
                 if ("selfie".equals(request.getClueTypeId())) {
                     hiderData.setAdditionalData(responseData); // URL for selfie
-                } else if ("closest-landmark".equals(request.getClueTypeId())) {
+                } else if ("closest-building".equals(request.getClueTypeId())) {
                     hiderData.setAdditionalData(responseData); // Landmark name
                 }
                 break;
@@ -660,7 +660,7 @@ public class ClueService {
                         hiderData.getLongitude()));
             } else if ("selfie".equals(clue.getClueTypeId())) {
                 clue.setClueText("Selfie received from " + hiderData.getTeamName());
-            } else if ("closest-landmark".equals(clue.getClueTypeId())) {
+            } else if ("closest-building".equals(clue.getClueTypeId())) {
                 clue.setClueText("Landmark information received from " + hiderData.getTeamName() + ": " + hiderData.getAdditionalData());
             }
         } else {

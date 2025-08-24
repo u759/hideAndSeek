@@ -14,7 +14,7 @@ type ClueResponseMsg = {
   requestingTeamId: string;
   response: {
     requestId: string;
-    clueTypeId: string; // e.g., 'selfie' | 'closest-landmark' | ...
+    clueTypeId: string; // e.g., 'selfie' | 'closest-building' | ...
     responseType: 'photo' | 'text' | 'location' | 'automatic';
     responseData: string; // text or URL
     timestamp: number;
@@ -56,7 +56,7 @@ const SeekerClueListener: React.FC<Props> = ({ gameId, teamId }) => {
       if (data.requestingTeamId !== teamId) return;
 
       const clueId = data.response?.clueTypeId;
-      if (clueId === 'selfie' || clueId === 'closest-landmark') {
+      if (clueId === 'selfie' || clueId === 'closest-building') {
         // Update last seen to this response time
         lastSeenTsRef.current = Math.max(lastSeenTsRef.current, data.response.timestamp || Date.now());
         setPayload(data.response);
@@ -78,7 +78,7 @@ const SeekerClueListener: React.FC<Props> = ({ gameId, teamId }) => {
         if (!newest) return;
         if ((newest.timestamp || 0) <= lastSeenTsRef.current) return;
         // Only popup for selfie clues (we can reliably detect by URL pattern)
-        // For closest-landmark, we rely on the WebSocket message which has proper clueTypeId
+        // For closest-building, we rely on the WebSocket message which has proper clueTypeId
         const looksLikeImage = /\/api\/uploads\/files\//.test(newest.text);
         if (looksLikeImage) {
           // We don't have the original response meta here, but we can synthesize minimal payload
@@ -107,8 +107,8 @@ const SeekerClueListener: React.FC<Props> = ({ gameId, teamId }) => {
 
   if (!payload) return null;
 
-  // Only show this custom modal for selfie and closest-landmark clues.
-  const allowedClue = payload.clueTypeId === 'selfie' || payload.clueTypeId === 'closest-landmark';
+  // Only show this custom modal for selfie and closest-building clues.
+  const allowedClue = payload.clueTypeId === 'selfie' || payload.clueTypeId === 'closest-building';
   if (!allowedClue) {
     // For other clue types, do not render the custom popup here.
     return null;

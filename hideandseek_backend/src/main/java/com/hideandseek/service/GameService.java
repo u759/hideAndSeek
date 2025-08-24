@@ -73,6 +73,10 @@ public class GameService {
                 checkRoundTimeLimit(g);
                 // Persist any changes and broadcast
                 gameStore.updateGame(g);
+                // Proactively broadcast active games so clients receive fresh timing fields
+                if ("active".equals(g.getStatus())) {
+                    webSocketHandler.broadcastToGame(g.getId(), g);
+                }
             } catch (Exception e) {
                 logger.warn("Failed to enforce round time limit for game {}: {}", g.getId(), e.getMessage());
             }
@@ -82,17 +86,14 @@ public class GameService {
     private void checkRoundTimeLimit(Game game) {
         if ("active".equals(game.getStatus()) && 
             game.getRoundLengthMinutes() != null && 
-            game.getStartTime() != null) {
-            
+            game.getRoundStartTime() != null) {
             long currentTime = System.currentTimeMillis();
             long roundDurationMs = game.getRoundLengthMinutes() * 60 * 1000L;
-            long elapsedTime = currentTime - game.getStartTime();
-            
-            // Subtract any paused time
-            if (game.getTotalPausedDuration() != null) {
-                elapsedTime -= game.getTotalPausedDuration();
-            }
-            
+            // Compute elapsed for current round excluding paused time since the round started
+            long totalPaused = game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L;
+            long pausedBaseline = game.getPausedDurationAtRoundStart() != null ? game.getPausedDurationAtRoundStart() : 0L;
+            long pausedSinceRoundStart = Math.max(0L, totalPaused - pausedBaseline);
+            long elapsedTime = currentTime - game.getRoundStartTime() - pausedSinceRoundStart;
             if (elapsedTime >= roundDurationMs) {
                 // Auto-pause the game when time limit is reached
                 game.setStatus("paused");
@@ -164,7 +165,13 @@ public class GameService {
 
         game.setStatus("active");
         long currentTime = System.currentTimeMillis();
-        game.setStartTime(currentTime);
+        game.setStartTime(currentTime); // keep legacy field in sync
+        // initialize new timing fields
+        if (game.getGameStartTime() == null) {
+            game.setGameStartTime(currentTime);
+        }
+        game.setRoundStartTime(currentTime);
+        game.setPausedDurationAtRoundStart(game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L);
         
         // Start tracking time for all hiders and ensure seekers have no start time
         for (Team team : game.getTeams()) {
@@ -186,6 +193,15 @@ public class GameService {
     public Game endGame(String gameId) {
         Game game = getGame(gameId);
         
+        // If ending while paused, accumulate the last paused segment into totalPausedDuration
+        if ("paused".equals(game.getStatus()) && game.getPauseTime() != null) {
+            long now = System.currentTimeMillis();
+            long pausedDuration = now - game.getPauseTime();
+            long totalPaused = game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L;
+            game.setTotalPausedDuration(totalPaused + pausedDuration);
+            game.setPauseTime(null);
+        }
+
         // Accumulate hiding time for all teams that are still hiding
         long currentTime = System.currentTimeMillis();
         for (Team team : game.getTeams()) {
@@ -264,7 +280,17 @@ public class GameService {
         game.setStatus(status);
         if ("active".equals(status)) {
             if (game.getStartTime() == null) {
+                // First activation for this game
                 game.setStartTime(currentTime);
+                if (game.getGameStartTime() == null) {
+                    game.setGameStartTime(currentTime);
+                }
+                if (game.getRoundStartTime() == null) {
+                    game.setRoundStartTime(currentTime);
+                }
+                if (game.getPausedDurationAtRoundStart() == null) {
+                    game.setPausedDurationAtRoundStart(game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L);
+                }
             }
         }
         gameStore.updateGame(game);
@@ -304,7 +330,19 @@ public class GameService {
         game.setStatus("active");
         game.setPausedByTimeLimit(false); // Reset the time limit flag for new round
         long currentTime = System.currentTimeMillis();
-        game.setStartTime(currentTime);
+        // Add the paused segment that just ended to totalPausedDuration
+        if (game.getPauseTime() != null) {
+            long pausedDuration = currentTime - game.getPauseTime();
+            long totalPaused = game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L;
+            game.setTotalPausedDuration(totalPaused + pausedDuration);
+            game.setPauseTime(null);
+        }
+        game.setStartTime(currentTime); // keep legacy field in sync
+        game.setRoundStartTime(currentTime);
+        game.setPausedDurationAtRoundStart(game.getTotalPausedDuration() != null ? game.getTotalPausedDuration() : 0L);
+        if (game.getGameStartTime() == null) {
+            game.setGameStartTime(currentTime);
+        }
         
         // Start tracking time for all hiders and ensure seekers have no start time
         for (Team team : game.getTeams()) {
@@ -337,6 +375,9 @@ public class GameService {
         game.setPauseTime(null);
         game.setTotalPausedDuration(0L);
         game.setEndTime(null);
+        game.setGameStartTime(null);
+        game.setRoundStartTime(null);
+        game.setPausedDurationAtRoundStart(0L);
         
         // Reset all teams
         for (Team team : game.getTeams()) {

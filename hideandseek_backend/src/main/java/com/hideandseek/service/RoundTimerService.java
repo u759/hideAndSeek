@@ -10,8 +10,8 @@ public class RoundTimerService {
     @Autowired
     private GameService gameService;
 
-    // Run every 5 seconds to proactively enforce round time limits and broadcast updates
-    @Scheduled(fixedRate = 5000)
+    // Run every 1 second to proactively enforce round time limits and broadcast updates
+    @Scheduled(fixedRate = 1000)
     public void pollAndEnforce() {
         try {
             gameService.enforceRoundTimeLimits();

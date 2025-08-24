@@ -24,16 +24,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
   const [refreshing, setRefreshing] = React.useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [gameStats, setGameStats] = useState<any>(null);
-  const [currentTime, setCurrentTime] = useState(Date.now());
-
-  // Update current time every 30 seconds for live remaining time display
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -150,30 +140,24 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
     return date.toLocaleTimeString();
   };
 
-  const getGameDuration = () => {
-    let duration;
-
-    if (game.status === 'ended' && game.endTime) {
-      duration = game.endTime - game.startTime;
-    } else {
-      duration = currentTime - game.startTime;
-      if (game.status === 'paused' && game.pauseTime) {
-        duration -= (currentTime - game.pauseTime);
-      }
-    }
-
-    if (game.totalPausedDuration) {
-      duration -= game.totalPausedDuration;
-    }
-    
-    duration = Math.max(0, duration);
-
-    const minutes = Math.floor(duration / 60000);
+  const formatDuration = (durationMs?: number) => {
+    if (durationMs == null) return '0m';
+    const safe = Math.max(0, durationMs);
+    const minutes = Math.floor(safe / 60000);
     const hours = Math.floor(minutes / 60);
-    if (hours > 0) {
-      return `${hours}h ${minutes % 60}m`;
-    }
+    if (hours > 0) return `${hours}h ${minutes % 60}m`;
     return `${minutes}m`;
+  };
+
+  const getGameDuration = () => {
+    // Prefer server-provided duration pushed via WebSocket
+    if (typeof game.gameDuration === 'number') return formatDuration(game.gameDuration);
+    // Fallback compute
+    const start = game.gameStartTime ?? game.startTime;
+    const nowOrEnd = game.status === 'ended' && game.endTime ? game.endTime : Date.now();
+    let paused = game.totalPausedDuration ?? 0;
+    if (game.status === 'paused' && game.pauseTime) paused += (nowOrEnd - game.pauseTime);
+    return formatDuration(Math.max(0, nowOrEnd - start - paused));
   };
 
   const getRemainingTime = () => {
@@ -181,32 +165,36 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
       return null;
     }
 
-    let elapsed;
-    if (game.status === 'paused' && game.pauseTime) {
-      elapsed = game.pauseTime - game.startTime;
-    } else {
-      elapsed = currentTime - game.startTime;
-    }
+    // Use server roundDuration if available
+    const elapsedMs = typeof game.roundDuration === 'number' ? game.roundDuration : (() => {
+      const roundStart = game.roundStartTime ?? game.gameStartTime ?? game.startTime;
+      const now = Date.now();
+      const totalPaused = game.totalPausedDuration ?? 0;
+      const pausedBaseline = game.pausedDurationAtRoundStart ?? 0;
+      let pausedSinceRoundStart = Math.max(0, totalPaused - pausedBaseline);
+      if (game.status === 'paused' && game.pauseTime) pausedSinceRoundStart += (now - game.pauseTime);
+      return Math.max(0, now - roundStart - pausedSinceRoundStart);
+    })();
 
-    // Subtract any paused time
-    if (game.totalPausedDuration) {
-      elapsed -= game.totalPausedDuration;
-    }
+    const roundLengthMs = game.roundLengthMinutes * 60 * 1000;
+    const remainingMs = Math.max(0, roundLengthMs - elapsedMs);
+    if (remainingMs === 0) return 'Time Up!';
+    const minutes = Math.floor(remainingMs / 60000);
+    const hours = Math.floor(minutes / 60);
+    if (hours > 0) return `${hours}h ${minutes % 60}m left`;
+    return `${minutes}m left`;
+  };
 
-    const elapsedMinutes = Math.floor(elapsed / 60000);
-    const remainingMinutes = Math.max(0, game.roundLengthMinutes - elapsedMinutes);
-    
-    if (remainingMinutes === 0) {
-      return 'Time Up!';
-    }
-
-    const hours = Math.floor(remainingMinutes / 60);
-    const mins = remainingMinutes % 60;
-    
-    if (hours > 0) {
-      return `${hours}h ${mins}m left`;
-    }
-    return `${mins}m left`;
+  const getRoundDuration = () => {
+    if (typeof game.roundDuration === 'number') return formatDuration(game.roundDuration);
+    // Fallback compute
+    const roundStart = game.roundStartTime ?? game.gameStartTime ?? game.startTime;
+    const now = game.status === 'ended' && game.endTime ? game.endTime : Date.now();
+    const totalPaused = game.totalPausedDuration ?? 0;
+    const pausedBaseline = game.pausedDurationAtRoundStart ?? 0;
+    let pausedSinceRoundStart = Math.max(0, totalPaused - pausedBaseline);
+    if (game.status === 'paused' && game.pauseTime) pausedSinceRoundStart += (now - game.pauseTime);
+    return formatDuration(Math.max(0, now - roundStart - pausedSinceRoundStart));
   };
 
   const seekerTeams = game.teams.filter(t => t.role === 'seeker');
@@ -304,35 +292,64 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ game, currentTeam, onRefresh 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Game Status</Text>
           <View style={styles.statusCard}>
-            <View style={styles.statusRow}>
-              <Text style={styles.statusLabel}>Status:</Text>
-              <Text style={[styles.statusValue, { color: getStatusColor(game.status) }]}>
-                {game.status.toUpperCase()}
-              </Text>
-            </View>
-            <View style={styles.statusRow}>
-              <Text style={styles.statusLabel}>Duration:</Text>
-              <Text style={styles.statusValue}>
-                {game.status === 'waiting' ? '--' : getGameDuration()}
-              </Text>
-            </View>
-            <View style={styles.statusRow}>
-              <Text style={styles.statusLabel}>Started:</Text>
-              <Text style={styles.statusValue}>
-                {game.status === 'waiting' ? '--' : formatTime(game.startTime)}
-              </Text>
-            </View>
-            {game.roundLengthMinutes && getRemainingTime() && (
-              <View style={styles.statusRow}>
-                <Text style={styles.statusLabel}>Round Time Remaining:</Text>
-                <Text style={[
-                  styles.statusValue, 
-                  getRemainingTime() === 'Time Up!' ? { color: '#e74c3c', fontWeight: 'bold' } : {}
-                ]}>
-                  {getRemainingTime()}
-                </Text>
+            <View style={styles.statusSummaryRow}>
+              <View style={[styles.statusChip, { backgroundColor: '#f3f6ff', borderColor: '#dbe4ff' }]}>
+                <MaterialIcons name="fiber-manual-record" size={10} color={getStatusColor(game.status)} style={{ marginRight: 6 }} />
+                <Text style={[styles.statusChipText, { color: getStatusColor(game.status) }]}>{game.status.toUpperCase()}</Text>
               </View>
-            )}
+              <View style={styles.statusChip}>
+                <MaterialIcons name="schedule" size={14} color="#555" style={{ marginRight: 6 }} />
+                <Text style={styles.statusChipText}>Game: {game.status === 'waiting' ? '--' : getGameDuration()}</Text>
+              </View>
+              {(game.status === 'active' || game.status === 'paused' || game.status === 'ended') && (
+                <>
+                  <View style={styles.statusChip}>
+                    <MaterialIcons name="timelapse" size={14} color="#555" style={{ marginRight: 6 }} />
+                    <Text style={styles.statusChipText}>Round: {getRoundDuration()}</Text>
+                  </View>
+                  {game.roundLengthMinutes && getRemainingTime() && (
+                    <View
+                      style={[
+                        styles.statusChip,
+                        getRemainingTime() === 'Time Up!'
+                          ? { backgroundColor: '#fdecea', borderColor: '#f5c6cb' }
+                          : null,
+                      ]}
+                    >
+                      <MaterialIcons
+                        name="hourglass-bottom"
+                        size={14}
+                        color={getRemainingTime() === 'Time Up!' ? '#e74c3c' : '#555'}
+                        style={{ marginRight: 6 }}
+                      />
+                      <Text
+                        style={[
+                          styles.statusChipText,
+                          getRemainingTime() === 'Time Up!'
+                            ? { color: '#e74c3c', fontWeight: '700' }
+                            : null,
+                        ]}
+                      >
+                        {getRemainingTime()}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              )}
+            </View>
+            <View style={styles.statusMetaRow}>
+              <MaterialIcons name="play-arrow" size={14} color="#888" style={{ marginRight: 6 }} />
+              <Text style={styles.statusMetaText}>
+                {game.status === 'waiting' ? 'Not started' : `Started ${formatTime((game.gameStartTime ?? game.startTime))}`}
+              </Text>
+              {(game.status === 'active' || game.status === 'paused' || game.status === 'ended') && game.roundStartTime && (
+                <>
+                  <Text style={styles.statusMetaDivider}>•</Text>
+                  <MaterialIcons name="restart-alt" size={14} color="#888" style={{ marginRight: 6 }} />
+                  <Text style={styles.statusMetaText}>Round {formatTime(game.roundStartTime)}</Text>
+                </>
+              )}
+            </View>
           </View>
         </View>
 
@@ -650,6 +667,42 @@ const styles = StyleSheet.create({
   statusValue: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  statusSummaryRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  statusChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: '#f7f7f9',
+    borderWidth: 1,
+    borderColor: '#eee',
+    borderRadius: 14,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  statusChipText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#555',
+  },
+  statusMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  statusMetaText: {
+    fontSize: 12,
+    color: '#888',
+  },
+  statusMetaDivider: {
+    marginHorizontal: 8,
+    color: '#bbb',
   },
   teamCard: {
     backgroundColor: '#fff',
