@@ -49,11 +49,9 @@
         "FOREGROUND_SERVICE_LOCATION",
         "WAKE_LOCK",
         "RECEIVE_BOOT_COMPLETED",
-        "SYSTEM_ALERT_WINDOW",
         "USE_FULL_SCREEN_INTENT",
         "VIBRATE",
         "FLASHLIGHT",
-        "DISABLE_KEYGUARD",
         "REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
       ],
       "notification": {
