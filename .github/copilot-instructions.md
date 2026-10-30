@@ -9,7 +9,7 @@ This repo is a real-time, location-based multiplayer game with a Spring Boot (WA
 	- Admin panel served from WAR: `src/main/resources/webapp/{admin-login,admin-dashboard,admin-game}.html` with REST under `/api/admin/**`.
 	- Session guard for admin: `com.hideandseek.config.AdminSecurityConfig` checks `ADMIN_AUTH` session attr; login via `/api/admin/auth/login` sets session.
 - Frontend (Expo RN, TypeScript) — `frontend/HideAndSeekApp/`
-	- Centralized game state over WebSocket: `hooks/useGameState.ts` (see WEBSOCKET_MIGRATION_SUMMARY.md).
+	- Centralized game state over WebSocket: `hooks/useGameState.ts`.
 	- API and WS config in `config/api.ts` (see `API_BASE_URL` and `getWebsocketUrl()`).
 
 ## Critical workflows
