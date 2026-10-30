@@ -33,4 +33,6 @@ build/
 .vscode/
 
 ### Logs ###
-logs/*.log
+# Runtime game event/location logs and selfie uploads (written under user.dir when run locally)
+/logs/
+/hideandseek/
